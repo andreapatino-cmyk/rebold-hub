@@ -209,14 +209,49 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
   </div>
   <div class="login-card">
     <div class="login-body">
+
+    <!-- PASO 1: CORREO -->
+    <div id="loginStep1">
       <div class="login-title">Bienvenido 👋</div>
       <div class="login-hint">Ingresa con tu correo corporativo</div>
       <div class="form-group">
         <label class="form-label">Correo corporativo</label>
         <input class="form-input" id="loginEmail" type="email" placeholder="tu.nombre@letsrebold.com" autocomplete="email">
       </div>
-      <button class="btn btn-red" onclick="doLogin()">Ingresar →</button>
+      <button class="btn btn-red" onclick="checkEmail()">Continuar →</button>
       <div class="login-error" id="loginError">Correo no reconocido. Verifica e intenta de nuevo.</div>
+    </div>
+
+    <!-- PASO 2: CREAR CONTRASEÑA (primera vez) -->
+    <div id="loginStep2" style="display:none">
+      <div class="login-title">Crea tu contraseña 🔐</div>
+      <div class="login-hint" id="step2Hint">Es tu primera vez. Define una contraseña para tu cuenta.</div>
+      <div class="form-group">
+        <label class="form-label">Nueva contraseña</label>
+        <input class="form-input" id="loginPass1" type="password" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmar contraseña</label>
+        <input class="form-input" id="loginPass2" type="password" placeholder="Repite la contraseña">
+      </div>
+      <button class="btn btn-red" onclick="setPassword()">Crear contraseña y entrar →</button>
+      <div class="login-error" id="loginError2">Las contraseñas no coinciden o son muy cortas.</div>
+      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="backToEmail()">← Cambiar correo</button>
+    </div>
+
+    <!-- PASO 3: INGRESAR CON CONTRASEÑA (sesiones siguientes) -->
+    <div id="loginStep3" style="display:none">
+      <div class="login-title">Hola de nuevo 👋</div>
+      <div class="login-hint" id="step3Name">Ingresa tu contraseña</div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input class="form-input" id="loginPassExist" type="password" placeholder="Tu contraseña">
+      </div>
+      <button class="btn btn-red" onclick="loginWithPassword()">Ingresar →</button>
+      <div class="login-error" id="loginError3">Contraseña incorrecta. Intenta de nuevo.</div>
+      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="backToEmail()">← Cambiar correo</button>
+    </div>
+
     </div>
   </div>
 </div>
@@ -717,16 +752,82 @@ function tick() {
 tick(); setInterval(tick, 1000);
 
 // ── LOGIN ──────────────────────────────────────────────
-function doLogin() {
+// Passwords stored in localStorage (key: rb_pwd_<email>)
+// In production these would be hashed and stored in Supabase
+
+function checkEmail() {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const user  = USERS[email];
   const err   = document.getElementById('loginError');
   if (!user) { err.style.display = 'block'; return; }
   err.style.display = 'none';
+
+  // Check if user has set a password before
+  const storedPwd = localStorage.getItem('rb_pwd_' + email);
+
+  document.getElementById('loginStep1').style.display = 'none';
+
+  if (!storedPwd) {
+    // First time — ask to create password
+    document.getElementById('loginStep2').style.display = 'block';
+    document.getElementById('step2Hint').textContent =
+      'Hola ' + user.name.split(' ')[0] + ', es tu primera vez. Define una contraseña.';
+    document.getElementById('loginPass1').focus();
+  } else {
+    // Returning user — ask for password
+    document.getElementById('loginStep3').style.display = 'block';
+    document.getElementById('step3Name').textContent =
+      'Hola ' + user.name.split(' ')[0] + ' 👋 Ingresa tu contraseña.';
+    document.getElementById('loginPassExist').focus();
+  }
+}
+
+function setPassword() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const p1    = document.getElementById('loginPass1').value;
+  const p2    = document.getElementById('loginPass2').value;
+  const err   = document.getElementById('loginError2');
+
+  if (p1.length < 6 || p1 !== p2) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+
+  // Save password (simple hash using btoa for demo — use Supabase Auth in production)
+  localStorage.setItem('rb_pwd_' + email, btoa(p1));
+  proceedLogin(email);
+}
+
+function loginWithPassword() {
+  const email  = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const p      = document.getElementById('loginPassExist').value;
+  const stored = localStorage.getItem('rb_pwd_' + email);
+  const err    = document.getElementById('loginError3');
+
+  if (!stored || btoa(p) !== stored) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  proceedLogin(email);
+}
+
+function proceedLogin(email) {
+  const user = USERS[email];
   currentUser = { ...user, email };
   initApp();
 }
-document.getElementById('loginEmail').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function backToEmail() {
+  document.getElementById('loginStep1').style.display = 'block';
+  document.getElementById('loginStep2').style.display = 'none';
+  document.getElementById('loginStep3').style.display = 'none';
+  document.getElementById('loginPass1').value = '';
+  document.getElementById('loginPass2').value = '';
+  document.getElementById('loginPassExist').value = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('loginStep1').style.display !== 'none') checkEmail();
+  else if (document.getElementById('loginStep2').style.display !== 'none') setPassword();
+  else if (document.getElementById('loginStep3').style.display !== 'none') loginWithPassword();
+});
 
 function logout() {
   currentUser = null;
