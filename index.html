@@ -305,9 +305,7 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
       <span class="badge b-blue">● Creatividad</span>
     </div>
   </div>
-  <div style="background:var(--amber-soft);border:1px solid rgba(245,166,35,.2);border-radius:10px;padding:10px 16px;margin-bottom:20px;font-size:12px;display:flex;align-items:center;gap:8px">
-    <span>⚠️</span><span style="color:var(--amber)"><strong>YouScan:</strong> Migración activa desde hoy. Alejandro Sierra tiene pendiente configurar cuentas del equipo.</span>
-  </div>
+
   <div class="g4" style="margin-bottom:20px">
     <div class="stat s-red"><div class="stat-label">Clientes activos</div><div class="stat-val" style="color:var(--red)">18</div><div class="stat-sub">2 unidades</div></div>
     <div class="stat s-green"><div class="stat-label">Check-ins hoy</div><div class="stat-val" style="color:var(--green)">8<span style="font-size:16px;color:var(--muted)">/12</span></div><div class="stat-sub up">4 pendientes</div></div>
@@ -324,9 +322,11 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
       </div>
       <div class="div"></div>
       <div class="sec">Últimos check-ins</div>
-      <div class="checkin-item"><div class="av" style="background:rgba(220,12,75,.2);color:var(--red)">SC</div><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Sebastián Castro</div><div style="font-size:11px;color:var(--muted)">Sodimac · Listening · 5h</div></div><span class="badge b-green">✓</span></div>
-      <div class="checkin-item"><div class="av" style="background:rgba(220,12,75,.15);color:var(--red)">AF</div><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Adriana Figueredo</div><div style="font-size:11px;color:var(--muted)">Páramo · Audiencias · 4h</div></div><span class="badge b-green">✓</span></div>
-      <div class="checkin-item" style="opacity:.5"><div class="av" style="background:var(--surface3);color:var(--muted)">LC</div><div style="flex:1"><div style="font-size:12.5px;font-weight:600">Laura Correa</div><div style="font-size:11px;color:var(--amber)">⏳ Sin respuesta</div></div><span class="badge b-amber">Pend.</span></div>
+      <div style="text-align:center;padding:24px 16px;color:var(--muted)">
+        <div style="font-size:28px;margin-bottom:8px">📋</div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:4px">Sin check-ins aún</div>
+        <div style="font-size:11px">El equipo recibirá el primer correo hoy a las 5:30 PM</div>
+      </div>
     </div>
     <div class="card">
       <div class="sec">Unidad Creatividad</div>
@@ -337,8 +337,11 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
       </div>
       <div class="div"></div>
       <div class="sec">Tickets urgentes</div>
-      <div class="ticket urgente" style="margin-bottom:8px"><div class="ticket-id">#TK-070</div><div class="ticket-title">YouScan — cuentas equipo Colombia sin configurar</div><div class="ticket-footer"><span class="badge b-red">Crítico</span><span style="font-size:11px;color:var(--muted)">Todas las cuentas INT</span></div></div>
-      <div class="ticket urgente" style="margin-bottom:8px"><div class="ticket-id">#TK-071</div><div class="ticket-title">Factura Corferias devuelta — error razón social</div><div class="ticket-footer"><span class="badge b-red">Urgente</span><span style="font-size:11px;color:var(--muted)">Corferias · Abr 24</span></div></div>
+      <div style="text-align:center;padding:24px 16px;color:var(--muted)">
+        <div style="font-size:28px;margin-bottom:8px">🎫</div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:4px">Sin tickets activos</div>
+        <div style="font-size:11px">Los tickets llegarán desde Gmail automáticamente</div>
+      </div>
     </div>
   </div>
 </div>
@@ -388,20 +391,11 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     <div class="page-header" style="margin-bottom:0"><div class="page-title">Portal de <span>tickets</span></div><div class="page-sub">Solicitudes internas y externas</div></div>
     <button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nuevo ticket</button>
   </div>
-  <div class="g2">
-    <div>
-      <div class="sec">Urgentes · Sin asignar</div>
-      <div class="ticket urgente"><div class="ticket-id">#TK-070 · Gmail Auto</div><div class="ticket-title">YouScan — permisos equipo Colombia sin configurar</div><div class="ticket-footer"><span class="badge b-red">Crítico</span><span class="badge b-red" style="font-size:9px">Intelligence</span><span style="font-size:11px;color:var(--muted)">Todas las cuentas</span><button class="btn btn-outline btn-sm" style="margin-left:auto;padding:4px 10px;font-size:11px">Asignar</button></div></div>
-      <div class="ticket urgente"><div class="ticket-id">#TK-071 · Gmail Auto</div><div class="ticket-title">Factura Corferias devuelta — razón social incorrecta</div><div class="ticket-footer"><span class="badge b-red">Urgente</span><span class="badge b-gray" style="font-size:9px">Operaciones</span><span style="font-size:11px;color:var(--muted)">Abr 24</span><button class="btn btn-outline btn-sm" style="margin-left:auto;padding:4px 10px;font-size:11px">Asignar</button></div></div>
-      <div class="ticket normal"><div class="ticket-id">#TK-072 · Gmail Auto</div><div class="ticket-title">Homecenter solicita cotización manejo TikTok</div><div class="ticket-footer"><span class="badge b-amber">Normal</span><span class="badge b-red" style="font-size:9px">Intelligence</span><button class="btn btn-outline btn-sm" style="margin-left:auto;padding:4px 10px;font-size:11px">Asignar</button></div></div>
-      <div class="ticket normal"><div class="ticket-id">#TK-073 · Interno</div><div class="ticket-title">Solicitud pack piezas Día de la Madre — Granite</div><div class="ticket-footer"><span class="badge b-amber">Normal</span><span class="badge b-blue" style="font-size:9px">Creatividad</span><span style="font-size:11px;color:var(--muted)">Creado por Alejandro Sierra</span><button class="btn btn-outline btn-sm" style="margin-left:auto;padding:4px 10px;font-size:11px">Asignar</button></div></div>
-    </div>
-    <div>
-      <div class="sec">En proceso</div>
-      <div class="ticket normal" style="border-color:var(--blue)"><div class="ticket-id">#TK-062</div><div class="ticket-title">Estrategia contenidos Día de la Madre · Páramo</div><div class="ticket-footer"><span class="badge b-blue">En curso</span><div class="av-sm" style="background:rgba(220,12,75,.2);color:var(--red)">AF</div><span style="font-size:11px;color:var(--muted)">Adriana F.</span></div></div>
-      <div class="ticket normal" style="border-color:var(--blue)"><div class="ticket-id">#TK-063</div><div class="ticket-title">Piezas Flash Sale Mayo · Granite</div><div class="ticket-footer"><span class="badge b-blue">En curso</span><div class="av-sm" style="background:rgba(74,158,255,.2);color:var(--blue)">DU</div><span style="font-size:11px;color:var(--muted)">Daniel Urbina</span></div></div>
-      <div class="ticket normal" style="border-color:var(--blue)"><div class="ticket-id">#TK-064</div><div class="ticket-title">Diseño campaña digital mayo · Henkel</div><div class="ticket-footer"><span class="badge b-blue">En curso</span><div class="av-sm" style="background:rgba(74,158,255,.15);color:var(--blue)">JE</div><span style="font-size:11px;color:var(--muted)">Juan Camilo E.</span></div></div>
-    </div>
+  <div style="text-align:center;padding:60px 20px;color:var(--muted)">
+    <div style="font-size:48px;margin-bottom:16px">🎫</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--text);margin-bottom:8px">Bandeja limpia</div>
+    <div style="font-size:13px;margin-bottom:24px">Los tickets llegarán automáticamente desde Gmail.<br>También puedes crear uno manualmente.</div>
+    <button class="btn btn-red" style="width:auto;padding:10px 24px" onclick="showPage('page-nuevo-ticket')">+ Crear primer ticket</button>
   </div>
 </div>
 
@@ -508,21 +502,16 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
   </div>
   <div class="kanban">
     <div class="k-col">
-      <div class="k-col-title">Pendiente <span class="k-count">3</span></div>
-      <div class="k-card"><div class="k-card-title">Monitoreo redes Mayo</div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--muted)">Sodimac</span><span class="badge b-red" style="font-size:9px">INT</span></div></div>
-      <div class="k-card"><div class="k-card-title">Grid contenidos Mayo</div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--muted)">Corferias</span><span class="badge b-blue" style="font-size:9px">CRE</span></div></div>
-      <div class="k-card"><div class="k-card-title">Análisis audiencias Q2</div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--muted)">Páramo</span><span class="badge b-red" style="font-size:9px">INT</span></div></div>
+      <div class="k-col-title">Pendiente <span class="k-count">0</span></div>
+      <div style="text-align:center;padding:24px 12px;color:var(--muted);font-size:12px">Sin tareas pendientes</div>
     </div>
     <div class="k-col">
-      <div class="k-col-title">En curso <span class="k-count">4</span></div>
-      <div class="k-card" style="border-color:var(--red)"><div class="k-card-title">Reporte listening mensual</div><div class="prog-bg" style="margin:6px 0 4px"><div class="prog-fill" style="width:80%;background:var(--red)"></div></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--muted)">Sodimac · 80%</span><span class="badge b-red" style="font-size:9px">HOY</span></div></div>
-      <div class="k-card" style="border-color:var(--blue)"><div class="k-card-title">Pack piezas Día de la Madre</div><div class="prog-bg" style="margin:6px 0 4px"><div class="prog-fill" style="width:50%;background:var(--blue)"></div></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--muted)">Granite · 50%</span><span class="badge b-blue" style="font-size:9px">May 2</span></div></div>
-      <div class="k-card" style="border-color:var(--blue)"><div class="k-card-title">PQRS semana 18</div><div class="prog-bg" style="margin:6px 0 4px"><div class="prog-fill" style="width:65%;background:var(--blue)"></div></div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--muted)">Homecenter · 65%</span><span class="badge b-gray" style="font-size:9px">Continuo</span></div></div>
+      <div class="k-col-title">En curso <span class="k-count">0</span></div>
+      <div style="text-align:center;padding:24px 12px;color:var(--muted);font-size:12px">Sin tareas en curso</div>
     </div>
     <div class="k-col">
-      <div class="k-col-title">Completado <span class="k-count">3</span></div>
-      <div class="k-card" style="opacity:.5"><div class="k-card-title">Reporte audiencias Q1</div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--green)">✓ Abr 22</span><span class="badge b-gray" style="font-size:9px">INT</span></div></div>
-      <div class="k-card" style="opacity:.5"><div class="k-card-title">Piezas Semana Santa</div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:11px;color:var(--green)">✓ Abr 15</span><span class="badge b-gray" style="font-size:9px">CRE</span></div></div>
+      <div class="k-col-title">Completado <span class="k-count">0</span></div>
+      <div style="text-align:center;padding:24px 12px;color:var(--muted);font-size:12px">Sin tareas completadas</div>
     </div>
   </div>
 </div>
@@ -559,56 +548,11 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     <div class="stat s-amber"><div class="stat-label">Tareas pendientes</div><div class="stat-val" style="color:var(--amber)">3</div><div class="stat-sub">Para completar</div></div>
     <div class="stat s-green"><div class="stat-label">Completadas hoy</div><div class="stat-val" style="color:var(--green)">1</div><div class="stat-sub up">¡Buen ritmo!</div></div>
   </div>
-  <div class="sec">Pendientes</div>
   <div id="myTasksList">
-    <div class="task-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-        <div>
-          <div class="task-title">Pack piezas Día de la Madre · Instagram + Stories</div>
-          <div class="task-meta"><span class="badge b-blue" style="font-size:9px">Diseño</span><span>Granite</span>·<span>Vence May 2</span></div>
-        </div>
-        <span class="badge b-amber">En curso</span>
-      </div>
-      <div class="prog-bg" style="margin:10px 0 4px"><div class="prog-fill" style="width:50%;background:var(--blue)"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:10px"><span>Progreso: 50%</span><span>Solicitado por: Alejandro Sierra</span></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="updateProgress(this)">📊 Actualizar progreso</button>
-        <button class="btn btn-red btn-sm" onclick="markDone(this)">✓ Marcar como listo</button>
-      </div>
-    </div>
-    <div class="task-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-        <div>
-          <div class="task-title">Flash Sale Mayo · 600x600 + pauta 3 productos</div>
-          <div class="task-meta"><span class="badge b-blue" style="font-size:9px">Diseño</span><span>Granite</span>·<span>Vence May 3</span></div>
-        </div>
-        <span class="badge b-amber">Pendiente</span>
-      </div>
-      <div style="margin-top:10px;display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="startTask(this)">▶ Iniciar tarea</button>
-      </div>
-    </div>
-    <div class="task-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-        <div>
-          <div class="task-title">Estrategia redes Feria del Hogar 2026</div>
-          <div class="task-meta"><span class="badge b-blue" style="font-size:9px">Creatividad</span><span>Corferias FDH</span>·<span>Vence May 5</span></div>
-        </div>
-        <span class="badge b-amber">Pendiente</span>
-      </div>
-      <div style="margin-top:10px;display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="startTask(this)">▶ Iniciar tarea</button>
-      </div>
-    </div>
-  </div>
-  <div class="sec" style="margin-top:20px">Completadas</div>
-  <div class="task-card done">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div class="task-title">Piezas Semana Santa · Corferias</div>
-        <div class="task-meta"><span>Entregado Abr 15</span></div>
-      </div>
-      <span class="badge b-green">✓ Listo</span>
+    <div style="text-align:center;padding:48px 20px;color:var(--muted)">
+      <div style="font-size:40px;margin-bottom:12px">✅</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-bottom:6px">Sin tareas asignadas</div>
+      <div style="font-size:12px">Cuando Natalia te asigne una tarea aparecerá aquí</div>
     </div>
   </div>
 </div>
@@ -619,16 +563,12 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     <div class="page-header" style="margin-bottom:0"><div class="page-title">Mis <span>solicitudes</span></div><div class="page-sub">Tickets que has creado</div></div>
     <button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nueva solicitud</button>
   </div>
-  <div class="g2" style="margin-bottom:20px">
-    <div class="stat s-amber"><div class="stat-label">En proceso</div><div class="stat-val" style="color:var(--amber)">2</div><div class="stat-sub">El equipo está trabajando</div></div>
-    <div class="stat s-green"><div class="stat-label">Resueltas</div><div class="stat-val" style="color:var(--green)">5</div><div class="stat-sub up">Este mes</div></div>
+  <div style="text-align:center;padding:48px 20px;color:var(--muted)">
+    <div style="font-size:40px;margin-bottom:12px">📋</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-bottom:6px">Sin solicitudes aún</div>
+    <div style="font-size:12px;margin-bottom:20px">Crea tu primera solicitud al equipo</div>
+    <button class="btn btn-red" style="width:auto;padding:10px 24px" onclick="showPage('page-nuevo-ticket')">+ Nueva solicitud</button>
   </div>
-  <div class="sec">Activas</div>
-  <div class="ticket normal"><div class="ticket-id">#TK-073 · Hace 2h</div><div class="ticket-title">Pack piezas Día de la Madre — Granite</div><div style="margin:6px 0 8px"><div class="prog-bg"><div class="prog-fill" style="width:50%;background:var(--blue)"></div></div><div style="font-size:11px;color:var(--muted);margin-top:3px">En curso · Daniel Urbina · 50%</div></div><div class="ticket-footer"><span class="badge b-blue">En curso</span><span class="badge b-blue" style="font-size:9px">Creatividad</span></div></div>
-  <div class="ticket normal"><div class="ticket-id">#TK-068 · Ayer</div><div class="ticket-title">Reporte de listening bimensual Q1-Q2</div><div style="margin:6px 0 8px"><div class="prog-bg"><div class="prog-fill" style="width:70%;background:var(--red)"></div></div><div style="font-size:11px;color:var(--muted);margin-top:3px">En curso · Sebastián Castro · 70%</div></div><div class="ticket-footer"><span class="badge b-blue">En curso</span><span class="badge b-red" style="font-size:9px">Intelligence</span></div></div>
-  <div class="sec" style="margin-top:20px">Resueltas este mes</div>
-  <div class="ticket baja" style="opacity:.6"><div class="ticket-id">#TK-055</div><div class="ticket-title">Reporte de competencia marzo 2026</div><div class="ticket-footer"><span class="badge b-green">✓ Entregado</span><span style="font-size:11px;color:var(--muted)">Abr 10</span></div></div>
-  <div class="ticket baja" style="opacity:.6"><div class="ticket-id">#TK-048</div><div class="ticket-title">Piezas campaña Semana Santa · Corferias</div><div class="ticket-footer"><span class="badge b-green">✓ Entregado</span><span style="font-size:11px;color:var(--muted)">Abr 15</span></div></div>
 </div>
 
 <!-- ── CHECK-IN PAGE (todos) ── -->
