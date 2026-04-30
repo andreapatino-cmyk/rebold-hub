@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebold Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#DC0C4B;
+  --red-dark:#A80838;
+  --red-soft:rgba(220,12,75,0.12);
+  --black:#0A0A0A;
+  --surface:#111111;
+  --surface2:#1A1A1A;
+  --surface3:#222222;
+  --border:#2A2A2A;
+  --border2:#333333;
+  --text:#F5F5F5;
+  --muted:#888;
+  --muted2:#555;
+  --white:#FFFFFF;
+  --green:#00D084;
+  --green-soft:rgba(0,208,132,0.1);
+  --amber:#F5A623;
+  --amber-soft:rgba(245,166,35,0.1);
+  --blue:#4A9EFF;
+  --blue-soft:rgba(74,158,255,0.1);
+}
+
+body{font-family:'Inter',sans-serif;background:var(--black);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* SIDEBAR */
+#sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:240px;
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:100;transition:transform .3s ease;
+}
+.logo-wrap{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
+.logo{font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;letter-spacing:-1px;color:var(--white);display:flex;align-items:center;gap:2px}
+.logo-dot{color:var(--red)}
+.logo-sub{font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:3px;font-weight:300}
+
+nav{flex:1;padding:20px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-label{font-size:9px;color:var(--muted2);letter-spacing:2.5px;text-transform:uppercase;padding:14px 12px 6px;font-weight:600}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;
+  cursor:pointer;font-size:12.5px;color:var(--muted);transition:all .15s;
+  border:none;background:none;width:100%;text-align:left;font-family:'Inter',sans-serif;font-weight:400
+}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--red-soft);color:var(--red);font-weight:500}
+.nav-icon{width:15px;height:15px;flex-shrink:0;opacity:.6}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;padding:2px 6px;border-radius:10px;font-weight:600}
+.nav-badge.green{background:var(--green)}
+
+.sidebar-footer{padding:16px 12px;border-top:1px solid var(--border)}
+.user-card{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--surface2);cursor:pointer}
+.user-av{width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:900;font-size:11px;color:#fff;flex-shrink:0}
+.user-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:10px;color:var(--muted)}
+
+/* TOPBAR MOBILE */
+#topbar{display:none;position:fixed;top:0;left:0;right:0;height:56px;background:var(--surface);border-bottom:1px solid var(--border);align-items:center;padding:0 16px;z-index:99;gap:12px}
+#hamburger{background:none;border:none;color:var(--text);cursor:pointer;padding:4px}
+.topbar-logo{font-family:'Montserrat',sans-serif;font-weight:900;font-size:18px;color:var(--white)}
+.topbar-logo span{color:var(--red)}
+
+/* OVERLAY */
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:98}
+
+/* MAIN */
+#main{margin-left:240px;min-height:100vh;transition:margin .3s}
+.page{display:none;padding:32px;animation:fadeUp .2s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:28px}
+.page-title{font-family:'Montserrat',sans-serif;font-weight:900;font-size:28px;letter-spacing:-1px;color:var(--white)}
+.page-title span{color:var(--red)}
+.page-sub{font-size:13px;color:var(--muted);margin-top:5px;font-weight:300}
+.page-actions{display:flex;align-items:center;gap:10px;margin-top:0}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px}
+.card-sm{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.card-red{border-color:var(--red);background:var(--red-soft)}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+/* STAT CARDS */
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;cursor:default}
+.stat::after{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;opacity:.06}
+.stat.s-red::after{background:var(--red)}
+.stat.s-green::after{background:var(--green)}
+.stat.s-amber::after{background:var(--amber)}
+.stat.s-blue::after{background:var(--blue)}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;font-weight:600}
+.stat-val{font-family:'Montserrat',sans-serif;font-weight:900;font-size:30px;letter-spacing:-1px;margin:8px 0 4px}
+.stat-sub{font-size:11px;color:var(--muted)}
+.stat-sub.up{color:var(--green)}
+.stat-sub.down{color:var(--red)}
+
+/* SECTION TITLE */
+.sec-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;font-weight:600;margin-bottom:14px}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.5px}
+.b-red{background:var(--red-soft);color:var(--red)}
+.b-green{background:var(--green-soft);color:var(--green)}
+.b-amber{background:var(--amber-soft);color:var(--amber)}
+.b-blue{background:var(--blue-soft);color:var(--blue)}
+.b-gray{background:var(--surface3);color:var(--muted)}
+.b-white{background:rgba(255,255,255,.08);color:var(--text)}
+
+/* PROGRESS */
+.progress-bg{background:var(--surface3);border-radius:4px;height:5px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:width .6s ease}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;padding:8px 14px;font-weight:600;border-bottom:1px solid var(--border)}
+.tbl td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+
+/* AVATAR */
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:900;font-size:10px;flex-shrink:0}
+.av-sm{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:900;font-size:9px;flex-shrink:0;border:2px solid var(--surface)}
+.av-group{display:flex}
+.av-group .av-sm{margin-right:-5px}
+
+/* BTN */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;text-decoration:none}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:var(--red-dark)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.btn-outline:hover{border-color:var(--muted)}
+
+/* UNIT TABS */
+.unit-tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface2);border-radius:10px;padding:4px}
+.unit-tab{flex:1;padding:9px;border-radius:8px;border:none;background:none;color:var(--muted);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;text-align:center}
+.unit-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.unit-tab.active.int{color:var(--red)}
+.unit-tab.active.cre{color:var(--blue)}
+
+/* MEMBER ROW */
+.member-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.member-row:last-child{border-bottom:none}
+.member-info{flex:1;min-width:0}
+.member-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.member-cargo{font-size:11px;color:var(--muted)}
+.member-hrs{font-size:12px;font-weight:600;min-width:36px;text-align:right}
+
+/* CHECKIN CARD */
+.checkin-card{background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.checkin-info{flex:1}
+.checkin-name{font-size:12.5px;font-weight:500}
+.checkin-detail{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* KANBAN */
+.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.k-col{background:var(--surface2);border-radius:12px;padding:14px;min-height:200px}
+.k-col-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.k-count{background:var(--surface3);border-radius:8px;padding:1px 7px;font-size:10px}
+.k-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.k-card:hover{border-color:var(--red)}
+.k-card-title{font-size:12.5px;font-weight:500;line-height:1.4;margin-bottom:8px}
+.k-card-meta{display:flex;align-items:center;justify-content:space-between}
+.k-client{font-size:11px;color:var(--muted)}
+
+/* TICKET */
+.ticket{background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.ticket:hover{border-color:var(--border2)}
+.ticket-header{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}
+.ticket-title{font-size:13px;font-weight:500;line-height:1.4}
+.ticket-id{font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:600;letter-spacing:1px}
+.ticket-footer{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted)}
+
+/* DIST BAR */
+.dist-item{margin-bottom:14px}
+.dist-labels{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.dist-name{color:var(--text)}
+.dist-val{color:var(--muted);font-weight:500}
+
+/* FIN ROW */
+.fin-header{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px;padding:8px 14px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.fin-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px;padding:12px 14px;background:var(--surface2);border-radius:10px;margin-bottom:8px;align-items:center}
+.fin-client{font-size:13px;font-weight:500}
+.fin-val{font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums}
+.fin-margin{font-size:13px;font-weight:700;text-align:right}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* FORM */
+.form-row{margin-bottom:16px}
+.form-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:7px;display:block}
+.form-select,.form-input,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:11px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13.5px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+.form-select:focus,.form-input:focus,.form-textarea:focus{border-color:var(--red)}
+.form-textarea{resize:none;height:90px;line-height:1.6}
+select option{background:var(--surface2)}
+
+/* WHATSAPP PREVIEW */
+.wa-preview{background:#1B2836;border-radius:12px;padding:16px;border:1px solid #2A3A4A}
+.wa-bubble{background:#005C4B;border-radius:10px 10px 0 10px;padding:12px 14px;max-width:85%;margin-left:auto;font-size:13px;line-height:1.6}
+.wa-time{font-size:10px;color:rgba(255,255,255,.4);text-align:right;margin-top:4px}
+.wa-link{color:#53BDEB;text-decoration:underline}
+
+/* TOOL CARD */
+.tool-card{background:var(--surface2);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px}
+.tool-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.tool-info{flex:1}
+.tool-name{font-size:13px;font-weight:500}
+.tool-cost{font-size:11px;color:var(--muted)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  #sidebar{transform:translateX(-240px)}
+  #sidebar.open{transform:translateX(0)}
+  #topbar{display:flex}
+  #main{margin-left:0;padding-top:56px}
+  .page{padding:16px}
+  .g4{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr}
+  .g2{grid-template-columns:1fr}
+  .kanban{grid-template-columns:1fr}
+  .fin-header{display:none}
+  .fin-row{grid-template-columns:1fr 1fr;gap:8px}
+  #overlay.open{display:block}
+}
+@media(max-width:480px){
+  .g4{grid-template-columns:1fr 1fr}
+  .page-title{font-size:22px}
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+<script>
+// ══════════════════════════════════════════════════════
+// SUPABASE CONNECTION — Rebold Hub
+// ══════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://sfdwmldxrjsefoxoqmvv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_XGDo7N3bGUvm0ZqE3Q04Bw_FwvjA7PL';
+
+async function sbFetch(table, options = {}) {
+  const { method = 'GET', body, select = '*', filters = [] } = options;
+  let url = `${SUPABASE_URL}/rest/v1/${table}?select=${select}`;
+  filters.forEach(f => url += `&${f}`);
+  const res = await fetch(url, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return res.ok ? res.json() : null;
+}
+
+async function sbInsert(table, data) {
+  const url = `${SUPABASE_URL}/rest/v1/${table}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(data)
+  });
+  return res.ok ? res.json() : null;
+}
+
+async function sbUpdate(table, id, data) {
+  const url = `${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  return res.ok;
+}
+
+// ── LOAD DATA FROM SUPABASE ────────────────────────────
+async function loadDashboardData() {
+  try {
+    // Load team
+    const team = await sbFetch('team', { filters: ['active=eq.true', 'order=name'] });
+    // Load clients
+    const clients = await sbFetch('clients', { filters: ['active=eq.true', 'order=name'] });
+    // Load today checkins
+    const today = new Date().toISOString().split('T')[0];
+    const checkins = await sbFetch('checkins', { filters: [`checkin_date=eq.${today}`, 'order=created_at.desc'] });
+    // Load open tickets
+    const tickets = await sbFetch('tickets', { filters: ['status=eq.inbox', 'order=created_at.desc'] });
+
+    if (team) updateTeamDisplay(team);
+    if (clients) updateClientsDisplay(clients);
+    if (checkins) updateCheckinsDisplay(checkins, team ? team.length : 12);
+    if (tickets) updateTicketsDisplay(tickets);
+
+    // Update sync indicator
+    const syncEl = document.querySelector('[id="gmailSyncStatus"]');
+    if (syncEl) syncEl.textContent = 'Supabase · Sync: ' + new Date().toLocaleTimeString('es-CO', {hour:'2-digit',minute:'2-digit'});
+
+    console.log('✅ Supabase sync OK — team:', team?.length, '| clients:', clients?.length, '| checkins today:', checkins?.length, '| tickets:', tickets?.length);
+  } catch(e) {
+    console.warn('Supabase sync error:', e);
+  }
+}
+
+function updateTeamDisplay(team) {
+  const intel = team.filter(m => m.unit === 'Intelligence' || m.unit === 'Ambas').length;
+  const cre = team.filter(m => m.unit === 'Creatividad' || m.unit === 'Ambas').length;
+  // Update badges if elements exist
+  const badges = document.querySelectorAll('[data-team-count]');
+  badges.forEach(b => b.textContent = team.length);
+}
+
+function updateClientsDisplay(clients) {
+  const intelClients = clients.filter(c => c.unit === 'Intelligence' || c.unit === 'Ambas').length;
+  const creClients = clients.filter(c => c.unit === 'Creatividad' || c.unit === 'Ambas').length;
+  // Update stat card
+  const statEl = document.querySelector('.stat-val[data-clients]');
+  if (statEl) statEl.textContent = clients.length;
+}
+
+function updateCheckinsDisplay(checkins, totalTeam) {
+  const countEl = document.querySelector('.stat-val[data-checkins]');
+  if (countEl) countEl.innerHTML = `${checkins.length}<span style="font-size:16px;color:var(--muted)">/&#8203;${totalTeam}</span>`;
+}
+
+function updateTicketsDisplay(tickets) {
+  const urgentes = tickets.filter(t => t.priority === 'urgente').length;
+  const countEl = document.querySelector('.stat-val[data-tickets]');
+  if (countEl) countEl.textContent = tickets.length;
+  // Update nav badge
+  document.querySelectorAll('.nav-badge').forEach(b => {
+    if (b.closest('.nav-item')?.textContent.includes('tickets')) b.textContent = tickets.length;
+  });
+}
+
+// ── SAVE CHECKIN TO SUPABASE ───────────────────────────
+async function saveCheckinToSupabase(checkinData) {
+  const result = await sbInsert('checkins', {
+    member_name: checkinData.name,
+    member_unit: checkinData.unit,
+    checkin_date: new Date().toISOString().split('T')[0],
+    accounts: checkinData.accounts,
+    tasks: checkinData.tasks,
+    providers: checkinData.providers,
+    hours: parseFloat(checkinData.hours) || 0,
+    note: checkinData.nota || '',
+    ai_summary: checkinData.aiSummary || ''
+  });
+  return result;
+}
+
+// ── SAVE TICKET TO SUPABASE ────────────────────────────
+async function saveTicketToSupabase(ticket) {
+  const num = 'TK-' + Date.now().toString().slice(-4);
+  const result = await sbInsert('tickets', {
+    ticket_number: num,
+    title: ticket.title,
+    client_name: ticket.client,
+    unit: ticket.unit,
+    category: ticket.category || 'General',
+    priority: ticket.priority || 'normal',
+    status: 'inbox',
+    source: ticket.source || 'manual',
+    email_from: ticket.emailFrom || '',
+    ai_summary: ticket.summary || ''
+  });
+  return result;
+}
+
+// Auto-load on page open
+window.addEventListener('load', () => {
+  setTimeout(loadDashboardData, 500);
+  // Refresh every 5 minutes
+  setInterval(loadDashboardData, 5 * 60 * 1000);
+});
+</script>
+
+</head>
+<body>
+
+<!-- MOBILE TOPBAR -->
+<div id="topbar">
+  <button id="hamburger" onclick="toggleSidebar()">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="5" x2="18" y2="5"/><line x1="2" y1="10" x2="18" y2="10"/><line x1="2" y1="15" x2="18" y2="15"/></svg>
+  </button>
+  <span class="topbar-logo">re<span>bold</span> hub</span>
+</div>
+
+<div id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="logo-wrap">
+    <div class="logo">re<span class="logo-dot">bold</span></div>
+    <div class="logo-sub">Hub de gestión · Andina</div>
+  </div>
+  <nav>
+    <div class="nav-label">General</div>
+    <button class="nav-item active" onclick="goTo('overview',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Resumen
+    </button>
+    <button class="nav-item" onclick="goTo('checkin',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Daily Check-in
+      <span class="nav-badge green">2 pend.</span>
+    </button>
+    <button class="nav-item" onclick="goTo('equipo',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Equipo
+    </button>
+    <div class="nav-label">Clientes</div>
+    <button class="nav-item" onclick="goTo('tareas',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Tareas
+    </button>
+    <button class="nav-item" onclick="goTo('tickets',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 20h.01M7 20v-4"/><path d="M12 20V10"/><path d="M17 20V4"/></svg>
+      Portal tickets
+      <span class="nav-badge">3</span>
+    </button>
+    <button class="nav-item" onclick="goTo('dedicacion',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Dedicación
+    </button>
+    <div class="nav-label">Finanzas</div>
+    <button class="nav-item" onclick="goTo('financiero',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Financiero
+    </button>
+    <button class="nav-item" onclick="goTo('herramientas',this)">
+      <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      Herramientas
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-av">NP</div>
+      <div>
+        <div class="user-name">Natalia Patiño</div>
+        <div class="user-role">Directora de Unidades</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+<!-- ① RESUMEN -->
+<div id="page-overview" class="page active">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Buenos días, <span>Natalia</span> 👋</div>
+      <div class="page-sub">Jueves 30 de abril · Semana 18 · 2026</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="badge b-green">● Intelligence activa</span>
+      <span class="badge b-blue">● Creatividad activa</span>
+    </div>
+  </div>
+  <div style="background:rgba(220,12,75,.06);border:1px solid rgba(220,12,75,.15);border-radius:10px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:13px">📧</span>
+    <span style="font-size:12px;color:var(--muted)">Gmail sincronizado · <strong style="color:var(--text)">7 tickets detectados</strong> en los últimos 30 días · 4 urgentes requieren acción</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--muted)">Última sync: hace 5 min</span>
+  </div>
+  <div style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:10px;padding:10px 16px;margin-bottom:24px;display:flex;align-items:flex-start;gap:10px">
+    <span style="font-size:16px;flex-shrink:0">⚠️</span>
+    <div style="font-size:12px;line-height:1.6"><strong style="color:var(--amber)">Brandwatch vence HOY.</strong> Migración a YouScan activa desde hoy 1 de mayo. Alejandro Sierra tiene pendiente configurar cuentas y categorías del equipo de Colombia. <span style="color:var(--red)">Riesgo operativo para todos los clientes de Intelligence.</span></div>
+  </div>
+
+  <div class="g4" style="margin-bottom:20px">
+    <div class="stat s-red">
+      <div class="stat-label">Clientes activos</div>
+      <div class="stat-val" style="color:var(--red)">13</div>
+      <div class="stat-sub">Base + Won · 2 unidades</div>
+    </div>
+    <div class="stat s-green">
+      <div class="stat-label">Check-ins hoy</div>
+      <div class="stat-val" style="color:var(--green)">7<span style="font-size:16px;color:var(--muted)">/9</span></div>
+      <div class="stat-sub up">2 pendientes</div>
+    </div>
+    <div class="stat s-amber">
+      <div class="stat-label">Tickets abiertos</div>
+      <div class="stat-val" style="color:var(--amber)">3</div>
+      <div class="stat-sub down">1 urgente</div>
+    </div>
+    <div class="stat s-blue">
+      <div class="stat-label">Margen abril</div>
+      <div class="stat-val" style="color:var(--blue)">~38%</div>
+      <div class="stat-sub">Estimado vs. Vitality</div>
+    </div>
+  </div>
+
+  <div class="g2" style="margin-bottom:20px">
+
+    <!-- UNIDAD INTELLIGENCE -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--red)"></div>
+            <span style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:15px">Intelligence</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Monitoreo · Listening · Audiencias · Estrategia</div>
+        </div>
+        <span class="badge b-white">6 personas</span>
+      </div>
+      <div class="g3" style="margin-bottom:16px">
+        <div style="background:var(--surface2);border-radius:8px;padding:10px">
+          <div class="stat-label" style="font-size:9px">Herramienta</div>
+          <div style="font-size:13px;font-weight:600;margin-top:4px;color:var(--amber)">YouScan ⚠</div>
+          <div style="font-size:10px;color:var(--muted)">Migración desde May 1</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:10px">
+          <div class="stat-label" style="font-size:9px">Clientes</div>
+          <div style="font-size:18px;font-weight:700;margin-top:4px;color:var(--text)">12</div>
+          <div style="font-size:10px;color:var(--muted)">activos</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:10px">
+          <div class="stat-label" style="font-size:9px">Check-in</div>
+          <div style="font-size:18px;font-weight:700;margin-top:4px;color:var(--green)">4<span style="font-size:12px;color:var(--muted)">/5</span></div>
+          <div style="font-size:10px;color:var(--muted)">hoy</div>
+        </div>
+      </div>
+      <div class="sec-title">Clientes activos</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span class="badge b-red">Sodimac</span>
+        <span class="badge b-red">Páramo Presenta</span>
+        <span class="badge b-red">Páramo Lab</span>
+        <span class="badge b-red">JEP</span>
+        <span class="badge b-red">Homecenter</span>
+        <span class="badge b-red">Jägermeister</span>
+        <span class="badge b-red">Banco Falabella</span>
+        <span class="badge b-red">Corferias</span>
+        <span class="badge b-red">Granite</span>
+        <span class="badge b-red">Blue Digital</span>
+        <span class="badge b-red">Bodytech</span>
+        <span class="badge b-red">Los Olivos</span>
+      </div>
+    </div>
+
+    <!-- UNIDAD CREATIVIDAD -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--blue)"></div>
+            <span style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:15px">Creatividad</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Community Management · Diseño de piezas</div>
+        </div>
+        <span class="badge b-white">6 personas</span>
+      </div>
+      <div class="g3" style="margin-bottom:16px">
+        <div style="background:var(--surface2);border-radius:8px;padding:10px">
+          <div class="stat-label" style="font-size:9px">Herramienta</div>
+          <div style="font-size:13px;font-weight:600;margin-top:4px;color:var(--blue)">Synaptic</div>
+          <div style="font-size:10px;color:var(--muted)">~$9.3M/mes</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:10px">
+          <div class="stat-label" style="font-size:9px">Clientes</div>
+          <div style="font-size:18px;font-weight:700;margin-top:4px;color:var(--text)">8</div>
+          <div style="font-size:10px;color:var(--muted)">activos</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:10px">
+          <div class="stat-label" style="font-size:9px">Check-in</div>
+          <div style="font-size:18px;font-weight:700;margin-top:4px;color:var(--amber)">3<span style="font-size:12px;color:var(--muted)">/4</span></div>
+          <div style="font-size:10px;color:var(--muted)">hoy</div>
+        </div>
+      </div>
+      <div class="sec-title">Clientes activos</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span class="badge b-blue">Corferias</span>
+        <span class="badge b-blue">Henkel</span>
+        <span class="badge b-blue">Granite</span>
+        <span class="badge b-blue">Stormberg</span>
+        <span class="badge b-blue">Parador Rojo</span>
+        <span class="badge b-blue">Punto de Pago</span>
+        <span class="badge b-blue">Supercerdo / 4 Patas</span>
+        <span class="badge b-blue">Casa Mayor</span>
+        <span class="badge b-blue">Blue Digital</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="sec-title">Últimos check-ins registrados</div>
+      <div class="checkin-card">
+        <div class="av" style="background:rgba(220,12,75,.15);color:var(--red)">SC</div>
+        <div class="checkin-info">
+          <div class="checkin-name">Sebastián Castro · Intelligence</div>
+          <div class="checkin-detail">Sodimac · Social listening + reporte · 5h</div>
+        </div>
+        <span class="badge b-green">✓</span>
+      </div>
+      <div class="checkin-card">
+        <div class="av" style="background:rgba(74,158,255,.15);color:var(--blue)">MC</div>
+        <div class="checkin-info">
+          <div class="checkin-name">María Camila Castro · Creatividad</div>
+          <div class="checkin-detail">Corferias Expopet · CM + programación piezas · 6h</div>
+        </div>
+        <span class="badge b-green">✓</span>
+      </div>
+      <div class="checkin-card">
+        <div class="av" style="background:rgba(74,158,255,.15);color:var(--blue)">DU</div>
+        <div class="checkin-info">
+          <div class="checkin-name">Daniel Urbina · Creatividad</div>
+          <div class="checkin-detail">Granite · Diseño piezas digital · 7h</div>
+        </div>
+        <span class="badge b-green">✓</span>
+      </div>
+      <div class="checkin-card" style="opacity:.5">
+        <div class="av" style="background:var(--surface3);color:var(--muted)">LC</div>
+        <div class="checkin-info">
+          <div class="checkin-name">Laura Correa · Intelligence</div>
+          <div class="checkin-detail" style="color:var(--amber)">⏳ Pendiente de respuesta</div>
+        </div>
+        <span class="badge b-amber">Pend.</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Proveedores activos este mes</div>
+      <table class="tbl">
+        <thead><tr><th>Proveedor</th><th>Clientes</th><th>Costo est.</th></tr></thead>
+        <tbody>
+          <tr><td><div style="font-weight:500">Laura Morales</div><div style="font-size:10px;color:var(--muted)">Diseñadora</div></td><td><span class="badge b-blue" style="font-size:9px">Corferias</span> <span class="badge b-blue" style="font-size:9px">Granite</span> <span class="badge b-blue" style="font-size:9px">Stomberg</span></td><td style="font-weight:600;color:var(--amber)">~$1.95M</td></tr>
+          <tr><td><div style="font-weight:500">Andrés Sánchez</div><div style="font-size:10px;color:var(--muted)">Diseñador · hasta mayo</div></td><td><span class="badge b-blue" style="font-size:9px">Pto. Pago</span> <span class="badge b-blue" style="font-size:9px">Parador R.</span></td><td style="font-weight:600;color:var(--amber)">$3.0M</td></tr>
+          <tr><td><div style="font-weight:500">Sebastián Barrera</div><div style="font-size:10px;color:var(--muted)">Diseñador + CM</div></td><td><span class="badge b-blue" style="font-size:9px">Henkel</span> <span class="badge b-blue" style="font-size:9px">Pto. Pago</span></td><td style="font-weight:600;color:var(--amber)">$6.0M</td></tr>
+          <tr><td><div style="font-weight:500">Nicole Sierra</div><div style="font-size:10px;color:var(--muted)">Diseñadora · hasta julio</div></td><td><span class="badge b-gray" style="font-size:9px">Multimarca</span></td><td style="font-weight:600;color:var(--amber)">$2.0M</td></tr>
+          <tr><td><div style="font-weight:500">Daniel Beltrán</div><div style="font-size:10px;color:var(--muted)">Monitoreo fines semana</div></td><td><span class="badge b-red" style="font-size:9px">Intelligence</span></td><td style="font-weight:600;color:var(--red)">~$900K</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ② DAILY CHECK-IN -->
+<div id="page-checkin" class="page">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:28px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Daily <span>Check-in</span></div>
+      <div class="page-sub">El equipo reporta su dedicación diaria · Link enviado por WhatsApp a las 18:00</div>
+    </div>
+    <button class="btn btn-red" onclick="alert('Enviando mensaje WhatsApp al equipo...')">📲 Enviar recordatorio</button>
+  </div>
+  <div class="g2">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="sec-title">Vista del colaborador · Formulario web</div>
+        <div class="wa-preview" style="margin-bottom:16px">
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:8px">📱 WhatsApp · 18:00</div>
+          <div class="wa-bubble">
+            🔔 Hola <strong>Sebastián</strong>, es hora de registrar tu dedicación del día.<br><br>
+            👉 <span class="wa-link">hub.rebold.com/checkin/sc2904</span>
+            <div class="wa-time">18:00 ✓✓</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">¿Con qué cliente trabajaste hoy?</label>
+          <select class="form-select">
+            <option>Selecciona el cliente...</option>
+            <option>Sodimac</option>
+            <option>Páramo Presenta</option>
+            <option>Páramo Lab</option>
+            <option>JEP</option>
+            <option>Homecenter</option>
+            <option>Jägermeister</option>
+            <option>Banco Falabella / CMR</option>
+            <option>Bodytech</option>
+            <option>Los Olivos</option>
+            <option>Corferias (Expopet)</option>
+            <option>Corferias (Agroexpo)</option>
+            <option>Corferias (Feria del Hogar)</option>
+            <option>Corferias (FIB)</option>
+            <option>Henkel Regional</option>
+            <option>Granite</option>
+            <option>Blue Digital</option>
+            <option>Stormberg</option>
+            <option>Parador Rojo</option>
+            <option>Punto de Pago</option>
+            <option>Supercerdo / Cuatro Patas</option>
+            <option>Casa Mayor</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">¿Qué tarea realizaste?</label>
+          <select class="form-select">
+            <option>Selecciona la tarea...</option>
+            <optgroup label="Intelligence">
+              <option>Social listening / monitoreo</option>
+              <option>Análisis de audiencias</option>
+              <option>Reporte / informe</option>
+              <option>Estrategia de contenidos</option>
+              <option>Estrategia de redes</option>
+              <option>Investigación de mercados</option>
+              <option>Atención PQRS</option>
+            </optgroup>
+            <optgroup label="Creatividad">
+              <option>Community management</option>
+              <option>Diseño de piezas</option>
+              <option>Programación de contenidos</option>
+              <option>Revisión y ajustes</option>
+            </optgroup>
+            <optgroup label="General">
+              <option>Reunión con cliente</option>
+              <option>Reunión interna</option>
+              <option>Elaboración de propuesta</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="g2">
+          <div class="form-row">
+            <label class="form-label">Horas dedicadas</label>
+            <input class="form-input" type="number" placeholder="ej. 4.5" min="0.5" max="12" step="0.5">
+          </div>
+          <div class="form-row">
+            <label class="form-label">¿Trabajó proveedor?</label>
+            <select class="form-select">
+              <option>No aplica</option>
+              <option>Laura Morales</option>
+              <option>Andrés Sánchez</option>
+              <option>Sebastián Barrera</option>
+              <option>Nicole Sierra</option>
+              <option>Daniel Beltrán</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Nota adicional (opcional)</label>
+          <textarea class="form-textarea" placeholder="Agrega contexto, entregas o bloqueos del día..."></textarea>
+        </div>
+        <button class="btn btn-red" style="width:100%;justify-content:center" onclick="alert('✅ Check-in registrado. ¡Gracias!')">Registrar mi día</button>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div class="sec-title" style="margin-bottom:0">Estado hoy · Mié 29 abril</div>
+          <span style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:20px;color:var(--green)">7<span style="font-size:13px;color:var(--muted);font-weight:400">/9</span></span>
+        </div>
+        <div class="progress-bg" style="margin-bottom:16px;height:8px"><div class="progress-fill" style="width:78%;background:var(--green)"></div></div>
+        <div class="checkin-card"><div class="av" style="background:rgba(220,12,75,.15);color:var(--red)">SC</div><div class="checkin-info"><div class="checkin-name">Sebastián Castro · Intelligence</div><div class="checkin-detail">Sodimac · Listening · 5h</div></div><span class="badge b-green">✓</span></div>
+        <div class="checkin-card"><div class="av" style="background:rgba(220,12,75,.15);color:var(--red)">AF</div><div class="checkin-info"><div class="checkin-name">Adriana Figueredo · Ambas</div><div class="checkin-detail">Páramo · Análisis audiencias · 4h</div></div><span class="badge b-green">✓</span></div>
+        <div class="checkin-card"><div class="av" style="background:rgba(220,12,75,.15);color:var(--red)">PB</div><div class="checkin-info"><div class="checkin-name">Paula Bermúdez · Intelligence</div><div class="checkin-detail">JEP · Monitoreo · 6h</div></div><span class="badge b-green">✓</span></div>
+        <div class="checkin-card"><div class="av" style="background:rgba(74,158,255,.15);color:var(--blue)">MC</div><div class="checkin-info"><div class="checkin-name">María Camila Castro · Creatividad</div><div class="checkin-detail">Corferias Expopet · CM · 6h</div></div><span class="badge b-green">✓</span></div>
+        <div class="checkin-card"><div class="av" style="background:rgba(74,158,255,.15);color:var(--blue)">DU</div><div class="checkin-info"><div class="checkin-name">Daniel Urbina · Creatividad</div><div class="checkin-detail">Granite · Diseño · 7h</div></div><span class="badge b-green">✓</span></div>
+        <div class="checkin-card" style="opacity:.5"><div class="av" style="background:var(--surface3);color:var(--muted)">LC</div><div class="checkin-info"><div class="checkin-name">Laura Correa · Intelligence</div><div class="checkin-detail" style="color:var(--amber)">⏳ Sin respuesta</div></div><span class="badge b-amber">Pend.</span></div>
+        <div class="checkin-card" style="opacity:.5"><div class="av" style="background:var(--surface3);color:var(--muted)">GB</div><div class="checkin-info"><div class="checkin-name">Gina Benavides · Ambas</div><div class="checkin-detail" style="color:var(--amber)">⏳ Sin respuesta</div></div><span class="badge b-amber">Pend.</span></div>
+      </div>
+      <div class="card">
+        <div class="sec-title">Histórico esta semana</div>
+        <table class="tbl" style="font-size:11px">
+          <thead><tr><th>Persona</th><th>Lun</th><th>Mar</th><th>Mié</th></tr></thead>
+          <tbody>
+            <tr><td>Sebastián C.</td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td></tr>
+            <tr><td>Adriana F.</td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td></tr>
+            <tr><td>Laura Correa</td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-amber" style="font-size:9px">—</span></td><td><span class="badge b-amber" style="font-size:9px">⏳</span></td></tr>
+            <tr><td>Paula B.</td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td></tr>
+            <tr><td>María Camila</td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td></tr>
+            <tr><td>Daniel Urbina</td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td></tr>
+            <tr><td>Gina B.</td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-green" style="font-size:9px">✓</span></td><td><span class="badge b-amber" style="font-size:9px">⏳</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ EQUIPO -->
+<div id="page-equipo" class="page">
+  <div class="page-header">
+    <div class="page-title">Equipo <span>Rebold</span></div>
+    <div class="page-sub">Estructura de las dos unidades · Costos empresa incluidos</div>
+  </div>
+  <div style="margin-bottom:8px;padding:10px 14px;background:rgba(220,12,75,.06);border:1px solid var(--red-soft);border-radius:10px;font-size:12px;color:var(--muted)">
+    💡 Los costos empresa se calculan con factor ×1.4 sobre el salario devengado. Los integrales de ambas unidades se distribuyen 50/50.
+  </div>
+  <div style="margin-top:16px" class="g2">
+    <!-- DIRECCIÓN -->
+    <div class="card" style="grid-column:1/-1;margin-bottom:4px">
+      <div class="sec-title">Dirección</div>
+      <div class="member-row">
+        <div class="av" style="background:var(--red);color:#fff">NP</div>
+        <div class="member-info">
+          <div class="member-name">Natalia Patiño</div>
+          <div class="member-cargo">Directora de Unidades · Intelligence + Creatividad</div>
+        </div>
+        <span class="badge b-red">Ambas unidades</span>
+        <div class="member-hrs" style="color:var(--red)">$12.07M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:60px;text-align:right">CE: $16.9M</div>
+      </div>
+    </div>
+
+    <!-- INTELLIGENCE -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--red)"></div>
+        <span style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:14px">Unidad Intelligence</span>
+        <span class="badge b-red" style="margin-left:auto">6 personas</span>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(220,12,75,.2);color:var(--red)">SC</div>
+        <div class="member-info"><div class="member-name">Sebastián Castro</div><div class="member-cargo">Analista SR de Insights</div></div>
+        <div class="member-hrs">$6.04M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">CE: $8.45M</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(220,12,75,.15);color:var(--red)">LC</div>
+        <div class="member-info"><div class="member-name">Laura Correa</div><div class="member-cargo">Analista de Monitoreo</div></div>
+        <div class="member-hrs">$3.47M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">CE: $4.85M</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(220,12,75,.15);color:var(--red)">PB</div>
+        <div class="member-info"><div class="member-name">Paula Bermúdez</div><div class="member-cargo">Analista de Monitoreo</div></div>
+        <div class="member-hrs">$2.37M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">CE: $3.31M</div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Integrales (50% asignado)</div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(220,12,75,.1);color:var(--red)">AF</div>
+        <div class="member-info"><div class="member-name">Adriana Figueredo</div><div class="member-cargo">Analista de Insights · Integral</div></div>
+        <div class="member-hrs">$2.45M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">50% CE</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(220,12,75,.1);color:var(--red)">AS</div>
+        <div class="member-info"><div class="member-name">Alejandro Sierra</div><div class="member-cargo">Coord. Operaciones · Integral</div></div>
+        <div class="member-hrs">$2.60M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">50% CE</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(220,12,75,.1);color:var(--red)">GB</div>
+        <div class="member-info"><div class="member-name">Gina Benavides</div><div class="member-cargo">Practicante SENA · Integral</div></div>
+        <div class="member-hrs">$0.81M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">50% CE</div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px">
+        <span style="color:var(--muted)">Costo total Intelligence/mes</span>
+        <span style="font-weight:700;color:var(--red)">~$27.5M</span>
+      </div>
+    </div>
+
+    <!-- CREATIVIDAD -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--blue)"></div>
+        <span style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:14px">Unidad Creatividad</span>
+        <span class="badge b-blue" style="margin-left:auto">6 personas</span>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(74,158,255,.2);color:var(--blue)">MC</div>
+        <div class="member-info"><div class="member-name">María Camila Castro</div><div class="member-cargo">CM · Corferias (Expopet, Belleza, Agroexpo, Feria Hogar)</div></div>
+        <div class="member-hrs">$4.44M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">CE: $6.22M</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(74,158,255,.15);color:var(--blue)">EP</div>
+        <div class="member-info"><div class="member-name">Estefanía Prieto</div><div class="member-cargo">CM · Granite, Stomberg, Parador Rojo</div></div>
+        <div class="member-hrs">$3.06M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">CE: $4.28M</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(74,158,255,.15);color:var(--blue)">JJ</div>
+        <div class="member-info"><div class="member-name">Juliana Jaramillo</div><div class="member-cargo">Analista PQRS · Homecenter</div></div>
+        <div class="member-hrs">$3.59M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">CE: $5.03M</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(74,158,255,.15);color:var(--blue)">MR</div>
+        <div class="member-info"><div class="member-name">Marcela Rondón</div><div class="member-cargo">Analista PQRS · Homecenter</div></div>
+        <div class="member-hrs">$3.88M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">CE: $5.43M</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(74,158,255,.15);color:var(--blue)">DU</div>
+        <div class="member-info"><div class="member-name">Daniel Urbina</div><div class="member-cargo">Diseñador Gráfico · Corferias, Granite, Stomberg</div></div>
+        <div class="member-hrs">$4.17M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">CE: $5.83M</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(74,158,255,.15);color:var(--blue)">JE</div>
+        <div class="member-info"><div class="member-name">Juan Camilo Espinosa</div><div class="member-cargo">Diseñador Gráfico · Henkel + apoyo multimarca</div></div>
+        <div class="member-hrs">$5.25M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">CE: $7.35M</div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Integrales (50% asignado)</div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(74,158,255,.1);color:var(--blue)">AF</div>
+        <div class="member-info"><div class="member-name">Adriana Figueredo</div><div class="member-cargo">Analista de Insights · Integral</div></div>
+        <div class="member-hrs">$2.45M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">50% CE</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(74,158,255,.1);color:var(--blue)">AS</div>
+        <div class="member-info"><div class="member-name">Alejandro Sierra</div><div class="member-cargo">Coord. Operaciones · Integral</div></div>
+        <div class="member-hrs">$2.60M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">50% CE</div>
+      </div>
+      <div class="member-row">
+        <div class="av" style="background:rgba(74,158,255,.1);color:var(--blue)">GB</div>
+        <div class="member-info"><div class="member-name">Gina Benavides</div><div class="member-cargo">Practicante SENA · Integral</div></div>
+        <div class="member-hrs">$0.81M</div>
+        <div style="font-size:10px;color:var(--muted);min-width:55px;text-align:right">50% CE</div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px">
+        <span style="color:var(--muted)">Costo total Creatividad/mes</span>
+        <span style="font-weight:700;color:var(--blue)">~$49.1M</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ④ TAREAS -->
+<div id="page-tareas" class="page">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:28px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Gestión de <span>tareas</span></div>
+      <div class="page-sub">Asignación por cliente y recurso · Abril 2026</div>
+    </div>
+    <button class="btn btn-red">+ Nueva tarea</button>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px">
+    <span class="badge b-gray" style="cursor:pointer;padding:5px 12px">Todos</span>
+    <span class="badge b-red" style="cursor:pointer;padding:5px 12px">Sodimac</span>
+    <span class="badge b-red" style="cursor:pointer;padding:5px 12px">Páramo</span>
+    <span class="badge b-blue" style="cursor:pointer;padding:5px 12px">Corferias</span>
+    <span class="badge b-blue" style="cursor:pointer;padding:5px 12px">Henkel</span>
+    <span class="badge b-red" style="cursor:pointer;padding:5px 12px">Homecenter</span>
+    <span class="badge b-blue" style="cursor:pointer;padding:5px 12px">Granite</span>
+  </div>
+  <div class="kanban">
+    <div class="k-col">
+      <div class="k-col-title">Pendiente <span class="k-count">3</span></div>
+      <div class="k-card">
+        <div class="k-card-title">Monitoreo redes · Mayo 2026</div>
+        <div style="margin-bottom:8px"><span class="badge b-red" style="font-size:9px">Intelligence</span></div>
+        <div class="k-card-meta"><span class="k-client">Sodimac</span><div class="av-group"><div class="av-sm" style="background:rgba(220,12,75,.2);color:var(--red)">SC</div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--muted)">Vence Vie 30 mayo</div>
+      </div>
+      <div class="k-card">
+        <div class="k-card-title">Grid de contenidos Mayo</div>
+        <div style="margin-bottom:8px"><span class="badge b-blue" style="font-size:9px">Creatividad</span></div>
+        <div class="k-card-meta"><span class="k-client">Corferias</span><div class="av-group"><div class="av-sm" style="background:rgba(74,158,255,.2);color:var(--blue)">MC</div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--muted)">Vence Lun 4 mayo</div>
+      </div>
+      <div class="k-card">
+        <div class="k-card-title">Análisis de audiencias Q2</div>
+        <div style="margin-bottom:8px"><span class="badge b-red" style="font-size:9px">Intelligence</span></div>
+        <div class="k-card-meta"><span class="k-client">Páramo</span><div class="av-group"><div class="av-sm" style="background:rgba(220,12,75,.2);color:var(--red)">AF</div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--muted)">Vence May 10</div>
+      </div>
+    </div>
+    <div class="k-col">
+      <div class="k-col-title">En curso <span class="k-count">4</span></div>
+      <div class="k-card" style="border-color:var(--red)">
+        <div class="k-card-title">Reporte listening mensual</div>
+        <div style="margin-bottom:8px"><span class="badge b-red" style="font-size:9px">Intelligence</span></div>
+        <div style="margin-bottom:8px"><div class="progress-bg"><div class="progress-fill" style="width:80%;background:var(--red)"></div></div><div style="font-size:10px;color:var(--muted);margin-top:3px">80%</div></div>
+        <div class="k-card-meta"><span class="k-client">Sodimac</span><div class="av-group"><div class="av-sm" style="background:rgba(220,12,75,.2);color:var(--red)">SC</div><div class="av-sm" style="background:rgba(220,12,75,.15);color:var(--red)">LC</div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--amber)">⚠ Vence mañana</div>
+      </div>
+      <div class="k-card" style="border-color:var(--blue)">
+        <div class="k-card-title">Pack piezas Día de la Madre · Instagram</div>
+        <div style="margin-bottom:8px"><span class="badge b-blue" style="font-size:9px">Creatividad</span></div>
+        <div style="margin-bottom:8px"><div class="progress-bg"><div class="progress-fill" style="width:50%;background:var(--blue)"></div></div><div style="font-size:10px;color:var(--muted);margin-top:3px">50%</div></div>
+        <div class="k-card-meta"><span class="k-client">Granite</span><div class="av-group"><div class="av-sm" style="background:rgba(74,158,255,.2);color:var(--blue)">DU</div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--muted)">Vence May 2</div>
+      </div>
+      <div class="k-card" style="border-color:var(--blue)">
+        <div class="k-card-title">Atención PQRS semana 18</div>
+        <div style="margin-bottom:8px"><span class="badge b-red" style="font-size:9px">Intelligence</span></div>
+        <div style="margin-bottom:8px"><div class="progress-bg"><div class="progress-fill" style="width:65%;background:var(--red)"></div></div><div style="font-size:10px;color:var(--muted);margin-top:3px">65%</div></div>
+        <div class="k-card-meta"><span class="k-client">Homecenter</span><div class="av-group"><div class="av-sm" style="background:rgba(220,12,75,.2);color:var(--red)">JJ</div><div class="av-sm" style="background:rgba(220,12,75,.15);color:var(--red)">MR</div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--muted)">Continuo</div>
+      </div>
+      <div class="k-card" style="border-color:var(--amber)">
+        <div class="k-card-title">Estrategia redes sociales Mayo</div>
+        <div style="margin-bottom:8px"><span class="badge b-red" style="font-size:9px">Intelligence</span></div>
+        <div style="margin-bottom:8px"><div class="progress-bg"><div class="progress-fill" style="width:30%;background:var(--amber)"></div></div><div style="font-size:10px;color:var(--muted);margin-top:3px">30%</div></div>
+        <div class="k-card-meta"><span class="k-client">Páramo</span><div class="av-group"><div class="av-sm" style="background:rgba(220,12,75,.15);color:var(--red)">AF</div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--muted)">Vence May 5</div>
+      </div>
+    </div>
+    <div class="k-col">
+      <div class="k-col-title">Completado <span class="k-count">3</span></div>
+      <div class="k-card" style="opacity:.5">
+        <div class="k-card-title">Informe reputación marzo</div>
+        <div style="margin-bottom:8px"><span class="badge b-gray" style="font-size:9px">Intelligence</span></div>
+        <div class="k-card-meta"><span class="k-client">JEP</span><div class="av-group"><div class="av-sm" style="background:var(--surface3);color:var(--muted)">PB</div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--green)">✓ Entregado Abr 22</div>
+      </div>
+      <div class="k-card" style="opacity:.5">
+        <div class="k-card-title">Piezas campaña Semana Santa</div>
+        <div style="margin-bottom:8px"><span class="badge b-gray" style="font-size:9px">Creatividad</span></div>
+        <div class="k-card-meta"><span class="k-client">Corferias</span><div class="av-group"><div class="av-sm" style="background:var(--surface3);color:var(--muted)">DU</div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--green)">✓ Entregado Abr 15</div>
+      </div>
+      <div class="k-card" style="opacity:.5">
+        <div class="k-card-title">Reporte audiencias Q1</div>
+        <div style="margin-bottom:8px"><span class="badge b-gray" style="font-size:9px">Intelligence</span></div>
+        <div class="k-card-meta"><span class="k-client">Sodimac</span><div class="av-group"><div class="av-sm" style="background:var(--surface3);color:var(--muted)">SC</div></div></div>
+        <div style="margin-top:8px;font-size:10px;color:var(--green)">✓ Entregado Abr 10</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ TICKETS -->
+<div id="page-tickets" class="page">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:28px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Portal de <span>tickets</span></div>
+      <div class="page-sub">Solicitudes entrantes de clientes · Gestión interna</div>
+    </div>
+    <div style="display:flex;gap:8px"><span class="badge b-red">1 urgente</span><span class="badge b-amber">2 sin asignar</span><span class="badge b-blue">4 en proceso</span></div>
+  </div>
+  <div class="g2">
+    <div>
+      <div class="sec-title">Nuevos · Sin asignar</div>
+      <div class="ticket">
+        <div class="ticket-header">
+          <div><div class="ticket-id">#TK-067</div><div class="ticket-title">Ajustar tono en redes para campaña Día de la Madre — urge aprobación</div></div>
+          <span class="badge b-red" style="flex-shrink:0">Urgente</span>
+        </div>
+        <div class="ticket-footer">
+          <span class="badge b-blue" style="font-size:9px">Creatividad</span>
+          <span>Granite</span>·<span>Hace 1h</span>
+          <button class="btn btn-outline" style="margin-left:auto;padding:4px 12px;font-size:11px">Asignar</button>
+        </div>
+      </div>
+      <div class="ticket">
+        <div class="ticket-header">
+          <div><div class="ticket-id">#TK-068</div><div class="ticket-title">Solicitud de reporte de competencia semana 18</div></div>
+          <span class="badge b-amber" style="flex-shrink:0">Normal</span>
+        </div>
+        <div class="ticket-footer">
+          <span class="badge b-red" style="font-size:9px">Intelligence</span>
+          <span>Sodimac</span>·<span>Hace 3h</span>
+          <button class="btn btn-outline" style="margin-left:auto;padding:4px 12px;font-size:11px">Asignar</button>
+        </div>
+      </div>
+      <div class="ticket">
+        <div class="ticket-header">
+          <div><div class="ticket-id">#TK-069</div><div class="ticket-title">Pack adicional de stories para evento Agroexpo</div></div>
+          <span class="badge b-amber" style="flex-shrink:0">Normal</span>
+        </div>
+        <div class="ticket-footer">
+          <span class="badge b-blue" style="font-size:9px">Creatividad</span>
+          <span>Corferias</span>·<span>Ayer</span>
+          <button class="btn btn-outline" style="margin-left:auto;padding:4px 12px;font-size:11px">Asignar</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="sec-title">En proceso</div>
+      <div class="ticket">
+        <div class="ticket-header">
+          <div><div class="ticket-id">#TK-062</div><div class="ticket-title">Estrategia contenidos Día de la Madre · Redes sociales</div></div>
+          <span class="badge b-blue" style="flex-shrink:0">En curso</span>
+        </div>
+        <div class="ticket-footer">
+          <span class="badge b-red" style="font-size:9px">Intelligence</span>
+          <span>Páramo</span>·
+          <div class="av-sm" style="background:rgba(220,12,75,.2);color:var(--red)">AF</div>
+          <span>Adriana F.</span>
+        </div>
+      </div>
+      <div class="ticket">
+        <div class="ticket-header">
+          <div><div class="ticket-id">#TK-063</div><div class="ticket-title">Informe de listening bimensual Q1-Q2</div></div>
+          <span class="badge b-blue" style="flex-shrink:0">En curso</span>
+        </div>
+        <div class="ticket-footer">
+          <span class="badge b-red" style="font-size:9px">Intelligence</span>
+          <span>Sodimac</span>·
+          <div class="av-sm" style="background:rgba(220,12,75,.2);color:var(--red)">SC</div>
+          <span>Sebastián C.</span>
+        </div>
+      </div>
+      <div class="ticket">
+        <div class="ticket-header">
+          <div><div class="ticket-id">#TK-064</div><div class="ticket-title">Diseño piezas para campaña digital Henkel mayo</div></div>
+          <span class="badge b-blue" style="flex-shrink:0">En curso</span>
+        </div>
+        <div class="ticket-footer">
+          <span class="badge b-blue" style="font-size:9px">Creatividad</span>
+          <span>Henkel</span>·
+          <div class="av-sm" style="background:rgba(74,158,255,.2);color:var(--blue)">JE</div>
+          <span>Juan Camilo E.</span>
+        </div>
+      </div>
+      <div class="sec-title" style="margin-top:20px">Vista cliente (demo)</div>
+      <div style="background:var(--surface2);border-radius:10px;padding:14px;border:1px dashed var(--border2)">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">Portal Sodimac · Rebold Hub</div>
+        <button class="btn btn-red" style="font-size:11px;padding:6px 14px;margin-bottom:12px">+ Nueva solicitud</button>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Mis solicitudes</div>
+        <div style="background:var(--surface);border-radius:7px;padding:9px 12px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between"><span>#TK-068 · Reporte competencia</span><span class="badge b-amber" style="font-size:9px">Sin asignar</span></div>
+        <div style="background:var(--surface);border-radius:7px;padding:9px 12px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between"><span>#TK-063 · Listening Q1-Q2</span><span class="badge b-blue" style="font-size:9px">En curso</span></div>
+        <div style="background:var(--surface);border-radius:7px;padding:9px 12px;font-size:12px;display:flex;justify-content:space-between;opacity:.5"><span>#TK-055 · Reporte marzo</span><span class="badge b-green" style="font-size:9px">✓ Entregado</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑥ DEDICACIÓN -->
+<div id="page-dedicacion" class="page">
+  <div class="page-header">
+    <div class="page-title">Dedicación <span>por cliente</span></div>
+    <div class="page-sub">Distribución de horas estimadas por cliente y recurso · Abril 2026</div>
+  </div>
+  <div class="g2" style="margin-bottom:20px">
+    <div class="card">
+      <div class="sec-title">Por cliente · Horas estimadas/mes</div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Sodimac</span><span class="dist-val" style="color:var(--red)">~80h</span></div><div class="progress-bg"><div class="progress-fill" style="width:100%;background:var(--red)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Corferias (todas las ferias)</span><span class="dist-val" style="color:var(--blue)">~70h</span></div><div class="progress-bg"><div class="progress-fill" style="width:87%;background:var(--blue)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Homecenter (PQRS)</span><span class="dist-val" style="color:var(--red)">~60h</span></div><div class="progress-bg"><div class="progress-fill" style="width:75%;background:var(--red)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Páramo Intelligence</span><span class="dist-val" style="color:var(--red)">~48h</span></div><div class="progress-bg"><div class="progress-fill" style="width:60%;background:var(--red)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Henkel Regional</span><span class="dist-val" style="color:var(--blue)">~44h</span></div><div class="progress-bg"><div class="progress-fill" style="width:55%;background:var(--blue)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Granite</span><span class="dist-val" style="color:var(--amber)">~40h</span></div><div class="progress-bg"><div class="progress-fill" style="width:50%;background:var(--amber)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">JEP</span><span class="dist-val" style="color:var(--red)">~36h</span></div><div class="progress-bg"><div class="progress-fill" style="width:45%;background:var(--red)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Otros clientes</span><span class="dist-val">~80h</span></div><div class="progress-bg"><div class="progress-fill" style="width:100%;background:var(--surface3)"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="sec-title">Por recurso · Carga estimada</div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Sebastián Castro · Intelligence</span><span class="dist-val" style="color:var(--red)">~168h</span></div><div class="progress-bg"><div class="progress-fill" style="width:100%;background:var(--red)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">María Camila Castro · Creatividad</span><span class="dist-val" style="color:var(--blue)">~160h</span></div><div class="progress-bg"><div class="progress-fill" style="width:95%;background:var(--blue)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Daniel Urbina · Creatividad</span><span class="dist-val" style="color:var(--blue)">~152h</span></div><div class="progress-bg"><div class="progress-fill" style="width:90%;background:var(--blue)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Juliana Jaramillo · Creatividad</span><span class="dist-val" style="color:var(--blue)">~144h</span></div><div class="progress-bg"><div class="progress-fill" style="width:86%;background:var(--blue)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Marcela Rondón · Creatividad</span><span class="dist-val" style="color:var(--blue)">~144h</span></div><div class="progress-bg"><div class="progress-fill" style="width:86%;background:var(--blue)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Adriana Figueredo · Ambas</span><span class="dist-val" style="color:var(--amber)">~136h</span></div><div class="progress-bg"><div class="progress-fill" style="width:81%;background:var(--amber)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Laura Correa · Intelligence</span><span class="dist-val">~120h</span></div><div class="progress-bg"><div class="progress-fill" style="width:71%;background:var(--surface3)"></div></div></div>
+      <div class="dist-item"><div class="dist-labels"><span class="dist-name">Paula Bermúdez · Intelligence</span><span class="dist-val">~104h</span></div><div class="progress-bg"><div class="progress-fill" style="width:62%;background:var(--surface3)"></div></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec-title">Detalle cruzado · Persona × Cliente (horas/mes estimadas)</div>
+    <div style="overflow-x:auto">
+    <table class="tbl" style="min-width:700px">
+      <thead><tr><th>Recurso</th><th>Sodimac</th><th>Páramo</th><th>Corferias</th><th>Homecenter</th><th>Henkel</th><th>Granite</th><th>Jäger.</th><th>Otros</th><th style="color:var(--red)">Total</th></tr></thead>
+      <tbody>
+        <tr><td><div style="font-weight:500">Sebastián Castro</div></td><td>50h</td><td>24h</td><td>—</td><td>—</td><td>—</td><td>—</td><td>24h</td><td>70h</td><td style="font-weight:700;color:var(--red)">168h</td></tr>
+        <tr><td><div style="font-weight:500">María Camila Castro</div></td><td>—</td><td>—</td><td>120h</td><td>—</td><td>—</td><td>—</td><td>—</td><td>40h</td><td style="font-weight:700;color:var(--blue)">160h</td></tr>
+        <tr><td><div style="font-weight:500">Daniel Urbina</div></td><td>—</td><td>—</td><td>60h</td><td>—</td><td>—</td><td>52h</td><td>40h</td><td style="font-weight:700;color:var(--blue)">152h</td></tr>
+        <tr><td><div style="font-weight:500">Juliana Jaramillo</div></td><td>—</td><td>—</td><td>—</td><td>128h</td><td>—</td><td>—</td><td>16h</td><td style="font-weight:700;color:var(--blue)">144h</td></tr>
+        <tr><td><div style="font-weight:500">Marcela Rondón</div></td><td>—</td><td>—</td><td>—</td><td>128h</td><td>—</td><td>—</td><td>16h</td><td style="font-weight:700;color:var(--blue)">144h</td></tr>
+        <tr><td><div style="font-weight:500">Adriana Figueredo</div></td><td>20h</td><td>18h</td><td>20h</td><td>—</td><td>20h</td><td>18h</td><td>40h</td><td style="font-weight:700;color:var(--amber)">136h</td></tr>
+        <tr><td><div style="font-weight:500">Laura Correa</div></td><td>60h</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>60h</td><td style="font-weight:700">120h</td></tr>
+        <tr><td><div style="font-weight:500">Paula Bermúdez</div></td><td>36h</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>68h</td><td style="font-weight:700">104h</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ⑦ FINANCIERO -->
+<div id="page-financiero" class="page">
+  <div class="page-header">
+    <div class="page-title">Análisis <span>financiero</span></div>
+    <div class="page-sub">Costo laboral + herramientas vs. ingreso por cliente · Abril 2026 · Datos del Vitality</div>
+  </div>
+  <div class="g4" style="margin-bottom:20px">
+    <div class="stat s-green">
+      <div class="stat-label">Ingresos estimados</div>
+      <div class="stat-val" style="color:var(--green);font-size:22px">$221M</div>
+      <div class="stat-sub">Clientes activos abril</div>
+    </div>
+    <div class="stat s-red">
+      <div class="stat-label">Costo laboral</div>
+      <div class="stat-val" style="color:var(--red);font-size:22px">$76.6M</div>
+      <div class="stat-sub">Ambas unidades + Dirección</div>
+    </div>
+    <div class="stat s-amber">
+      <div class="stat-label">Herramientas</div>
+      <div class="stat-val" style="color:var(--amber);font-size:22px">$26.2M</div>
+      <div class="stat-sub">Brandwatch + Synaptic + freelances</div>
+    </div>
+    <div class="stat s-blue">
+      <div class="stat-label">Margen estimado</div>
+      <div class="stat-val" style="color:var(--blue);font-size:22px">~54%</div>
+      <div class="stat-sub">Antes de costos transversales</div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="sec-title">Rentabilidad por cliente · Abril 2026</div>
+    <div class="fin-header">
+      <span>Cliente</span><span style="text-align:right">Ingreso</span><span style="text-align:right">C. Laboral</span><span style="text-align:right">Herram.</span><span style="text-align:right">Margen</span>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">Sodimac</div><div style="font-size:10px;color:var(--red)">Intelligence</div></div>
+      <div class="fin-val">$26.0M</div><div class="fin-val">$8.4M</div><div class="fin-val">$4.2M</div>
+      <div class="fin-margin" style="color:var(--green)">51.5%</div>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">Páramo Intelligence</div><div style="font-size:10px;color:var(--red)">Intelligence</div></div>
+      <div class="fin-val">$8.0M</div><div class="fin-val">$3.2M</div><div class="fin-val">$2.1M</div>
+      <div class="fin-margin" style="color:var(--green)">33.8%</div>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">JEP</div><div style="font-size:10px;color:var(--red)">Intelligence</div></div>
+      <div class="fin-val">$11.8M</div><div class="fin-val">$4.6M</div><div class="fin-val">$1.8M</div>
+      <div class="fin-margin" style="color:var(--green)">45.8%</div>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">Corferias (Redes)</div><div style="font-size:10px;color:var(--blue)">Creatividad</div></div>
+      <div class="fin-val">$6.7M</div><div class="fin-val">$6.2M</div><div class="fin-val">$1.5M</div>
+      <div class="fin-margin" style="color:var(--red)">-14.9%</div>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">Henkel Regional</div><div style="font-size:10px;color:var(--blue)">Creatividad</div></div>
+      <div class="fin-val">$13.0M</div><div class="fin-val">$5.3M</div><div class="fin-val">$3.0M</div>
+      <div class="fin-margin" style="color:var(--green)">35.4%</div>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">Homecenter (PQRS)</div><div style="font-size:10px;color:var(--red)">Intelligence</div></div>
+      <div class="fin-val">$24.1M</div><div class="fin-val">$10.5M</div><div class="fin-val">$2.2M</div>
+      <div class="fin-margin" style="color:var(--green)">47.7%</div>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">Granite</div><div style="font-size:10px;color:var(--amber)">Intelligence + Creatividad</div></div>
+      <div class="fin-val">$11.4M</div><div class="fin-val">$5.8M</div><div class="fin-val">$2.4M</div>
+      <div class="fin-margin" style="color:var(--amber)">28.1%</div>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">Casa Mayor</div><div style="font-size:10px;color:var(--blue)">Creatividad</div></div>
+      <div class="fin-val">$12.5M</div><div class="fin-val">$3.8M</div><div class="fin-val">$1.0M</div>
+      <div class="fin-margin" style="color:var(--green)">61.6%</div>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">Jägermeister</div><div style="font-size:10px;color:var(--red)">Intelligence</div></div>
+      <div class="fin-val">$8.5M</div><div class="fin-val">$2.8M</div><div class="fin-val">$1.4M</div>
+      <div class="fin-margin" style="color:var(--green)">50.6%</div>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">Páramo Presenta + Lab</div><div style="font-size:10px;color:var(--red)">Intelligence</div></div>
+      <div class="fin-val">$17.4M</div><div class="fin-val">$5.2M</div><div class="fin-val">$2.1M</div>
+      <div class="fin-margin" style="color:var(--green)">58.6%</div>
+    </div>
+    <div class="fin-row">
+      <div><div class="fin-client">Supercerdo / Casa Mayor</div><div style="font-size:10px;color:var(--blue)">Creatividad</div></div>
+      <div class="fin-val">$12.5M</div><div class="fin-val">$3.8M</div><div class="fin-val">$1.0M</div>
+      <div class="fin-margin" style="color:var(--green)">61.6%</div>
+    </div>
+    <div class="fin-row" style="border:1px solid var(--border2)">
+      <div><div class="fin-client" style="color:var(--muted)">Otros (JEP, Bodytech, Stormberg, Blue Digital...)</div></div>
+      <div class="fin-val" style="color:var(--muted)">$68.5M</div><div class="fin-val" style="color:var(--muted)">$18.2M</div><div class="fin-val" style="color:var(--muted)">$5.8M</div>
+      <div class="fin-margin" style="color:var(--muted)">~42%</div>
+    </div>
+  </div>
+  <div class="card-sm" style="background:rgba(220,12,75,.04);border-color:var(--red-soft)">
+    <div style="display:flex;align-items:flex-start;gap:10px">
+      <span style="font-size:18px">⚠️</span>
+      <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">⚠ 2 alertas financieras activas</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6"><strong style="color:var(--red)">Corferias:</strong> El fee de redes ($6.7M) no cubre el costo real del equipo + Laura Morales. Margen negativo.<br><br><strong style="color:var(--amber)">YouScan:</strong> Brandwatch vence hoy (1 mayo). La nueva herramienta tiene un costo diferente — actualizar el módulo financiero una vez se confirme el valor mensual de YouScan con Alejandro.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑧ HERRAMIENTAS -->
+<div id="page-herramientas" class="page">
+  <div class="page-header">
+    <div class="page-title">Herramientas y <span>proveedores</span></div>
+    <div class="page-sub">Stack tecnológico + freelances · Costos mensuales por unidad</div>
+  </div>
+  <div class="g2" style="margin-bottom:20px">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--red)"></div>
+        <span style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:14px">Intelligence</span>
+      </div>
+      <div class="tool-card" style="margin-bottom:10px">
+        <div class="tool-icon" style="background:rgba(220,12,75,.15)">🎯</div>
+        <div class="tool-info"><div class="tool-name">YouScan <span style="font-size:10px;color:var(--amber)">(desde May 1)</span></div><div class="tool-cost">Social Listening · Migración activa</div></div>
+        <div style="font-weight:700;color:var(--amber)">Por confirmar</div>
+      </div>
+      <div class="tool-card" style="margin-bottom:10px">
+        <div class="tool-icon" style="background:rgba(220,12,75,.1)">📊</div>
+        <div class="tool-info"><div class="tool-name">SigloData</div><div class="tool-cost">Análisis de datos</div></div>
+        <div style="font-weight:700;color:var(--muted)">Incluido</div>
+      </div>
+      <div class="tool-card" style="margin-bottom:10px">
+        <div class="tool-icon" style="background:rgba(220,12,75,.1)">📈</div>
+        <div class="tool-info"><div class="tool-name">Dashboards</div><div class="tool-cost">Reportería y visualización</div></div>
+        <div style="font-weight:700;color:var(--muted)">Incluido</div>
+      </div>
+      <div class="divider"></div>
+      <div class="sec-title">Proveedor Intelligence</div>
+      <div class="tool-card">
+        <div class="tool-icon" style="background:rgba(245,166,35,.15)">👤</div>
+        <div class="tool-info"><div class="tool-name">Daniel Beltrán</div><div class="tool-cost">Monitoreo fines de semana · Variable</div></div>
+        <div style="font-weight:700;color:var(--amber)">~$900K</div>
+      </div>
+      <div style="margin-top:14px;padding:10px 14px;background:var(--surface2);border-radius:8px;display:flex;justify-content:space-between">
+        <span style="font-size:12px;color:var(--muted)">Total herramientas Intelligence</span>
+        <span style="font-weight:700;color:var(--red)">~$17.8M/mes</span>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--blue)"></div>
+        <span style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:14px">Creatividad</span>
+      </div>
+      <div class="tool-card" style="margin-bottom:10px">
+        <div class="tool-icon" style="background:rgba(74,158,255,.15)">🎨</div>
+        <div class="tool-info"><div class="tool-name">Synaptic</div><div class="tool-cost">Herramienta creativa · Abril: 2,500 hrs</div></div>
+        <div style="font-weight:700;color:var(--blue)">$9.25M</div>
+      </div>
+      <div class="divider"></div>
+      <div class="sec-title">Proveedores Creatividad · Abril</div>
+      <div class="tool-card" style="margin-bottom:10px">
+        <div class="tool-icon" style="background:rgba(74,158,255,.1)">✏️</div>
+        <div class="tool-info"><div class="tool-name">Laura Morales</div><div class="tool-cost">Diseñadora · Corferias, Granite, Stomberg</div></div>
+        <div style="font-weight:700;color:var(--amber)">~$1.95M</div>
+      </div>
+      <div class="tool-card" style="margin-bottom:10px">
+        <div class="tool-icon" style="background:rgba(74,158,255,.1)">✏️</div>
+        <div class="tool-info">
+          <div class="tool-name">Andrés Sánchez <span class="badge b-amber" style="font-size:9px">hasta mayo 15</span></div>
+          <div class="tool-cost">Diseñador · Pto. Pago, Parador Rojo, Casa Mayor</div>
+        </div>
+        <div style="font-weight:700;color:var(--amber)">$3.0M</div>
+      </div>
+      <div class="tool-card" style="margin-bottom:10px">
+        <div class="tool-icon" style="background:rgba(74,158,255,.1)">✏️</div>
+        <div class="tool-info">
+          <div class="tool-name">Sebastián Barrera <span class="badge b-green" style="font-size:9px">desde junio full</span></div>
+          <div class="tool-cost">Diseñador + CM · Henkel ($3M) + Parador/Pto.Pago ($3M)</div>
+        </div>
+        <div style="font-weight:700;color:var(--amber)">$6.0M</div>
+      </div>
+      <div class="tool-card" style="margin-bottom:10px">
+        <div class="tool-icon" style="background:rgba(74,158,255,.1)">✏️</div>
+        <div class="tool-info">
+          <div class="tool-name">Nicole Sierra <span class="badge b-amber" style="font-size:9px">hasta julio</span></div>
+          <div class="tool-cost">Diseñadora · Multimarca</div>
+        </div>
+        <div style="font-weight:700;color:var(--amber)">$2.0M</div>
+      </div>
+      <div style="margin-top:14px;padding:10px 14px;background:var(--surface2);border-radius:8px;display:flex;justify-content:space-between">
+        <span style="font-size:12px;color:var(--muted)">Total herramientas + proveedores Creatividad</span>
+        <span style="font-weight:700;color:var(--blue)">~$22.2M/mes</span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec-title">Seguimiento piezas Laura Morales · Contador mensual</div>
+    <div style="background:var(--surface2);border-radius:10px;padding:16px">
+      <div class="g3" style="margin-bottom:16px">
+        <div style="text-align:center">
+          <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:32px;color:var(--blue)">24</div>
+          <div style="font-size:11px;color:var(--muted)">Piezas semana 1</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:32px;color:var(--blue)">31</div>
+          <div style="font-size:11px;color:var(--muted)">Piezas semana 2</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:32px;color:var(--amber)">—</div>
+          <div style="font-size:11px;color:var(--muted)">Semana 3 (en curso)</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="font-size:13px"><strong>55 piezas</strong> acumuladas · <span style="color:var(--muted)">Costo proyectado:</span> <strong style="color:var(--amber)">~$1.62M</strong></div>
+        <button class="btn btn-outline" style="font-size:12px">+ Registrar piezas semana 3</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end #main -->
+
+<script>
+function goTo(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (window.innerWidth <= 900) closeSidebar();
+  window.scrollTo(0, 0);
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+</script>
+</body>
+</html>
