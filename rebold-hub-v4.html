@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebold Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Figtree:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#DC0C4B;--red-dark:#A80838;--red-glow:rgba(220,12,75,0.14);
+  --black:#08080A;--surface:#0F0F12;--surface2:#161619;--surface3:#1E1E23;
+  --border:#252529;--border2:#2E2E34;
+  --text:#EEEEF2;--muted:#66666F;--muted2:#3A3A41;
+  --green:#00C97A;--green-soft:rgba(0,201,122,0.1);
+  --amber:#F5A623;--amber-soft:rgba(245,166,35,0.1);
+  --blue:#3D8EFF;--blue-soft:rgba(61,142,255,0.1);
+  --purple:#9B6FFF;--purple-soft:rgba(155,111,255,0.1);
+}
+body{font-family:'Figtree',sans-serif;background:var(--black);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 40% at 50% -10%,rgba(220,12,75,0.1) 0%,transparent 60%);pointer-events:none;z-index:0}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ══════════════════════════════════════
+   LOGIN
+══════════════════════════════════════ */
+#screenLogin{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  z-index:1000;background:var(--black);padding:20px;animation:fadeIn .3s ease;
+}
+.login-wrap{width:100%;max-width:420px;animation:slideUp .4s ease}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px}
+.login-logo-text span{color:var(--red)}
+.login-logo-sub{font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:4px}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),transparent)}
+.login-body{padding:32px}
+.login-title{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin-bottom:6px}
+.login-hint{font-size:13px;color:var(--muted);margin-bottom:24px}
+
+/* FORM */
+.form-group{margin-bottom:16px}
+.form-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:7px;display:block}
+.form-input,.form-select{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'Figtree',sans-serif;font-size:14px;outline:none;transition:all .2s;-webkit-appearance:none}
+.form-input:focus,.form-select:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow)}
+select option{background:var(--surface2);color:var(--text)}
+.btn{width:100%;padding:13px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:.5px;cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:var(--red-dark);box-shadow:0 6px 20px rgba(220,12,75,.3);transform:translateY(-1px)}
+.btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border2)}
+.btn-ghost:hover{color:var(--text)}
+.btn-sm{padding:8px 16px;font-size:12px;width:auto;border-radius:8px}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.btn-outline:hover{border-color:var(--muted)}
+.login-error{font-size:12px;color:var(--red);margin-top:10px;text-align:center;display:none}
+
+/* ══════════════════════════════════════
+   APP SHELL
+══════════════════════════════════════ */
+#appShell{display:none;min-height:100vh}
+
+/* SIDEBAR */
+#sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:transform .3s}
+.logo-wrap{padding:26px 22px 18px;border-bottom:1px solid var(--border)}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px}
+.logo span{color:var(--red)}
+.logo-sub{font-size:9px;color:var(--muted);letter-spacing:2.5px;text-transform:uppercase;margin-top:2px}
+nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-sec{font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;padding:12px 12px 6px;font-weight:700}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;font-size:12.5px;color:var(--muted);transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'Figtree',sans-serif;border-radius:8px}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--red-glow);color:var(--red);font-weight:600}
+.nav-icon{width:15px;height:15px;flex-shrink:0;opacity:.6}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;background:var(--red);color:#fff;padding:1px 6px;border-radius:8px}
+.nav-badge.green{background:var(--green)}
+.sidebar-footer{padding:14px 12px;border-top:1px solid var(--border)}
+.user-card{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:var(--surface2);cursor:pointer}
+.user-av{width:30px;height:30px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:10px;color:#fff;flex-shrink:0}
+.user-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:10px;color:var(--muted)}
+
+/* TOPBAR MOBILE */
+#topbar{display:none;position:fixed;top:0;left:0;right:0;height:54px;background:var(--surface);border-bottom:1px solid var(--border);align-items:center;padding:0 16px;z-index:99;gap:12px}
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:98}
+
+/* MAIN */
+#main{margin-left:240px;min-height:100vh}
+.page{display:none;padding:28px 32px;animation:slideUp .2s ease}
+.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.5px}
+.page-title span{color:var(--red)}
+.page-sub{font-size:13px;color:var(--muted);margin-top:4px;font-weight:300}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px}
+.card-sm{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+/* STAT */
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;opacity:.06}
+.stat.s-red::after{background:var(--red)}.stat.s-green::after{background:var(--green)}
+.stat.s-amber::after{background:var(--amber)}.stat.s-blue::after{background:var(--blue)}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;font-weight:700}
+.stat-val{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;letter-spacing:-1px;margin:6px 0 3px}
+.stat-sub{font-size:11px;color:var(--muted)}
+.stat-sub.up{color:var(--green)}.stat-sub.down{color:var(--red)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.b-red{background:var(--red-glow);color:var(--red)}.b-green{background:var(--green-soft);color:var(--green)}
+.b-amber{background:var(--amber-soft);color:var(--amber)}.b-blue{background:var(--blue-soft);color:var(--blue)}
+.b-purple{background:var(--purple-soft);color:var(--purple)}.b-gray{background:var(--surface3);color:var(--muted)}
+
+/* SECTION TITLE */
+.sec{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;padding:8px 14px;font-weight:700;border-bottom:1px solid var(--border)}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+
+/* PROGRESS */
+.prog-bg{background:var(--surface3);border-radius:4px;height:5px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;transition:width .5s}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border);margin:16px 0}
+
+/* AVATAR */
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:10px;flex-shrink:0}
+.av-sm{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:9px;flex-shrink:0;border:2px solid var(--surface)}
+
+/* TICKET CARD */
+.ticket{background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;transition:all .15s;border:1px solid transparent;position:relative}
+.ticket:hover{border-color:var(--border2)}
+.ticket.urgente{border-left:3px solid var(--red)}
+.ticket.normal{border-left:3px solid var(--amber)}
+.ticket.baja{border-left:3px solid var(--blue)}
+.ticket-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:500}
+.ticket-title{font-size:13px;font-weight:600;line-height:1.4;margin-bottom:8px}
+.ticket-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* TASK CARD */
+.task-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;transition:all .15s}
+.task-card:hover{border-color:var(--border2)}
+.task-card.done{opacity:.5}
+.task-title{font-size:13px;font-weight:600;margin-bottom:6px}
+.task-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+
+/* NEW TICKET FORM */
+.new-ticket-form{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px}
+.new-ticket-form::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--red),transparent);margin:-28px -28px 24px;border-radius:16px 16px 0 0}
+
+/* KANBAN */
+.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.k-col{background:var(--surface2);border-radius:12px;padding:14px;min-height:180px}
+.k-col-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.k-count{background:var(--surface3);border-radius:8px;padding:1px 7px;font-size:10px}
+.k-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.k-card:hover{border-color:var(--red)}
+.k-card-title{font-size:12.5px;font-weight:500;line-height:1.4;margin-bottom:8px}
+
+/* STATUS PILL */
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+
+/* CHECKIN CARD */
+.checkin-item{background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+
+/* DIST BAR */
+.dist-item{margin-bottom:14px}
+.dist-labels{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  #sidebar{transform:translateX(-240px)}#sidebar.open{transform:translateX(0)}
+  #topbar{display:flex}#main{margin-left:0;padding-top:54px}
+  .page{padding:16px}.g4{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}
+  .kanban{grid-template-columns:1fr}#overlay.open{display:block}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════ -->
+<div id="screenLogin">
+<div class="login-wrap">
+  <div class="login-logo">
+    <div class="login-logo-text">re<span>bold</span></div>
+    <div class="login-logo-sub">Hub de gestión · Andina</div>
+  </div>
+  <div class="login-card">
+    <div class="login-body">
+
+    <!-- PASO 1: CORREO -->
+    <div id="loginStep1">
+      <div class="login-title">Bienvenido 👋</div>
+      <div class="login-hint">Ingresa con tu correo corporativo</div>
+      <div class="form-group">
+        <label class="form-label">Correo corporativo</label>
+        <input class="form-input" id="loginEmail" type="email" placeholder="tu.nombre@letsrebold.com" autocomplete="email">
+      </div>
+      <button class="btn btn-red" onclick="checkEmail()">Continuar →</button>
+      <div class="login-error" id="loginError">Correo no reconocido. Verifica e intenta de nuevo.</div>
+    </div>
+
+    <!-- PASO 2: CREAR CONTRASEÑA (primera vez) -->
+    <div id="loginStep2" style="display:none">
+      <div class="login-title">Crea tu contraseña 🔐</div>
+      <div class="login-hint" id="step2Hint">Es tu primera vez. Define una contraseña para tu cuenta.</div>
+      <div class="form-group">
+        <label class="form-label">Nueva contraseña</label>
+        <input class="form-input" id="loginPass1" type="password" placeholder="Mínimo 6 caracteres">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmar contraseña</label>
+        <input class="form-input" id="loginPass2" type="password" placeholder="Repite la contraseña">
+      </div>
+      <button class="btn btn-red" onclick="setPassword()">Crear contraseña y entrar →</button>
+      <div class="login-error" id="loginError2">Las contraseñas no coinciden o son muy cortas.</div>
+      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="backToEmail()">← Cambiar correo</button>
+    </div>
+
+    <!-- PASO 3: INGRESAR CON CONTRASEÑA (sesiones siguientes) -->
+    <div id="loginStep3" style="display:none">
+      <div class="login-title">Hola de nuevo 👋</div>
+      <div class="login-hint" id="step3Name">Ingresa tu contraseña</div>
+      <div class="form-group">
+        <label class="form-label">Contraseña</label>
+        <input class="form-input" id="loginPassExist" type="password" placeholder="Tu contraseña">
+      </div>
+      <button class="btn btn-red" onclick="loginWithPassword()">Ingresar →</button>
+      <div class="login-error" id="loginError3">Contraseña incorrecta. Intenta de nuevo.</div>
+      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="backToEmail()">← Cambiar correo</button>
+    </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════ -->
+<div id="appShell">
+
+<!-- MOBILE TOPBAR -->
+<div id="topbar">
+  <button style="background:none;border:none;color:var(--text);cursor:pointer" onclick="toggleSidebar()">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="5" x2="18" y2="5"/><line x1="2" y1="10" x2="18" y2="10"/><line x1="2" y1="15" x2="18" y2="15"/></svg>
+  </button>
+  <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:17px">re<span style="color:var(--red)">bold</span></span>
+</div>
+<div id="overlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="logo-wrap">
+    <div class="logo">re<span>bold</span></div>
+    <div class="logo-sub">Hub · Andina</div>
+  </div>
+  <nav id="sidebarNav"></nav>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-av" id="userAv">?</div>
+      <div>
+        <div class="user-name" id="userName">—</div>
+        <div class="user-role" id="userRoleLabel">—</div>
+      </div>
+      <button style="background:none;border:none;color:var(--muted);cursor:pointer;margin-left:auto;font-size:11px" onclick="logout()">Salir</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+<!-- ── DIRECTOR: RESUMEN ── -->
+<div id="page-overview" class="page">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Buenos días, <span id="directorName">Natalia</span> 👋</div>
+      <div class="page-sub" id="todayDate2">Cargando...</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="badge b-red">● Intelligence</span>
+      <span class="badge b-blue">● Creatividad</span>
+    </div>
+  </div>
+
+  <div class="g4" style="margin-bottom:20px">
+    <div class="stat s-red"><div class="stat-label">Clientes activos</div><div class="stat-val" style="color:var(--red)">18</div><div class="stat-sub">2 unidades</div></div>
+    <div class="stat s-green"><div class="stat-label">Check-ins hoy</div><div class="stat-val" style="color:var(--green)">8<span style="font-size:16px;color:var(--muted)">/12</span></div><div class="stat-sub up">4 pendientes</div></div>
+    <div class="stat s-amber"><div class="stat-label">Tickets abiertos</div><div class="stat-val" style="color:var(--amber)">7</div><div class="stat-sub down">4 urgentes</div></div>
+    <div class="stat s-blue"><div class="stat-label">Margen abril</div><div class="stat-val" style="color:var(--blue)">~38%</div><div class="stat-sub">Est. vs Vitality</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="sec">Unidad Intelligence</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <span class="badge b-red">Sodimac</span><span class="badge b-red">Páramo</span><span class="badge b-red">JEP</span>
+        <span class="badge b-red">Homecenter</span><span class="badge b-red">Jägermeister</span><span class="badge b-red">Banco Falabella</span>
+        <span class="badge b-red">Corferias</span><span class="badge b-red">Bodytech</span><span class="badge b-red">Los Olivos</span>
+      </div>
+      <div class="div"></div>
+      <div class="sec">Últimos check-ins</div>
+      <div style="text-align:center;padding:24px 16px;color:var(--muted)">
+        <div style="font-size:28px;margin-bottom:8px">📋</div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:4px">Sin check-ins aún</div>
+        <div style="font-size:11px">El equipo recibirá el primer correo hoy a las 5:30 PM</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec">Unidad Creatividad</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <span class="badge b-blue">Corferias</span><span class="badge b-blue">Henkel</span><span class="badge b-blue">Granite</span>
+        <span class="badge b-blue">Stormberg</span><span class="badge b-blue">Parador Rojo</span><span class="badge b-blue">Punto de Pago</span>
+        <span class="badge b-blue">Supercerdo</span><span class="badge b-blue">Casa Mayor</span><span class="badge b-blue">Blue Digital</span>
+      </div>
+      <div class="div"></div>
+      <div class="sec">Tickets urgentes</div>
+      <div style="text-align:center;padding:24px 16px;color:var(--muted)">
+        <div style="font-size:28px;margin-bottom:8px">🎫</div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:4px">Sin tickets activos</div>
+        <div style="font-size:11px">Los tickets llegarán desde Gmail automáticamente</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DIRECTOR: EQUIPO ── -->
+<div id="page-equipo" class="page">
+  <div class="page-header"><div class="page-title">Equipo <span>Rebold</span></div><div class="page-sub">Estructura completa · Costos empresa</div></div>
+  <div class="card">
+    <div class="sec">Dirección</div>
+    <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Unidad</th><th>Salario</th><th>CE</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Natalia Patiño</strong></td><td>Directora de Unidades</td><td><span class="badge b-red">Dirección</span></td><td>$12.07M</td><td style="color:var(--red)">$16.9M</td></tr>
+    </tbody></table>
+    <div class="div"></div>
+    <div class="sec">Intelligence</div>
+    <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Salario</th><th>CE</th></tr></thead>
+    <tbody>
+      <tr><td>Sebastián Castro</td><td>Analista SR Insights</td><td>$6.04M</td><td>$8.45M</td></tr>
+      <tr><td>Laura Correa</td><td>Analista Monitoreo</td><td>$3.47M</td><td>$4.85M</td></tr>
+      <tr><td>Paula Bermúdez</td><td>Analista Monitoreo</td><td>$2.37M</td><td>$3.31M</td></tr>
+      <tr><td>Juliana Jaramillo</td><td>Analista PQRS Homecenter</td><td>$3.59M</td><td>$5.03M</td></tr>
+      <tr><td>Marcela Rondón</td><td>Analista PQRS Homecenter</td><td>$3.88M</td><td>$5.43M</td></tr>
+    </tbody></table>
+    <div class="div"></div>
+    <div class="sec">Creatividad</div>
+    <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Salario</th><th>CE</th></tr></thead>
+    <tbody>
+      <tr><td>María Camila Castro</td><td>CM Corferias</td><td>$4.44M</td><td>$6.22M</td></tr>
+      <tr><td>Estefanía Prieto</td><td>CM Granite/Stomberg</td><td>$3.06M</td><td>$4.28M</td></tr>
+      <tr><td>Daniel Urbina</td><td>Diseñador Gráfico</td><td>$4.17M</td><td>$5.83M</td></tr>
+      <tr><td>Juan Camilo Espinosa</td><td>Diseñador Gráfico Henkel</td><td>$5.25M</td><td>$7.35M</td></tr>
+    </tbody></table>
+    <div class="div"></div>
+    <div class="sec">Integrales (ambas unidades)</div>
+    <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Salario</th><th>Dist.</th></tr></thead>
+    <tbody>
+      <tr><td>Adriana Figueredo</td><td>Analista Insights</td><td>$4.90M</td><td>50/50</td></tr>
+      <tr><td>Alejandro Sierra</td><td>Coord. Operaciones</td><td>$5.20M</td><td>50/50</td></tr>
+      <tr><td>Gina Benavides</td><td>Practicante SENA</td><td>$1.62M</td><td>50/50</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- ── DIRECTOR: TICKETS ── -->
+<div id="page-tickets" class="page">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+    <div class="page-header" style="margin-bottom:0"><div class="page-title">Portal de <span>tickets</span></div><div class="page-sub">Solicitudes internas y externas</div></div>
+    <button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nuevo ticket</button>
+  </div>
+  <div style="text-align:center;padding:60px 20px;color:var(--muted)">
+    <div style="font-size:48px;margin-bottom:16px">🎫</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--text);margin-bottom:8px">Bandeja limpia</div>
+    <div style="font-size:13px;margin-bottom:24px">Los tickets llegarán automáticamente desde Gmail.<br>También puedes crear uno manualmente.</div>
+    <button class="btn btn-red" style="width:auto;padding:10px 24px" onclick="showPage('page-nuevo-ticket')">+ Crear primer ticket</button>
+  </div>
+</div>
+
+<!-- ── NUEVO TICKET (todos los roles) ── -->
+<div id="page-nuevo-ticket" class="page">
+  <div class="page-header">
+    <div class="page-title">Nueva <span>solicitud</span></div>
+    <div class="page-sub">Crea un ticket interno para una unidad o persona</div>
+  </div>
+  <div style="max-width:600px">
+  <div class="new-ticket-form">
+    <div class="form-group">
+      <label class="form-label">Título de la solicitud</label>
+      <input class="form-input" id="ntTitle" placeholder="ej: Pack de piezas para campaña Día de la Madre">
+    </div>
+    <div class="g2">
+      <div class="form-group">
+        <label class="form-label">Cliente</label>
+        <select class="form-select" id="ntClient">
+          <option value="">Selecciona...</option>
+          <option>Sodimac</option><option>Páramo Presenta</option><option>Páramo Lab</option>
+          <option>JEP</option><option>Homecenter</option><option>Jägermeister</option>
+          <option>Banco Falabella</option><option>Corferias</option><option>Henkel Regional</option>
+          <option>Granite</option><option>Stormberg</option><option>Parador Rojo</option>
+          <option>Punto de Pago</option><option>Supercerdo</option><option>Casa Mayor</option>
+          <option>Blue Digital</option><option>Bodytech</option><option>Los Olivos</option>
+          <option>Interno Rebold</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Unidad responsable</label>
+        <select class="form-select" id="ntUnit">
+          <option value="">Selecciona...</option>
+          <option>Intelligence</option>
+          <option>Creatividad</option>
+          <option>Ambas</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="form-group">
+        <label class="form-label">Tipo de solicitud</label>
+        <select class="form-select" id="ntCategory">
+          <option value="">Selecciona...</option>
+          <option>Diseño de piezas</option>
+          <option>Community Management</option>
+          <option>Social Listening / Monitoreo</option>
+          <option>Análisis / Reporte</option>
+          <option>Estrategia de contenidos</option>
+          <option>Estrategia de redes</option>
+          <option>PQRS</option>
+          <option>Reunión / Presentación</option>
+          <option>Propuesta comercial</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Prioridad</label>
+        <select class="form-select" id="ntPriority">
+          <option value="normal">Normal</option>
+          <option value="urgente">Urgente</option>
+          <option value="baja">Baja</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Asignar a (opcional)</label>
+      <select class="form-select" id="ntAssignee">
+        <option value="">Sin asignar (Natalia asignará)</option>
+        <option>Sebastián Castro · Intelligence</option>
+        <option>Adriana Figueredo · Ambas</option>
+        <option>Laura Correa · Intelligence</option>
+        <option>Paula Bermúdez · Intelligence</option>
+        <option>Alejandro Sierra · Ambas</option>
+        <option>María Camila Castro · Creatividad</option>
+        <option>Estefanía Prieto · Creatividad</option>
+        <option>Daniel Urbina · Creatividad</option>
+        <option>Juan Camilo Espinosa · Creatividad</option>
+        <option>Juliana Jaramillo · Intelligence</option>
+        <option>Marcela Rondón · Intelligence</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fecha límite (opcional)</label>
+      <input class="form-input" id="ntDue" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descripción detallada</label>
+      <textarea class="form-input" id="ntDesc" style="height:100px;resize:none;line-height:1.6" placeholder="Describe qué necesitas, formatos, referencias, contexto..."></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="goBack()">← Cancelar</button>
+      <button class="btn btn-red" style="flex:2" onclick="createTicket()">Crear solicitud ✓</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ── DIRECTOR: TAREAS ── -->
+<div id="page-tareas" class="page">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+    <div class="page-header" style="margin-bottom:0"><div class="page-title">Gestión de <span>tareas</span></div><div class="page-sub">Kanban por unidad</div></div>
+    <button class="btn btn-red btn-sm">+ Nueva tarea</button>
+  </div>
+  <div class="kanban">
+    <div class="k-col">
+      <div class="k-col-title">Pendiente <span class="k-count">0</span></div>
+      <div style="text-align:center;padding:24px 12px;color:var(--muted);font-size:12px">Sin tareas pendientes</div>
+    </div>
+    <div class="k-col">
+      <div class="k-col-title">En curso <span class="k-count">0</span></div>
+      <div style="text-align:center;padding:24px 12px;color:var(--muted);font-size:12px">Sin tareas en curso</div>
+    </div>
+    <div class="k-col">
+      <div class="k-col-title">Completado <span class="k-count">0</span></div>
+      <div style="text-align:center;padding:24px 12px;color:var(--muted);font-size:12px">Sin tareas completadas</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DIRECTOR: FINANCIERO ── -->
+<div id="page-financiero" class="page">
+  <div class="page-header"><div class="page-title">Análisis <span>financiero</span></div><div class="page-sub">Costo vs ingreso por cliente · Abril 2026</div></div>
+  <div class="g4" style="margin-bottom:20px">
+    <div class="stat s-green"><div class="stat-label">Ingresos est.</div><div class="stat-val" style="color:var(--green);font-size:22px">$221M</div><div class="stat-sub">Clientes activos</div></div>
+    <div class="stat s-red"><div class="stat-label">Costo laboral</div><div class="stat-val" style="color:var(--red);font-size:22px">$76.6M</div><div class="stat-sub">Ambas unidades</div></div>
+    <div class="stat s-amber"><div class="stat-label">Herramientas</div><div class="stat-val" style="color:var(--amber);font-size:22px">$26.2M</div><div class="stat-sub">YouScan + Synaptic</div></div>
+    <div class="stat s-blue"><div class="stat-label">Margen est.</div><div class="stat-val" style="color:var(--blue);font-size:22px">~54%</div><div class="stat-sub">Antes costos trans.</div></div>
+  </div>
+  <div class="card">
+    <div class="sec">Rentabilidad por cliente</div>
+    <table class="tbl">
+      <thead><tr><th>Cliente</th><th>Unidad</th><th>Ingreso</th><th>C. Laboral</th><th>Herram.</th><th>Margen</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Sodimac</strong></td><td><span class="badge b-red" style="font-size:9px">INT</span></td><td>$26.0M</td><td>$8.4M</td><td>$4.2M</td><td style="font-weight:700;color:var(--green)">51.5%</td></tr>
+        <tr><td><strong>Homecenter</strong></td><td><span class="badge b-red" style="font-size:9px">INT</span></td><td>$24.1M</td><td>$10.5M</td><td>$2.2M</td><td style="font-weight:700;color:var(--green)">47.7%</td></tr>
+        <tr><td><strong>Henkel Regional</strong></td><td><span class="badge b-blue" style="font-size:9px">CRE</span></td><td>$13.0M</td><td>$5.3M</td><td>$3.0M</td><td style="font-weight:700;color:var(--green)">35.4%</td></tr>
+        <tr><td><strong>Supercerdo</strong></td><td><span class="badge b-blue" style="font-size:9px">CRE</span></td><td>$12.5M</td><td>$3.8M</td><td>$1.0M</td><td style="font-weight:700;color:var(--green)">61.6%</td></tr>
+        <tr><td><strong>Granite</strong></td><td><span class="badge b-amber" style="font-size:9px">AMB</span></td><td>$11.4M</td><td>$5.8M</td><td>$2.4M</td><td style="font-weight:700;color:var(--amber)">28.1%</td></tr>
+        <tr><td><strong>Corferias</strong></td><td><span class="badge b-blue" style="font-size:9px">CRE</span></td><td>$6.7M</td><td>$6.2M</td><td>$1.5M</td><td style="font-weight:700;color:var(--red)">-14.9%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── VISTA COLABORADOR: MIS TAREAS ── -->
+<div id="page-mis-tareas" class="page">
+  <div class="page-header"><div class="page-title">Mis <span>tareas</span></div><div class="page-sub" id="colaboradorSub">Tus solicitudes asignadas</div></div>
+  <div class="g2" style="margin-bottom:20px">
+    <div class="stat s-amber"><div class="stat-label">Tareas pendientes</div><div class="stat-val" style="color:var(--amber)">3</div><div class="stat-sub">Para completar</div></div>
+    <div class="stat s-green"><div class="stat-label">Completadas hoy</div><div class="stat-val" style="color:var(--green)">1</div><div class="stat-sub up">¡Buen ritmo!</div></div>
+  </div>
+  <div id="myTasksList">
+    <div style="text-align:center;padding:48px 20px;color:var(--muted)">
+      <div style="font-size:40px;margin-bottom:12px">✅</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-bottom:6px">Sin tareas asignadas</div>
+      <div style="font-size:12px">Cuando Natalia te asigne una tarea aparecerá aquí</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── EJECUTIVO: MIS SOLICITUDES ── -->
+<div id="page-mis-solicitudes" class="page">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+    <div class="page-header" style="margin-bottom:0"><div class="page-title">Mis <span>solicitudes</span></div><div class="page-sub">Tickets que has creado</div></div>
+    <button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nueva solicitud</button>
+  </div>
+  <div style="text-align:center;padding:48px 20px;color:var(--muted)">
+    <div style="font-size:40px;margin-bottom:12px">📋</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-bottom:6px">Sin solicitudes aún</div>
+    <div style="font-size:12px;margin-bottom:20px">Crea tu primera solicitud al equipo</div>
+    <button class="btn btn-red" style="width:auto;padding:10px 24px" onclick="showPage('page-nuevo-ticket')">+ Nueva solicitud</button>
+  </div>
+</div>
+
+<!-- ── CHECK-IN PAGE (todos) ── -->
+<div id="page-checkin" class="page">
+  <div class="page-header"><div class="page-title">Daily <span>Check-in</span></div><div class="page-sub">Registra tu día</div></div>
+  <div style="max-width:500px">
+  <div class="card">
+    <div class="sec">¿Con qué clientes trabajaste hoy?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px" id="clientChips"></div>
+    <div class="sec">¿Qué hiciste?</div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px" id="taskChips">
+      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Social listening</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Análisis audiencias</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Reporte / Informe</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Estrategia contenidos</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Community mgmt</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Diseño piezas</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">PQRS</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Reunión cliente</div>
+    </div>
+    <div class="sec">Horas del día</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px" id="hourBtns">
+      <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'4')">4h</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'5')">5h</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'6')">6h</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'7')">7h</div>
+      <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'8')">8h</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nota del día (opcional)</label>
+      <textarea class="form-input" style="height:80px;resize:none;line-height:1.6" placeholder="¿Algún bloqueo, entrega o novedad?"></textarea>
+    </div>
+    <button class="btn btn-red" onclick="submitCheckin()">Registrar mi día ✓</button>
+  </div>
+  </div>
+</div>
+
+</div><!-- end main -->
+</div><!-- end appShell -->
+
+<script>
+// ══════════════════════════════════════════════════════
+// USUARIOS Y ROLES
+// ══════════════════════════════════════════════════════
+const USERS = {
+  'andrea.patino@letsrebold.com':      { name:'Natalia Patiño',       role:'director',   unit:'Dirección',    code:'NP', color:'var(--red)' },
+  'sebastian.castro@letsrebold.com':   { name:'Sebastián Castro',     role:'analyst',    unit:'Intelligence', code:'SC', color:'var(--red)' },
+  'adriana.figueredo@letsrebold.com':  { name:'Adriana Figueredo',    role:'analyst',    unit:'Ambas',        code:'AF', color:'var(--amber)' },
+  'laura.correa@letsrebold.com':       { name:'Laura Correa',         role:'analyst',    unit:'Intelligence', code:'LC', color:'var(--red)' },
+  'paula.bermudez@letsrebold.com':     { name:'Paula Bermúdez',       role:'analyst',    unit:'Intelligence', code:'PB', color:'var(--red)' },
+  'alejandro.sierra@letsrebold.com':   { name:'Alejandro Sierra',     role:'account',    unit:'Ambas',        code:'AS', color:'var(--amber)' },
+  'gina.benavides@ispd.com':           { name:'Gina Benavides',       role:'analyst',    unit:'Ambas',        code:'GB', color:'var(--amber)' },
+  'maria.castro@letsrebold.com':       { name:'María Camila Castro',  role:'cm',         unit:'Creatividad',  code:'MC', color:'var(--blue)' },
+  'alicia.prieto@letsrebold.com':      { name:'Estefanía Prieto',     role:'cm',         unit:'Creatividad',  code:'EP', color:'var(--blue)' },
+  'juliana.jaramillo@letsrebold.com':  { name:'Juliana Jaramillo',    role:'analyst',    unit:'Intelligence', code:'JJ', color:'var(--red)' },
+  'marcela.rondon@letsrebold.com':     { name:'Marcela Rondón',       role:'analyst',    unit:'Intelligence', code:'MR', color:'var(--red)' },
+  'daniel.urbina@ispd.com':            { name:'Daniel Urbina',        role:'designer',   unit:'Creatividad',  code:'DU', color:'var(--blue)' },
+  'juan.espinosa@ispd.com':            { name:'Juan Camilo Espinosa', role:'designer',   unit:'Creatividad',  code:'JE', color:'var(--blue)' },
+};
+
+const ROLE_LABELS = {
+  director: 'Directora de Unidades',
+  account:  'Ejecutivo de Cuentas',
+  analyst:  'Analista',
+  designer: 'Diseñador',
+  cm:       'Community Manager',
+};
+
+// NAV CONFIG PER ROLE
+const NAV_CONFIG = {
+  director: [
+    { id:'overview',    label:'Resumen',       icon:'grid' },
+    { id:'equipo',      label:'Equipo',         icon:'users' },
+    { id:'tareas',      label:'Tareas',         icon:'check' },
+    { id:'tickets',     label:'Tickets',        icon:'ticket', badge:7 },
+    { id:'financiero',  label:'Financiero',     icon:'dollar' },
+    { id:'checkin',     label:'Check-in',       icon:'msg' },
+  ],
+  account: [
+    { id:'mis-solicitudes', label:'Mis solicitudes', icon:'ticket' },
+    { id:'nuevo-ticket',    label:'Nueva solicitud',  icon:'plus' },
+    { id:'checkin',         label:'Check-in',         icon:'msg' },
+  ],
+  analyst: [
+    { id:'mis-tareas', label:'Mis tareas',  icon:'check' },
+    { id:'checkin',    label:'Check-in',    icon:'msg' },
+  ],
+  designer: [
+    { id:'mis-tareas', label:'Mis tareas',  icon:'check' },
+    { id:'checkin',    label:'Check-in',    icon:'msg' },
+  ],
+  cm: [
+    { id:'mis-tareas', label:'Mis tareas',  icon:'check' },
+    { id:'checkin',    label:'Check-in',    icon:'msg' },
+  ],
+};
+
+const ICONS = {
+  grid:   '<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+  users:  '<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  check:  '<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+  ticket: '<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 20h.01M7 20v-4"/><path d="M12 20V10"/><path d="M17 20V4"/></svg>',
+  dollar: '<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  msg:    '<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  plus:   '<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+};
+
+// ── STATE ──────────────────────────────────────────────
+let currentUser = null;
+let prevPage = null;
+
+// ── CLOCK & DATE ───────────────────────────────────────
+function tick() {
+  const n = new Date();
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const str = `${days[n.getDay()]} ${n.getDate()} de ${months[n.getMonth()]} · ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+  const el = document.getElementById('todayDate2');
+  if (el) el.textContent = str;
+}
+tick(); setInterval(tick, 1000);
+
+// ── LOGIN ──────────────────────────────────────────────
+// Passwords stored in localStorage (key: rb_pwd_<email>)
+// In production these would be hashed and stored in Supabase
+
+function checkEmail() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const user  = USERS[email];
+  const err   = document.getElementById('loginError');
+  if (!user) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+
+  // Check if user has set a password before
+  const storedPwd = localStorage.getItem('rb_pwd_' + email);
+
+  document.getElementById('loginStep1').style.display = 'none';
+
+  if (!storedPwd) {
+    // First time — ask to create password
+    document.getElementById('loginStep2').style.display = 'block';
+    document.getElementById('step2Hint').textContent =
+      'Hola ' + user.name.split(' ')[0] + ', es tu primera vez. Define una contraseña.';
+    document.getElementById('loginPass1').focus();
+  } else {
+    // Returning user — ask for password
+    document.getElementById('loginStep3').style.display = 'block';
+    document.getElementById('step3Name').textContent =
+      'Hola ' + user.name.split(' ')[0] + ' 👋 Ingresa tu contraseña.';
+    document.getElementById('loginPassExist').focus();
+  }
+}
+
+function setPassword() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const p1    = document.getElementById('loginPass1').value;
+  const p2    = document.getElementById('loginPass2').value;
+  const err   = document.getElementById('loginError2');
+
+  if (p1.length < 6 || p1 !== p2) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+
+  // Save password (simple hash using btoa for demo — use Supabase Auth in production)
+  localStorage.setItem('rb_pwd_' + email, btoa(p1));
+  proceedLogin(email);
+}
+
+function loginWithPassword() {
+  const email  = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const p      = document.getElementById('loginPassExist').value;
+  const stored = localStorage.getItem('rb_pwd_' + email);
+  const err    = document.getElementById('loginError3');
+
+  if (!stored || btoa(p) !== stored) { err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  proceedLogin(email);
+}
+
+function proceedLogin(email) {
+  const user = USERS[email];
+  currentUser = { ...user, email };
+  initApp();
+}
+
+function backToEmail() {
+  document.getElementById('loginStep1').style.display = 'block';
+  document.getElementById('loginStep2').style.display = 'none';
+  document.getElementById('loginStep3').style.display = 'none';
+  document.getElementById('loginPass1').value = '';
+  document.getElementById('loginPass2').value = '';
+  document.getElementById('loginPassExist').value = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('loginStep1').style.display !== 'none') checkEmail();
+  else if (document.getElementById('loginStep2').style.display !== 'none') setPassword();
+  else if (document.getElementById('loginStep3').style.display !== 'none') loginWithPassword();
+});
+
+function logout() {
+  currentUser = null;
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('screenLogin').style.display = 'flex';
+  document.getElementById('loginEmail').value = '';
+}
+
+// ── INIT APP ───────────────────────────────────────────
+function initApp() {
+  document.getElementById('screenLogin').style.display = 'none';
+  document.getElementById('appShell').style.display = 'block';
+
+  // Set user info in sidebar
+  document.getElementById('userAv').textContent    = currentUser.code;
+  document.getElementById('userAv').style.background = currentUser.color;
+  document.getElementById('userName').textContent  = currentUser.name;
+  document.getElementById('userRoleLabel').textContent = ROLE_LABELS[currentUser.role] || currentUser.role;
+
+  // Build nav
+  buildNav();
+
+  // Set director name
+  const dn = document.getElementById('directorName');
+  if (dn) dn.textContent = currentUser.name.split(' ')[0];
+
+  // Set colaborador sub
+  const cs = document.getElementById('colaboradorSub');
+  if (cs) cs.textContent = currentUser.name + ' · ' + currentUser.unit;
+
+  // Build client chips for checkin
+  buildClientChips();
+
+  // Navigate to first page
+  const nav = NAV_CONFIG[currentUser.role] || NAV_CONFIG.analyst;
+  showPage('page-' + nav[0].id);
+}
+
+function buildNav() {
+  const nav    = NAV_CONFIG[currentUser.role] || NAV_CONFIG.analyst;
+  const navEl  = document.getElementById('sidebarNav');
+  navEl.innerHTML = '';
+
+  const sec = document.createElement('div');
+  sec.className = 'nav-sec';
+  sec.textContent = currentUser.unit;
+  navEl.appendChild(sec);
+
+  nav.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-item';
+    btn.id = 'nav-' + item.id;
+    btn.innerHTML = (ICONS[item.icon] || '') + item.label +
+      (item.badge ? `<span class="nav-badge">${item.badge}</span>` : '');
+    btn.onclick = () => showPage('page-' + item.id, btn);
+    navEl.appendChild(btn);
+  });
+}
+
+function buildClientChips() {
+  const clients = ['Sodimac','Páramo','JEP','Homecenter','Corferias','Henkel','Granite','Stormberg','Parador Rojo','Punto de Pago','Supercerdo','Blue Digital'];
+  const container = document.getElementById('clientChips');
+  if (!container) return;
+  container.innerHTML = clients.map(c =>
+    `<div class="badge b-gray" style="cursor:pointer;padding:8px 10px;font-size:12px;border-radius:8px;justify-content:center" onclick="toggleChip(this)">${c}</div>`
+  ).join('');
+}
+
+// ── NAVIGATION ─────────────────────────────────────────
+function showPage(pageId, btn) {
+  prevPage = document.querySelector('.page.active')?.id;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById(pageId);
+  if (page) page.classList.add('active');
+  if (btn) btn.classList.add('active');
+  else {
+    const navId = pageId.replace('page-', '');
+    const navBtn = document.getElementById('nav-' + navId);
+    if (navBtn) navBtn.classList.add('active');
+  }
+  if (window.innerWidth <= 900) closeSidebar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goBack() {
+  if (prevPage) showPage(prevPage);
+  else {
+    const nav = NAV_CONFIG[currentUser?.role] || NAV_CONFIG.analyst;
+    showPage('page-' + nav[0].id);
+  }
+}
+
+// ── SIDEBAR MOBILE ─────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ── TICKET CREATION ────────────────────────────────────
+function createTicket() {
+  const title    = document.getElementById('ntTitle').value.trim();
+  const client   = document.getElementById('ntClient').value;
+  const unit     = document.getElementById('ntUnit').value;
+  const category = document.getElementById('ntCategory').value;
+  const priority = document.getElementById('ntPriority').value;
+
+  if (!title || !client || !unit) {
+    alert('Por favor completa: título, cliente y unidad.');
+    return;
+  }
+
+  const id = 'TK-' + (800 + Math.floor(Math.random() * 99));
+  alert(`✅ Solicitud ${id} creada exitosamente.\n\nEl equipo de ${unit} fue notificado.`);
+
+  // Reset form
+  ['ntTitle','ntDesc'].forEach(i => document.getElementById(i).value = '');
+  ['ntClient','ntUnit','ntCategory','ntAssignee'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('ntPriority').value = 'normal';
+
+  // Navigate to correct page
+  if (currentUser.role === 'director') showPage('page-tickets');
+  else showPage('page-mis-solicitudes');
+}
+
+// ── TASK ACTIONS ───────────────────────────────────────
+function markDone(btn) {
+  const card = btn.closest('.task-card');
+  card.classList.add('done');
+  const badge = card.querySelector('.badge');
+  if (badge) { badge.textContent = '✓ Listo'; badge.className = 'badge b-green'; }
+  btn.remove();
+  const updateBtn = card.querySelector('.btn-ghost');
+  if (updateBtn) updateBtn.remove();
+}
+
+function startTask(btn) {
+  const card  = btn.closest('.task-card');
+  const badge = card.querySelector('.badge');
+  if (badge) { badge.textContent = 'En curso'; badge.className = 'badge b-blue'; }
+  btn.textContent = '✓ Marcar como listo';
+  btn.className   = 'btn btn-red btn-sm';
+  btn.onclick     = () => markDone(btn);
+
+  const prog = document.createElement('div');
+  prog.innerHTML = '<div class="prog-bg" style="margin:10px 0 4px"><div class="prog-fill" style="width:10%;background:var(--blue)"></div></div>';
+  btn.parentElement.before(prog);
+}
+
+function updateProgress(btn) {
+  const val = prompt('¿Qué porcentaje de avance? (0-100)', '50');
+  if (!val) return;
+  const pct = Math.min(100, Math.max(0, parseInt(val)));
+  const bar = btn.closest('.task-card').querySelector('.prog-fill');
+  if (bar) bar.style.width = pct + '%';
+}
+
+// ── CHECK-IN ───────────────────────────────────────────
+function toggleChip(el) {
+  el.classList.toggle('b-gray');
+  el.classList.toggle('b-red');
+}
+
+function selectH(el, val) {
+  document.querySelectorAll('#hourBtns .badge').forEach(b => {
+    b.classList.remove('b-red'); b.classList.add('b-gray');
+  });
+  el.classList.remove('b-gray'); el.classList.add('b-red');
+}
+
+function submitCheckin() {
+  alert('✅ Check-in registrado. ¡Gracias ' + currentUser.name.split(' ')[0] + '!');
+}
+
+// ── URL PARAM LOGIN (desde link de WhatsApp) ───────────
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(window.location.search);
+  const email  = params.get('email');
+  if (email && USERS[email.toLowerCase()]) {
+    document.getElementById('loginEmail').value = email;
+    doLogin();
+  }
+});
+</script>
+</body>
+</html>
