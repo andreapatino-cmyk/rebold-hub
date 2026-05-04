@@ -388,15 +388,28 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
 
 <!-- ── DIRECTOR: TICKETS ── -->
 <div id="page-tickets" class="page">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
-    <div class="page-header" style="margin-bottom:0"><div class="page-title">Portal de <span>tickets</span></div><div class="page-sub">Solicitudes internas y externas</div></div>
-    <button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nuevo ticket</button>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div class="page-header" style="margin-bottom:0"><div class="page-title">Portal de <span>tickets</span></div><div class="page-sub" id="ticketsSub">Cargando...</div></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="loadTickets()">↻ Actualizar</button>
+      <button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nuevo ticket</button>
+    </div>
   </div>
-  <div style="text-align:center;padding:60px 20px;color:var(--muted)">
-    <div style="font-size:48px;margin-bottom:16px">🎫</div>
-    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--text);margin-bottom:8px">Bandeja limpia</div>
-    <div style="font-size:13px;margin-bottom:24px">Los tickets llegarán automáticamente desde Gmail.<br>También puedes crear uno manualmente.</div>
-    <button class="btn btn-red" style="width:auto;padding:10px 24px" onclick="showPage('page-nuevo-ticket')">+ Crear primer ticket</button>
+
+  <!-- FILTROS -->
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn btn-ghost btn-sm filter-btn active" onclick="filterTickets('inbox',this)">Bandeja</button>
+    <button class="btn btn-ghost btn-sm filter-btn" onclick="filterTickets('proceso',this)">En proceso</button>
+    <button class="btn btn-ghost btn-sm filter-btn" onclick="filterTickets('resuelto',this)">Resueltos</button>
+    <button class="btn btn-ghost btn-sm filter-btn" onclick="filterTickets('all',this)">Todos</button>
+  </div>
+
+  <!-- TICKETS LIST -->
+  <div id="ticketsList">
+    <div style="text-align:center;padding:40px;color:var(--muted)">
+      <div style="font-size:32px;margin-bottom:8px">⏳</div>
+      <div>Cargando tickets...</div>
+    </div>
   </div>
 </div>
 
@@ -498,22 +511,87 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
 
 <!-- ── DIRECTOR: TAREAS ── -->
 <div id="page-tareas" class="page">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
-    <div class="page-header" style="margin-bottom:0"><div class="page-title">Gestión de <span>tareas</span></div><div class="page-sub">Kanban por unidad</div></div>
-    <button class="btn btn-red btn-sm">+ Nueva tarea</button>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div class="page-header" style="margin-bottom:0"><div class="page-title">Gestión de <span>tareas</span></div><div class="page-sub">Kanban por unidad · desde tickets</div></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="loadTasks()">↻ Actualizar</button>
+      <button class="btn btn-red btn-sm" onclick="showNewTaskModal()">+ Nueva tarea</button>
+    </div>
   </div>
-  <div class="kanban">
-    <div class="k-col">
-      <div class="k-col-title">Pendiente <span class="k-count">0</span></div>
-      <div style="text-align:center;padding:24px 12px;color:var(--muted);font-size:12px">Sin tareas pendientes</div>
+  <div class="kanban" id="kanbanBoard">
+    <div class="k-col" id="col-pendiente">
+      <div class="k-col-title">Pendiente <span class="k-count" id="cnt-pendiente">0</span></div>
+      <div id="tasks-pendiente" style="min-height:60px">
+        <div style="text-align:center;padding:20px 12px;color:var(--muted);font-size:12px">Cargando...</div>
+      </div>
     </div>
-    <div class="k-col">
-      <div class="k-col-title">En curso <span class="k-count">0</span></div>
-      <div style="text-align:center;padding:24px 12px;color:var(--muted);font-size:12px">Sin tareas en curso</div>
+    <div class="k-col" id="col-en_curso">
+      <div class="k-col-title">En curso <span class="k-count" id="cnt-en_curso">0</span></div>
+      <div id="tasks-en_curso" style="min-height:60px"></div>
     </div>
-    <div class="k-col">
-      <div class="k-col-title">Completado <span class="k-count">0</span></div>
-      <div style="text-align:center;padding:24px 12px;color:var(--muted);font-size:12px">Sin tareas completadas</div>
+    <div class="k-col" id="col-completado">
+      <div class="k-col-title">Completado <span class="k-count" id="cnt-completado">0</span></div>
+      <div id="tasks-completado" style="min-height:60px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVA TAREA -->
+<div id="modalTarea" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:500px;position:relative">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:20px">Nueva tarea</div>
+    <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="taskTitle" placeholder="ej: Reporte mensual listening"></div>
+    <div class="g2">
+      <div class="form-group">
+        <label class="form-label">Cliente</label>
+        <select class="form-select" id="taskClient">
+          <option value="">Selecciona...</option>
+          <option>Sodimac</option><option>Páramo Presenta</option><option>Páramo Lab</option>
+          <option>JEP</option><option>Homecenter</option><option>Global Wine</option>
+          <option>Banco Falabella</option><option>Corferias</option><option>Henkel Regional</option>
+          <option>Granite</option><option>Stormberg</option><option>Parador Rojo</option>
+          <option>Punto de Pago</option><option>Supercerdo</option><option>Blue Digital</option>
+          <option>Bodytech</option><option>Los Olivos</option><option>Interno Rebold</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Unidad</label>
+        <select class="form-select" id="taskUnit">
+          <option value="Intelligence">Intelligence</option>
+          <option value="Creatividad">Creatividad</option>
+          <option value="Ambas">Ambas</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="form-group">
+        <label class="form-label">Asignar a</label>
+        <select class="form-select" id="taskAssignee">
+          <option value="">Sin asignar</option>
+          <option>Sebastián Castro</option><option>Adriana Figueredo</option>
+          <option>Laura Correa</option><option>Paula Bermúdez</option>
+          <option>Alejandro Sierra</option><option>Gina Benavides</option>
+          <option>María Camila Castro</option><option>Estefanía Prieto</option>
+          <option>Daniel Urbina</option><option>Juan Camilo Espinosa</option>
+          <option>Juliana Jaramillo</option><option>Marcela Rondón</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha límite</label>
+        <input class="form-input" id="taskDue" type="date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Prioridad</label>
+      <select class="form-select" id="taskPriority">
+        <option value="normal">Normal</option>
+        <option value="urgente">Urgente</option>
+        <option value="baja">Baja</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeTaskModal()">Cancelar</button>
+      <button class="btn btn-red" style="flex:2" onclick="saveTask()">Crear tarea ✓</button>
     </div>
   </div>
 </div>
@@ -957,6 +1035,201 @@ window.addEventListener('load', () => {
     doLogin();
   }
 });
+
+// ══════════════════════════════════════════════════════
+// SUPABASE — Tickets y Tareas en tiempo real
+// ══════════════════════════════════════════════════════
+const SB_URL = 'https://sfdwmldxrjsefoxoqmvv.supabase.co';
+const SB_KEY = 'sb_publishable_XGDo7N3bGUvm0ZqE3Q04Bw_FwvjA7PL';
+const SB_HDR = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+let currentFilter = 'inbox';
+let allTickets = [];
+let allTasks = [];
+
+async function sbGet(table, query) {
+  const res = await fetch(SB_URL + '/rest/v1/' + table + '?' + (query||''), { headers: SB_HDR });
+  return res.ok ? res.json() : [];
+}
+async function sbPost(table, data) {
+  const res = await fetch(SB_URL + '/rest/v1/' + table, {
+    method: 'POST', headers: Object.assign({}, SB_HDR, {'Prefer':'return=representation'}),
+    body: JSON.stringify(data)
+  });
+  return res.ok ? res.json() : null;
+}
+async function sbPatch(table, id, data) {
+  const res = await fetch(SB_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+    method: 'PATCH', headers: SB_HDR, body: JSON.stringify(data)
+  });
+  return res.ok;
+}
+
+// ── TICKETS ───────────────────────────────────────────
+async function loadTickets() {
+  const list = document.getElementById('ticketsList');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)"><div style="font-size:24px">⏳</div>Cargando...</div>';
+  try {
+    allTickets = await sbGet('tickets', 'order=created_at.desc&limit=100');
+    const sub = document.getElementById('ticketsSub');
+    if (sub) sub.textContent = allTickets.length + ' tickets · ' + allTickets.filter(t=>t.status==='inbox').length + ' sin asignar';
+    renderTickets(currentFilter);
+  } catch(e) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">Error cargando tickets.</div>';
+  }
+}
+
+function filterTickets(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderTickets(filter);
+}
+
+function renderTickets(filter) {
+  const list = document.getElementById('ticketsList');
+  if (!list) return;
+  const tickets = filter === 'all' ? allTickets : allTickets.filter(t => t.status === filter);
+  if (tickets.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--muted)"><div style="font-size:36px;margin-bottom:12px">🎫</div><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">Sin tickets</div><div style="font-size:12px">Los tickets llegan desde Gmail y los Sheets de Henkel</div></div>';
+    return;
+  }
+  list.innerHTML = tickets.map(function(t) {
+    const prioColor = t.priority === 'urgente' ? 'var(--red)' : t.priority === 'normal' ? 'var(--amber)' : 'var(--blue)';
+    const statusLabel = t.status === 'inbox' ? 'Sin asignar' : t.status === 'proceso' ? 'En proceso' : 'Resuelto';
+    const unitColor = (t.unit === 'Intelligence') ? 'b-red' : 'b-blue';
+    const src = t.source === 'sheet_agente' ? '📊 Sheet' : t.source && t.source.indexOf('henkel') !== -1 ? '📧 Gmail Henkel' : t.source === 'gmail_auto' ? '📧 Gmail' : '✏️ Manual';
+    const time = t.created_at ? new Date(t.created_at).toLocaleDateString('es-CO',{day:'numeric',month:'short'}) : '';
+    return '<div class="ticket ' + (t.priority||'') + '" style="border-left:3px solid ' + prioColor + ';margin-bottom:10px">' +
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);margin-bottom:4px">' + (t.ticket_number||'TK-?') + ' · ' + src + ' · ' + time + '</div>' +
+          '<div style="font-size:13px;font-weight:600;line-height:1.4">' + (t.title||'Sin título') + '</div>' +
+        '</div>' +
+        '<span class="badge ' + (t.status==='inbox'?'b-amber':t.status==='proceso'?'b-blue':'b-green') + '" style="flex-shrink:0;font-size:10px">' + statusLabel + '</span>' +
+      '</div>' +
+      (t.ai_summary ? '<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.5">' + t.ai_summary.slice(0,120) + (t.ai_summary.length>120?'...':'') + '</div>' : '') +
+      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+        '<span class="badge ' + unitColor + '" style="font-size:9px">' + (t.unit||'—') + '</span>' +
+        '<span style="font-size:11px;color:var(--muted)">' + (t.client_name||'—') + '</span>' +
+        (t.assignee ? '<span style="font-size:11px;color:var(--muted)">→ ' + t.assignee + '</span>' : '') +
+        '<div style="margin-left:auto;display:flex;gap:6px">' +
+          (t.status === 'inbox' ? '<button class="btn btn-ghost btn-sm" style="padding:4px 10px;font-size:11px" onclick="assignTicket('' + t.id + '')">Asignar</button>' : '') +
+          (t.status !== 'resuelto' ? '<button class="btn btn-red btn-sm" style="padding:4px 10px;font-size:11px" onclick="advanceTicket('' + t.id + '','' + t.status + '')">' + (t.status==='inbox'?'▶ Iniciar':'✓ Resolver') + '</button>' : '<span class="badge b-green" style="font-size:10px">✓ Resuelto</span>') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function advanceTicket(id, currentStatus) {
+  const next = currentStatus === 'inbox' ? 'proceso' : 'resuelto';
+  await sbPatch('tickets', id, { status: next });
+  await loadTickets();
+}
+
+async function assignTicket(id) {
+  const team = ['Sebastián Castro','Adriana Figueredo','Laura Correa','Paula Bermúdez','Alejandro Sierra','Gina Benavides','María Camila Castro','Estefanía Prieto','Daniel Urbina','Juan Camilo Espinosa','Juliana Jaramillo','Marcela Rondón','Cristian Santamaría'];
+  const assignee = prompt('Asignar a:\n' + team.map(function(n,i){return (i+1)+'. '+n;}).join('\n') + '\n\nEscribe el nombre exacto:');
+  if (!assignee) return;
+  await sbPatch('tickets', id, { assignee: assignee, status: 'proceso' });
+  await loadTickets();
+}
+
+// ── TAREAS KANBAN ─────────────────────────────────────
+async function loadTasks() {
+  try {
+    allTasks = await sbGet('tasks', 'order=created_at.desc&limit=100');
+    renderKanban();
+  } catch(e) { console.error('Error tasks:', e); }
+}
+
+function renderKanban() {
+  ['pendiente','en_curso','completado'].forEach(function(status) {
+    const tasks = allTasks.filter(function(t){ return t.status === status; });
+    const col   = document.getElementById('tasks-' + status);
+    const cnt   = document.getElementById('cnt-' + status);
+    if (cnt) cnt.textContent = tasks.length;
+    if (!col) return;
+    if (tasks.length === 0) { col.innerHTML = '<div style="text-align:center;padding:20px 12px;color:var(--muted);font-size:12px">Sin tareas</div>'; return; }
+    col.innerHTML = tasks.map(function(t) {
+      const prioColor = t.priority === 'urgente' ? 'var(--red)' : 'var(--amber)';
+      const due = t.due_date ? new Date(t.due_date).toLocaleDateString('es-CO',{day:'numeric',month:'short'}) : '';
+      return '<div class="k-card" style="border-left:2px solid ' + prioColor + '">' +
+        '<div class="k-card-title">' + (t.title||'Sin título') + '</div>' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
+          '<span style="font-size:11px;color:var(--muted)">' + (t.client_name||'—') + '</span>' +
+          (due ? '<span style="font-size:10px;color:var(--muted)">' + due + '</span>' : '') +
+        '</div>' +
+        (t.assignee ? '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">→ ' + t.assignee + '</div>' : '') +
+        (t.progress > 0 ? '<div class="prog-bg" style="margin-bottom:6px"><div class="prog-fill" style="width:' + t.progress + '%;background:' + prioColor + '"></div></div>' : '') +
+        '<div style="display:flex;gap:6px">' +
+          (t.status !== 'completado' ? '<button class="btn btn-red btn-sm" style="flex:1;padding:5px;font-size:11px" onclick="advanceTask('' + t.id + '','' + t.status + '')">' + (t.status==='pendiente'?'▶ Iniciar':'✓ Completar') + '</button>' : '<span style="font-size:11px;color:var(--green)">✓ Listo</span>') +
+          (t.status === 'en_curso' ? '<button class="btn btn-ghost btn-sm" style="padding:5px 8px;font-size:11px" onclick="updateTaskProgress('' + t.id + '')">%</button>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  });
+}
+
+async function advanceTask(id, status) {
+  const next = status === 'pendiente' ? 'en_curso' : 'completado';
+  await sbPatch('tasks', id, { status: next });
+  await loadTasks();
+}
+
+async function updateTaskProgress(id) {
+  const val = prompt('¿Qué porcentaje de avance? (0-100)');
+  if (!val) return;
+  await sbPatch('tasks', id, { progress: Math.min(100, Math.max(0, parseInt(val)||0)) });
+  await loadTasks();
+}
+
+function showNewTaskModal() { document.getElementById('modalTarea').style.display = 'flex'; }
+function closeTaskModal()   { document.getElementById('modalTarea').style.display = 'none'; }
+
+async function saveTask() {
+  const title    = document.getElementById('taskTitle').value.trim();
+  const client   = document.getElementById('taskClient').value;
+  const unit     = document.getElementById('taskUnit').value;
+  const assignee = document.getElementById('taskAssignee').value;
+  const due      = document.getElementById('taskDue').value;
+  const priority = document.getElementById('taskPriority').value;
+  if (!title) { alert('El título es obligatorio'); return; }
+  await sbPost('tasks', { title, client_name: client, unit, assignee: assignee||null, due_date: due||null, priority, status: 'pendiente', progress: 0 });
+  closeTaskModal();
+  document.getElementById('taskTitle').value = '';
+  await loadTasks();
+}
+
+// ── OVERRIDE createTicket → Supabase ─────────────────
+async function createTicket() {
+  const title    = document.getElementById('ntTitle').value.trim();
+  const client   = document.getElementById('ntClient').value;
+  const unit     = document.getElementById('ntUnit').value;
+  const category = document.getElementById('ntCategory').value;
+  const priority = document.getElementById('ntPriority').value;
+  const assignee = document.getElementById('ntAssignee').value;
+  const desc     = document.getElementById('ntDesc').value;
+  if (!title || !client || !unit) { alert('Completa: título, cliente y unidad'); return; }
+  const num = 'TK-' + Date.now().toString().slice(-5);
+  await sbPost('tickets', { ticket_number: num, title, client_name: client, unit, category, priority, status: 'inbox', source: 'manual', assignee: assignee||null, ai_summary: desc||'', email_from: currentUser ? currentUser.email : '' });
+  ['ntTitle','ntDesc'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['ntClient','ntUnit','ntCategory','ntAssignee'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('ntPriority').value = 'normal';
+  alert('Ticket ' + num + ' creado en Supabase.');
+  if (currentUser && currentUser.role === 'director') showPage('page-tickets');
+  else showPage('page-mis-solicitudes');
+}
+
+// ── AUTO-LOAD WHEN PAGE OPENS ─────────────────────────
+const _origShow = showPage;
+showPage = function(pageId, btn) {
+  _origShow(pageId, btn);
+  if (pageId === 'page-tickets') setTimeout(loadTickets, 100);
+  if (pageId === 'page-tareas')  setTimeout(loadTasks, 100);
+};
+
 </script>
 </body>
 </html>
