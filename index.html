@@ -1223,12 +1223,13 @@ async function createTicket() {
 }
 
 // ── AUTO-LOAD WHEN PAGE OPENS ─────────────────────────
-const _origShow = showPage;
-showPage = function(pageId, btn) {
-  _origShow(pageId, btn);
-  if (pageId === 'page-tickets') setTimeout(loadTickets, 100);
-  if (pageId === 'page-tareas')  setTimeout(loadTasks, 100);
-};
+// Patch showPage to load Supabase data when navigating
+const _origShowPage = showPage;
+function showPage(pageId, btn) {
+  _origShowPage(pageId, btn);
+  if (pageId === 'page-tickets') setTimeout(loadTickets, 200);
+  if (pageId === 'page-tareas')  setTimeout(loadTasks, 200);
+}
 
 </script>
 </body>
