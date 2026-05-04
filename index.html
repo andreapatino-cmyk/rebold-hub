@@ -317,7 +317,7 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
       <div class="sec">Unidad Intelligence</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
         <span class="badge b-red">Sodimac</span><span class="badge b-red">Páramo</span><span class="badge b-red">JEP</span>
-        <span class="badge b-red">Homecenter</span><span class="badge b-red">Jägermeister</span><span class="badge b-red">Banco Falabella</span>
+        <span class="badge b-red">Homecenter</span><span class="badge b-red">Banco Falabella</span>
         <span class="badge b-red">Corferias</span><span class="badge b-red">Bodytech</span><span class="badge b-red">Los Olivos</span>
         <span class="badge b-red">Global Wine</span>
       </div>
@@ -418,7 +418,7 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
         <select class="form-select" id="ntClient">
           <option value="">Selecciona...</option>
           <option>Sodimac</option><option>Páramo Presenta</option><option>Páramo Lab</option>
-          <option>JEP</option><option>Homecenter</option><option>Jägermeister</option>
+          <option>JEP</option><option>Homecenter</option>
           <option>Banco Falabella</option><option>Corferias</option><option>Henkel Regional</option>
           <option>Granite</option><option>Stormberg</option><option>Parador Rojo</option>
           <option>Punto de Pago</option><option>Supercerdo</option><option>Casa Mayor</option>
@@ -830,7 +830,7 @@ function buildNav() {
 }
 
 function buildClientChips() {
-  const clients = ['Sodimac','Páramo','JEP','Homecenter','Corferias','Henkel','Granite','Stormberg','Parador Rojo','Punto de Pago','Supercerdo','Blue Digital'];
+  const clients = ['Sodimac','Páramo Presenta','Páramo Lab','JEP','Homecenter','Global Wine','Banco Falabella','Bodytech','Los Olivos','Corferias','Henkel Regional','Granite','Stormberg','Parador Rojo','Punto de Pago','Supercerdo','Casa Mayor','Blue Digital','Reunión interna'];
   const container = document.getElementById('clientChips');
   if (!container) return;
   container.innerHTML = clients.map(c =>
