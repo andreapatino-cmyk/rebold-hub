@@ -931,6 +931,7 @@ function showPage(pageId, btn) {
   }
   if (window.innerWidth <= 900) closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  onPageOpen(pageId);
 }
 
 function goBack() {
@@ -1255,10 +1256,8 @@ async function createTicket() {
 }
 
 // ── AUTO-LOAD WHEN PAGE OPENS ─────────────────────────
-// Patch showPage to load Supabase data when navigating
-const _origShowPage = showPage;
-function showPage(pageId, btn) {
-  _origShowPage(pageId, btn);
+// Called by nav items — add Supabase loading without overriding showPage
+function onPageOpen(pageId) {
   if (pageId === 'page-tickets') setTimeout(loadTickets, 200);
   if (pageId === 'page-tareas')  setTimeout(loadTasks, 200);
 }
