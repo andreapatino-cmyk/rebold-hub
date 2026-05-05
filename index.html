@@ -686,6 +686,54 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
   </div>
 </div>
 
+
+<!-- ── DIRECTOR: DEDICACIÓN ── -->
+<div id="page-dedicacion" class="page">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Dedicación <span>del equipo</span></div>
+      <div class="page-sub">Histórico de check-ins por persona y semana</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="filterPersona" class="form-select" style="width:auto;padding:8px 12px;font-size:12px" onchange="loadDedicacion()">
+        <option value="">Todo el equipo</option>
+        <option>Sebastián Castro</option>
+        <option>Adriana Figueredo</option>
+        <option>Laura Correa</option>
+        <option>Paula Bermúdez</option>
+        <option>Alejandro Sierra</option>
+        <option>Gina Benavides</option>
+        <option>María Camila Castro</option>
+        <option>Estefanía Prieto</option>
+        <option>Daniel Urbina</option>
+        <option>Juan Camilo Espinosa</option>
+        <option>Juliana Jaramillo</option>
+        <option>Marcela Rondón</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="loadDedicacion()">↻ Actualizar</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="g4" style="margin-bottom:20px" id="dedicacionStats">
+    <div class="stat s-green"><div class="stat-label">Check-ins hoy</div><div class="stat-val" style="color:var(--green)" id="statHoy">—</div><div class="stat-sub">Del equipo</div></div>
+    <div class="stat s-blue"><div class="stat-label">Esta semana</div><div class="stat-val" style="color:var(--blue)" id="statSemana">—</div><div class="stat-sub">Check-ins registrados</div></div>
+    <div class="stat s-amber"><div class="stat-label">Horas prom./día</div><div class="stat-val" style="color:var(--amber)" id="statHoras">—</div><div class="stat-sub">Promedio del equipo</div></div>
+    <div class="stat s-red"><div class="stat-label">Sin reportar hoy</div><div class="stat-val" style="color:var(--red)" id="statPendientes">—</div><div class="stat-sub">De 12 personas</div></div>
+  </div>
+
+  <!-- TABLA HISTÓRICO -->
+  <div class="card">
+    <div class="sec">Histórico de check-ins</div>
+    <div id="dedicacionTable">
+      <div style="text-align:center;padding:40px;color:var(--muted)">
+        <div style="font-size:32px;margin-bottom:8px">⏳</div>
+        <div>Cargando histórico...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- end main -->
 </div><!-- end appShell -->
 
@@ -725,6 +773,7 @@ const NAV_CONFIG = {
     { id:'tareas',      label:'Tareas',         icon:'check' },
     { id:'tickets',     label:'Tickets',        icon:'ticket' },
     { id:'financiero',  label:'Financiero',     icon:'dollar' },
+    { id:'dedicacion',  label:'Dedicación',      icon:'dollar' },
     { id:'checkin',     label:'Check-in',       icon:'msg' },
   ],
   account: [
@@ -1255,11 +1304,104 @@ async function createTicket() {
   else showPage('page-mis-solicitudes');
 }
 
+
+// ── DEDICACIÓN ────────────────────────────────────────
+async function loadDedicacion() {
+  const persona = document.getElementById('filterPersona')?.value || '';
+  let query = 'order=checkin_date.desc&limit=200';
+  if (persona) query += '&member_name=eq.' + encodeURIComponent(persona);
+
+  try {
+    const checkins = await sbGet('checkins', query);
+    renderDedicacion(checkins);
+  } catch(e) {
+    console.error('Error loading dedicacion:', e);
+  }
+}
+
+function renderDedicacion(checkins) {
+  const today = new Date().toISOString().split('T')[0];
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+  const weekStartStr = weekStart.toISOString().split('T')[0];
+
+  const hoy     = checkins.filter(c => c.checkin_date === today);
+  const semana  = checkins.filter(c => c.checkin_date >= weekStartStr);
+  const horas   = checkins.filter(c => c.hours > 0);
+  const promHoras = horas.length > 0 ? (horas.reduce((s,c) => s + parseFloat(c.hours||0), 0) / horas.length).toFixed(1) : '—';
+
+  // Update stats
+  const elHoy  = document.getElementById('statHoy');
+  const elSem  = document.getElementById('statSemana');
+  const elHrs  = document.getElementById('statHoras');
+  const elPend = document.getElementById('statPendientes');
+  if (elHoy)  elHoy.textContent  = hoy.length + '/12';
+  if (elSem)  elSem.textContent  = semana.length;
+  if (elHrs)  elHrs.textContent  = promHoras + 'h';
+  if (elPend) elPend.textContent = Math.max(0, 12 - hoy.length);
+
+  // Table
+  const tbl = document.getElementById('dedicacionTable');
+  if (!tbl) return;
+
+  if (checkins.length === 0) {
+    tbl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:32px;margin-bottom:8px">📋</div><div>Sin check-ins registrados aún</div><div style="font-size:12px;margin-top:6px">El equipo recibirá el correo hoy a las 5:30 PM</div></div>';
+    return;
+  }
+
+  // Group by week
+  const byWeek = {};
+  checkins.forEach(function(c) {
+    const d = new Date(c.checkin_date + 'T12:00:00');
+    const weekNum = getWeekNumber(d);
+    const weekKey = d.getFullYear() + '-W' + weekNum;
+    if (!byWeek[weekKey]) byWeek[weekKey] = { label: 'Semana ' + weekNum, checkins: [] };
+    byWeek[weekKey].checkins.push(c);
+  });
+
+  var html = '<table class="tbl"><thead><tr><th>Fecha</th><th>Persona</th><th>Unidad</th><th>Cuentas</th><th>Tareas</th><th>Horas</th><th>Nota</th></tr></thead><tbody>';
+
+  Object.keys(byWeek).sort().reverse().forEach(function(wk) {
+    const week = byWeek[wk];
+    html += '<tr><td colspan="7" style="background:var(--surface2);font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:700;padding:8px 14px">' + week.label + ' · ' + week.checkins.length + ' check-ins</td></tr>';
+
+    week.checkins.forEach(function(c) {
+      const accounts = c.accounts ? (Array.isArray(c.accounts) ? c.accounts.map(function(a){ return a.client || a; }).join(', ') : String(c.accounts)) : '—';
+      const tasks    = c.tasks ? (Array.isArray(c.tasks) ? c.tasks.slice(0,2).join(', ') : String(c.tasks)) : '—';
+      const fecha    = c.checkin_date ? new Date(c.checkin_date + 'T12:00:00').toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'}) : '—';
+      const unitColor = c.member_unit === 'Intelligence' ? 'var(--red)' : c.member_unit === 'Creatividad' ? 'var(--blue)' : 'var(--amber)';
+      const horasColor = parseFloat(c.hours) >= 7 ? 'var(--green)' : parseFloat(c.hours) >= 4 ? 'var(--amber)' : 'var(--muted)';
+
+      html += '<tr>' +
+        '<td style="font-family:monospace;font-size:11px;white-space:nowrap">' + fecha + '</td>' +
+        '<td><strong>' + (c.member_name || '—') + '</strong></td>' +
+        '<td><span class="badge" style="background:rgba(0,0,0,.2);color:' + unitColor + ';border:1px solid ' + unitColor + ';font-size:9px">' + (c.member_unit || '—') + '</span></td>' +
+        '<td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + accounts + '">' + accounts + '</td>' +
+        '<td style="font-size:11px;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + tasks + '</td>' +
+        '<td><strong style="color:' + horasColor + '">' + (c.hours || '—') + 'h</strong></td>' +
+        '<td style="font-size:11px;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (c.note || '') + '">' + (c.note || '—') + '</td>' +
+      '</tr>';
+    });
+  });
+
+  html += '</tbody></table>';
+  tbl.innerHTML = html;
+}
+
+function getWeekNumber(d) {
+  var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  var yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+}
+
 // ── AUTO-LOAD WHEN PAGE OPENS ─────────────────────────
 // Called by nav items — add Supabase loading without overriding showPage
 function onPageOpen(pageId) {
-  if (pageId === 'page-tickets') setTimeout(loadTickets, 200);
-  if (pageId === 'page-tareas')  setTimeout(loadTasks, 200);
+  if (pageId === 'page-tickets')   setTimeout(loadTickets, 200);
+  if (pageId === 'page-tareas')    setTimeout(loadTasks, 200);
+  if (pageId === 'page-dedicacion') setTimeout(loadDedicacion, 200);
 }
 
 </script>
