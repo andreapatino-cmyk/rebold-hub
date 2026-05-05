@@ -1072,8 +1072,44 @@ function selectH(el, val) {
   el.classList.remove('b-gray'); el.classList.add('b-red');
 }
 
-function submitCheckin() {
-  alert('✅ Check-in registrado. ¡Gracias ' + currentUser.name.split(' ')[0] + '!');
+async function submitCheckin() {
+  // Gather data from form
+  const clientChips  = document.querySelectorAll('#clientChips .b-red');
+  const taskChips    = document.querySelectorAll('#taskChips .b-red');
+  const hourSelected = document.querySelector('#hourBtns .b-red');
+  const nota         = document.querySelector('#page-checkin .form-textarea')?.value || '';
+
+  const accounts = Array.from(clientChips).map(function(c){ return { client: c.textContent.trim() }; });
+  const tasks    = Array.from(taskChips).map(function(c){ return c.textContent.trim(); });
+  const hours    = hourSelected ? hourSelected.textContent.replace('h','').trim() : '0';
+
+  if (accounts.length === 0) { alert('Por favor selecciona al menos un cliente'); return; }
+  if (tasks.length === 0)    { alert('Por favor selecciona al menos una tarea'); return; }
+  if (!hourSelected)         { alert('Por favor selecciona las horas del día'); return; }
+
+  const checkin = {
+    member_name: currentUser.name,
+    member_unit: currentUser.unit,
+    checkin_date: new Date().toISOString().split('T')[0],
+    accounts:     accounts,
+    tasks:        tasks,
+    hours:        parseFloat(hours) || 0,
+    note:         nota,
+    ai_summary:   currentUser.name.split(' ')[0] + ' trabajó en ' + accounts.map(function(a){ return a.client; }).join(', ') + '. Realizó: ' + tasks.slice(0,2).join(', ') + '. Horas: ' + hours + 'h.'
+  };
+
+  try {
+    await sbPost('checkins', checkin);
+    alert('✅ Check-in registrado. ¡Gracias ' + currentUser.name.split(' ')[0] + '!');
+    // Reset chips
+    document.querySelectorAll('#clientChips .b-red, #taskChips .b-red, #hourBtns .b-red').forEach(function(el){
+      el.classList.remove('b-red'); el.classList.add('b-gray');
+    });
+    if (nota) document.querySelector('#page-checkin .form-textarea').value = '';
+  } catch(e) {
+    alert('Error guardando el check-in. Por favor intenta de nuevo.');
+    console.error(e);
+  }
 }
 
 // ── URL PARAM LOGIN (desde link de WhatsApp) ───────────
