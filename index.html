@@ -629,10 +629,9 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     <div class="stat s-green"><div class="stat-label">Completadas hoy</div><div class="stat-val" style="color:var(--green)">1</div><div class="stat-sub up">¡Buen ritmo!</div></div>
   </div>
   <div id="myTasksList">
-    <div style="text-align:center;padding:48px 20px;color:var(--muted)">
-      <div style="font-size:40px;margin-bottom:12px">✅</div>
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-bottom:6px">Sin tareas asignadas</div>
-      <div style="font-size:12px">Cuando Natalia te asigne una tarea aparecerá aquí</div>
+    <div style="text-align:center;padding:40px;color:var(--muted)">
+      <div style="font-size:24px;margin-bottom:8px">⏳</div>
+      <div>Cargando tus tickets...</div>
     </div>
   </div>
 </div>
@@ -643,11 +642,15 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     <div class="page-header" style="margin-bottom:0"><div class="page-title">Mis <span>solicitudes</span></div><div class="page-sub">Tickets que has creado</div></div>
     <button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nueva solicitud</button>
   </div>
-  <div style="text-align:center;padding:48px 20px;color:var(--muted)">
-    <div style="font-size:40px;margin-bottom:12px">📋</div>
-    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-bottom:6px">Sin solicitudes aún</div>
-    <div style="font-size:12px;margin-bottom:20px">Crea tu primera solicitud al equipo</div>
-    <button class="btn btn-red" style="width:auto;padding:10px 24px" onclick="showPage('page-nuevo-ticket')">+ Nueva solicitud</button>
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <button class="btn btn-ghost btn-sm" onclick="loadMisSolicitudes()">↻ Actualizar</button>
+    <button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nueva solicitud</button>
+  </div>
+  <div id="misSolicitudesList">
+    <div style="text-align:center;padding:40px;color:var(--muted)">
+      <div style="font-size:24px;margin-bottom:8px">⏳</div>
+      <div>Cargando tus solicitudes...</div>
+    </div>
   </div>
 </div>
 
@@ -1437,12 +1440,105 @@ function getWeekNumber(d) {
   return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
 }
 
+
+// ── MIS TAREAS (colaboradores) ────────────────────────
+async function loadMisTareas() {
+  const list = document.getElementById('myTasksList');
+  if (!list || !currentUser) return;
+  try {
+    // Load tickets assigned to this person
+    const tickets = await sbGet('tickets', 'assignee=eq.' + encodeURIComponent(currentUser.name) + '&status=neq.resuelto&order=created_at.desc');
+    const tasks   = await sbGet('tasks',   'assignee=eq.' + encodeURIComponent(currentUser.name) + '&status=neq.completado&order=created_at.desc');
+    const all     = [...tickets.map(function(t){ return {...t, _type:'ticket'}; }), ...tasks.map(function(t){ return {...t, _type:'task'}; })];
+
+    if (all.length === 0) {
+      list.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">✅</div><div style="font-family:Syne,sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-bottom:6px">Sin tareas asignadas</div><div style="font-size:12px">Cuando Natalia te asigne algo aparecerá aquí</div></div>';
+      return;
+    }
+
+    list.innerHTML = all.map(function(t) {
+      var prioColor  = t.priority === 'urgente' ? 'var(--red)' : 'var(--amber)';
+      var statusLabel = t.status === 'inbox' ? 'Sin iniciar' : t.status === 'proceso' || t.status === 'en_curso' ? 'En curso' : 'Pendiente';
+      var due = t.due_date ? new Date(t.due_date + 'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'}) : '';
+      var actionId = t._type === 'ticket' ? 'advanceTicket' : 'advanceTask';
+      var currentSt = t._type === 'ticket' ? t.status : t.status;
+      return '<div class="task-card" style="border-left:3px solid ' + prioColor + '">' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
+          '<div>' +
+            '<div class="task-title">' + (t.title || 'Sin título') + '</div>' +
+            '<div class="task-meta">' +
+              '<span class="badge b-gray" style="font-size:9px">' + (t.client_name || '—') + '</span>' +
+              (due ? '<span>Vence ' + due + '</span>' : '') +
+              '<span style="color:var(--amber)">' + statusLabel + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<span class="badge b-' + (t.priority === 'urgente' ? 'red' : 'amber') + '">' + (t.priority || 'normal') + '</span>' +
+        '</div>' +
+        (t.progress > 0 ? '<div class="prog-bg" style="margin:10px 0 4px"><div class="prog-fill" style="width:' + t.progress + '%;background:' + prioColor + '"></div></div><div style="font-size:11px;color:var(--muted);margin-bottom:8px">Progreso: ' + t.progress + '%</div>' : '<div style="margin-top:10px"></div>') +
+        '<div style="display:flex;gap:8px">' +
+          (t._type === 'ticket' && t.status !== 'resuelto' ? '<button class="btn btn-red btn-sm" data-action="advance-ticket" data-id="' + t.id + '" data-status="' + t.status + '">' + (t.status === 'inbox' ? '▶ Iniciar' : '✓ Resolver') + '</button>' : '') +
+          (t._type === 'task' && t.status !== 'completado' ? '<button class="btn btn-red btn-sm" data-action="advance-task" data-id="' + t.id + '" data-status="' + t.status + '">' + (t.status === 'pendiente' ? '▶ Iniciar' : '✓ Completar') + '</button>' : '') +
+          (t._type === 'task' && t.status === 'en_curso' ? '<button class="btn btn-ghost btn-sm" data-action="progress-task" data-id="' + t.id + '">% Progreso</button>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+    // Add event delegation
+    list.addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      var action = btn.dataset.action;
+      var id = btn.dataset.id;
+      var status = btn.dataset.status;
+      if (action === 'advance-ticket') { advanceTicket(id, status).then(loadMisTareas); }
+      if (action === 'advance-task')   { advanceTask(id, status).then(loadMisTareas); }
+      if (action === 'progress-task')  { updateTaskProgress(id).then(loadMisTareas); }
+    });
+  } catch(e) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">Error cargando tareas.</div>';
+  }
+}
+
+// ── MIS SOLICITUDES (ejecutivos) ──────────────────────
+async function loadMisSolicitudes() {
+  const list = document.getElementById('misSolicitudesList');
+  if (!list || !currentUser) return;
+  try {
+    const tickets = await sbGet('tickets', 'email_from=ilike.*' + encodeURIComponent(currentUser.email) + '*&order=created_at.desc&limit=50');
+    if (tickets.length === 0) {
+      list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:36px;margin-bottom:12px">📋</div><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">Sin solicitudes aún</div></div>';
+      return;
+    }
+    list.innerHTML = tickets.map(function(t) {
+      var statusLabel = t.status === 'inbox' ? 'Sin asignar' : t.status === 'proceso' ? 'En proceso' : 'Resuelto';
+      var statusColor = t.status === 'inbox' ? 'b-amber' : t.status === 'proceso' ? 'b-blue' : 'b-green';
+      var time = t.created_at ? new Date(t.created_at).toLocaleDateString('es-CO',{day:'numeric',month:'short'}) : '';
+      return '<div class="ticket ' + (t.priority||'') + '" style="margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:6px">' +
+          '<div>' +
+            '<div style="font-family:monospace;font-size:10px;color:var(--muted);margin-bottom:4px">' + (t.ticket_number||'TK-?') + ' · ' + time + '</div>' +
+            '<div style="font-size:13px;font-weight:600">' + (t.title||'Sin título') + '</div>' +
+          '</div>' +
+          '<span class="badge ' + statusColor + '" style="font-size:10px;flex-shrink:0">' + statusLabel + '</span>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;font-size:11px;color:var(--muted)">' +
+          '<span>' + (t.client_name||'—') + '</span>' +
+          (t.assignee ? '<span>→ ' + t.assignee + '</span>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">Error cargando solicitudes.</div>';
+  }
+}
+
 // ── AUTO-LOAD WHEN PAGE OPENS ─────────────────────────
 // Called by nav items — add Supabase loading without overriding showPage
 function onPageOpen(pageId) {
   if (pageId === 'page-tickets')   setTimeout(loadTickets, 200);
   if (pageId === 'page-tareas')    setTimeout(loadTasks, 200);
-  if (pageId === 'page-dedicacion') setTimeout(loadDedicacion, 200);
+  if (pageId === 'page-dedicacion')    setTimeout(loadDedicacion, 200);
+  if (pageId === 'page-mis-tareas')    setTimeout(loadMisTareas, 200);
+  if (pageId === 'page-mis-solicitudes') setTimeout(loadMisSolicitudes, 200);
 }
 
 </script>
