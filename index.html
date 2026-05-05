@@ -1061,27 +1061,32 @@ function updateProgress(btn) {
 
 // ── CHECK-IN ───────────────────────────────────────────
 function toggleChip(el) {
+  var isSelected = el.getAttribute('data-selected') === 'true';
+  el.setAttribute('data-selected', isSelected ? 'false' : 'true');
   el.classList.toggle('b-gray');
   el.classList.toggle('b-red');
 }
 
 function selectH(el, val) {
-  document.querySelectorAll('#hourBtns .badge').forEach(b => {
+  document.querySelectorAll('#hourBtns .badge').forEach(function(b) {
     b.classList.remove('b-red'); b.classList.add('b-gray');
+    b.setAttribute('data-selected', 'false');
   });
   el.classList.remove('b-gray'); el.classList.add('b-red');
+  el.setAttribute('data-selected', 'true');
+  el.setAttribute('data-hours', val);
 }
 
 async function submitCheckin() {
-  // Gather data from form
-  const clientChips  = document.querySelectorAll('#clientChips .b-red');
-  const taskChips    = document.querySelectorAll('#taskChips .b-red');
-  const hourSelected = document.querySelector('#hourBtns .b-red');
-  const nota         = document.querySelector('#page-checkin .form-textarea')?.value || '';
+  // Gather data - use data-selected attribute for reliability
+  const allClientChips = document.querySelectorAll('#clientChips [data-selected="true"]');
+  const allTaskChips   = document.querySelectorAll('#taskChips [data-selected="true"]');
+  const hourSelected   = document.querySelector('#hourBtns [data-selected="true"]');
+  const nota           = document.querySelector('#page-checkin .form-textarea')?.value || '';
 
-  const accounts = Array.from(clientChips).map(function(c){ return { client: c.textContent.trim() }; });
-  const tasks    = Array.from(taskChips).map(function(c){ return c.textContent.trim(); });
-  const hours    = hourSelected ? hourSelected.textContent.replace('h','').trim() : '0';
+  const accounts = Array.from(allClientChips).map(function(c){ return { client: c.textContent.trim() }; });
+  const tasks    = Array.from(allTaskChips).map(function(c){ return c.textContent.trim(); });
+  const hours    = hourSelected ? hourSelected.getAttribute('data-hours') || hourSelected.textContent.replace('h','').trim() : '0';
 
   if (accounts.length === 0) { alert('Por favor selecciona al menos un cliente'); return; }
   if (tasks.length === 0)    { alert('Por favor selecciona al menos una tarea'); return; }
@@ -1102,8 +1107,8 @@ async function submitCheckin() {
     await sbPost('checkins', checkin);
     alert('✅ Check-in registrado. ¡Gracias ' + currentUser.name.split(' ')[0] + '!');
     // Reset chips
-    document.querySelectorAll('#clientChips .b-red, #taskChips .b-red, #hourBtns .b-red').forEach(function(el){
-      el.classList.remove('b-red'); el.classList.add('b-gray');
+    document.querySelectorAll('#clientChips .badge, #taskChips .badge, #hourBtns .badge').forEach(function(el){
+      el.classList.remove('b-red'); el.classList.add('b-gray'); el.setAttribute('data-selected','false');
     });
     if (nota) document.querySelector('#page-checkin .form-textarea').value = '';
   } catch(e) {
