@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebold · Nueva Solicitud</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Figtree:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#DC0C4B;--red-dark:#A80838;--red-glow:rgba(220,12,75,0.14);
+  --black:#08080A;--surface:#0F0F12;--surface2:#161619;--surface3:#1E1E23;
+  --border:#252529;--border2:#2E2E34;
+  --text:#EEEEF2;--muted:#66666F;
+  --green:#00C97A;--green-soft:rgba(0,201,122,0.1);
+  --amber:#F5A623;--amber-soft:rgba(245,166,35,0.1);
+  --blue:#3D8EFF;
+}
+body{font-family:'Figtree',sans-serif;background:var(--black);color:var(--text);min-height:100vh;padding:32px 16px 80px;display:flex;flex-direction:column;align-items:center}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 50% -10%,rgba(220,12,75,0.1) 0%,transparent 60%);pointer-events:none}
+
+.wrap{width:100%;max-width:560px;position:relative;z-index:1}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:32px}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;letter-spacing:-1px;margin-bottom:6px}
+.logo span{color:var(--red)}
+.header-sub{font-size:13px;color:var(--muted)}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),transparent)}
+
+/* FORM */
+.form-group{margin-bottom:18px}
+.form-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.required{color:var(--red)}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'Figtree',sans-serif;font-size:14px;outline:none;transition:all .2s;-webkit-appearance:none}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow)}
+.form-textarea{resize:none;height:100px;line-height:1.6}
+select option{background:var(--surface2);color:var(--text)}
+.form-hint{font-size:11px;color:var(--muted);margin-top:5px}
+.form-error{font-size:11px;color:var(--red);margin-top:5px;display:none}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border);margin:20px 0}
+.sec{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* PRIORITY CHIPS */
+.prio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.prio-chip{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px;text-align:center;cursor:pointer;transition:all .15s}
+.prio-chip:hover{border-color:var(--border)}
+.prio-chip.sel-urgente{background:var(--red-glow);border-color:var(--red)}
+.prio-chip.sel-normal{background:var(--amber-soft);border-color:var(--amber)}
+.prio-chip.sel-baja{background:var(--blue-soft,rgba(61,142,255,.1));border-color:var(--blue)}
+.prio-emoji{font-size:20px;margin-bottom:4px}
+.prio-label{font-size:12px;font-weight:600}
+.prio-sub{font-size:10px;color:var(--muted)}
+
+/* BTN */
+.btn{width:100%;padding:14px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;letter-spacing:.5px;cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:var(--red-dark);box-shadow:0 6px 20px rgba(220,12,75,.3);transform:translateY(-1px)}
+.btn-red:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* SUCCESS */
+.success{text-align:center;padding:40px 20px;animation:up .4s ease}
+.success-icon{font-size:64px;margin-bottom:16px;animation:bounce .5s cubic-bezier(.36,.07,.19,.97)}
+@keyframes bounce{0%{transform:scale(0)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* STEP INDICATOR */
+.steps{display:flex;gap:0;margin-bottom:24px}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+.step-line{position:absolute;top:13px;left:50%;right:-50%;height:1px;background:var(--border2);z-index:0}
+.step:last-child .step-line{display:none}
+.step-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--border2);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--muted);position:relative;z-index:1;transition:all .3s;font-family:'DM Mono',monospace}
+.step-dot.active{border-color:var(--red);color:var(--red);background:var(--red-glow)}
+.step-dot.done{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.step-lbl{font-size:9px;color:var(--muted);margin-top:4px;text-align:center}
+.step.active .step-lbl{color:var(--red)}
+
+@media(max-width:480px){body{padding:20px 12px 60px}.card{padding:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">re<span>bold</span></div>
+    <div class="header-sub">Formulario de solicitudes · Rebold Andina</div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps" id="stepsBar">
+    <div class="step active" id="s1"><div class="step-dot active" id="d1">1</div><div class="step-line"></div><div class="step-lbl">¿Quién eres?</div></div>
+    <div class="step" id="s2"><div class="step-dot" id="d2">2</div><div class="step-line"></div><div class="step-lbl">Solicitud</div></div>
+    <div class="step" id="s3"><div class="step-dot" id="d3">3</div><div class="step-lbl">Confirmar</div></div>
+  </div>
+
+  <!-- STEP 1: QUIÉN ERES -->
+  <div class="card" id="fStep1">
+    <div class="sec">¿Quién hace la solicitud?</div>
+    <div class="form-group">
+      <label class="form-label">Nombre completo <span class="required">*</span></label>
+      <input class="form-input" id="solNombre" placeholder="ej: Johanna Mora Morales" autocomplete="name">
+      <div class="form-error" id="errNombre">Por favor ingresa tu nombre</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Correo <span class="required">*</span></label>
+      <input class="form-input" id="solEmail" type="email" placeholder="tu.correo@empresa.com" autocomplete="email">
+      <div class="form-error" id="errEmail">Por favor ingresa un correo válido</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Empresa / Cliente <span class="required">*</span></label>
+      <select class="form-select" id="solCliente">
+        <option value="">Selecciona...</option>
+        <optgroup label="Intelligence">
+          <option>Sodimac</option>
+          <option>Páramo Presenta</option>
+          <option>Páramo Lab</option>
+          <option>JEP</option>
+          <option>Homecenter</option>
+          <option>Global Wine</option>
+          <option>Banco Falabella</option>
+          <option>Bodytech</option>
+          <option>Los Olivos</option>
+        </optgroup>
+        <optgroup label="Creatividad">
+          <option>Corferias</option>
+          <option>Henkel Regional</option>
+          <option>Henkel Colombia</option>
+          <option>Granite</option>
+          <option>Stormberg</option>
+          <option>Parador Rojo</option>
+          <option>Punto de Pago</option>
+          <option>Supercerdo / Cuatro Patas</option>
+          <option>Casa Mayor</option>
+          <option>Blue Digital</option>
+        </optgroup>
+        <optgroup label="Rebold interno">
+          <option>Interno — Intelligence</option>
+          <option>Interno — Creatividad</option>
+          <option>Interno — Ambas unidades</option>
+        </optgroup>
+      </select>
+      <div class="form-error" id="errCliente">Por favor selecciona el cliente</div>
+    </div>
+    <button class="btn btn-red" onclick="goStep(2)">Continuar →</button>
+  </div>
+
+  <!-- STEP 2: SOLICITUD -->
+  <div class="card" id="fStep2" style="display:none">
+    <div class="sec">Detalle de la solicitud</div>
+    <div class="form-group">
+      <label class="form-label">Tipo de solicitud <span class="required">*</span></label>
+      <select class="form-select" id="solTipo">
+        <option value="">Selecciona...</option>
+        <optgroup label="Creatividad">
+          <option>Diseño de piezas</option>
+          <option>Community Management</option>
+          <option>Programación de contenidos</option>
+          <option>Revisión y aprobación de piezas</option>
+          <option>Adaptación de formatos</option>
+          <option>Producción audiovisual</option>
+        </optgroup>
+        <optgroup label="Intelligence">
+          <option>Social Listening / Monitoreo</option>
+          <option>Análisis de audiencias</option>
+          <option>Reporte / Informe</option>
+          <option>Estrategia de contenidos</option>
+          <option>Estrategia de redes</option>
+          <option>Investigación de mercados</option>
+          <option>PQRS</option>
+        </optgroup>
+        <optgroup label="General">
+          <option>Reunión / Presentación</option>
+          <option>Propuesta comercial</option>
+          <option>Otro</option>
+        </optgroup>
+      </select>
+      <div class="form-error" id="errTipo">Por favor selecciona el tipo</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Título de la solicitud <span class="required">*</span></label>
+      <input class="form-input" id="solTitulo" placeholder="ej: Pack de piezas para campaña Día de la Madre">
+      <div class="form-error" id="errTitulo">Por favor describe brevemente la solicitud</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descripción detallada <span class="required">*</span></label>
+      <textarea class="form-textarea" id="solDesc" placeholder="Describe qué necesitas: formatos, dimensiones, referencias, número de piezas, contexto de la campaña..."></textarea>
+      <div class="form-error" id="errDesc">Por favor describe la solicitud con más detalle</div>
+    </div>
+    <div class="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">Número de piezas</label>
+        <input class="form-input" id="solPiezas" type="number" min="1" placeholder="ej: 5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha límite <span class="required">*</span></label>
+        <input class="form-input" id="solFecha" type="date">
+        <div class="form-error" id="errFecha">Indica la fecha límite</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Prioridad <span class="required">*</span></label>
+      <div class="prio-grid">
+        <div class="prio-chip" id="prio-urgente" onclick="setPrio('urgente')">
+          <div class="prio-emoji">🔴</div>
+          <div class="prio-label">Urgente</div>
+          <div class="prio-sub">Hoy / mañana</div>
+        </div>
+        <div class="prio-chip sel-normal" id="prio-normal" onclick="setPrio('normal')">
+          <div class="prio-emoji">🟡</div>
+          <div class="prio-label">Normal</div>
+          <div class="prio-sub">Esta semana</div>
+        </div>
+        <div class="prio-chip" id="prio-baja" onclick="setPrio('baja')">
+          <div class="prio-emoji">🔵</div>
+          <div class="prio-label">Baja</div>
+          <div class="prio-sub">Sin urgencia</div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Asignar a (opcional)</label>
+      <select class="form-select" id="solAsignado">
+        <option value="">Sin asignar — Natalia asignará</option>
+        <option>Sebastián Castro · Intelligence</option>
+        <option>Adriana Figueredo · Ambas</option>
+        <option>Laura Correa · Intelligence</option>
+        <option>Paula Bermúdez · Intelligence</option>
+        <option>Alejandro Sierra · Ambas</option>
+        <option>María Camila Castro · Creatividad</option>
+        <option>Estefanía Prieto · Creatividad</option>
+        <option>Daniel Urbina · Creatividad</option>
+        <option>Juan Camilo Espinosa · Creatividad</option>
+        <option>Juliana Jaramillo · Intelligence</option>
+        <option>Marcela Rondón · Intelligence</option>
+        <option>Cristian Santamaría · Creatividad</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" style="flex:1;background:var(--surface2);color:var(--muted);border:1px solid var(--border2)" onclick="goStep(1)">← Atrás</button>
+      <button class="btn btn-red" style="flex:2" onclick="goStep(3)">Revisar →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: CONFIRMAR -->
+  <div class="card" id="fStep3" style="display:none">
+    <div class="sec">Revisa tu solicitud</div>
+    <div id="resumenSolicitud" style="background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:20px;display:flex;flex-direction:column;gap:10px;font-size:13px"></div>
+    <div style="background:var(--amber-soft);border:1px solid rgba(245,166,35,.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--amber);margin-bottom:20px">
+      ⏰ Una vez enviada, Natalia Patiño recibirá la solicitud y la asignará al equipo correspondiente.
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" style="flex:1;background:var(--surface2);color:var(--muted);border:1px solid var(--border2)" onclick="goStep(2)">← Editar</button>
+      <button class="btn btn-red" style="flex:2" id="btnEnviar" onclick="enviarSolicitud()">Enviar solicitud ✓</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="fSuccess" style="display:none">
+    <div class="card">
+      <div class="success">
+        <div class="success-icon">🎉</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin-bottom:8px">¡Solicitud enviada!</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">Tu solicitud fue recibida y registrada en el sistema de Rebold. El equipo la revisará y te contactará pronto.</div>
+        <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:20px;text-align:left" id="successDetail"></div>
+        <button class="btn btn-red" onclick="resetForm()">Hacer otra solicitud</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://sfdwmldxrjsefoxoqmvv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_XGDo7N3bGUvm0ZqE3Q04Bw_FwvjA7PL';
+
+let prioridad = 'normal';
+
+// Pre-fill desde URL params (?nombre=X&cliente=Y)
+window.addEventListener('load', function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('nombre')) document.getElementById('solNombre').value = params.get('nombre');
+  if (params.get('email'))  document.getElementById('solEmail').value  = params.get('email');
+  if (params.get('cliente')) {
+    var sel = document.getElementById('solCliente');
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === params.get('cliente')) { sel.selectedIndex = i; break; }
+    }
+  }
+  // Set min date to today
+  document.getElementById('solFecha').min = new Date().toISOString().split('T')[0];
+});
+
+function setPrio(p) {
+  prioridad = p;
+  ['urgente','normal','baja'].forEach(function(x) {
+    var chip = document.getElementById('prio-' + x);
+    chip.className = 'prio-chip' + (x === p ? ' sel-' + x : '');
+  });
+}
+
+function goStep(n) {
+  if (n === 2 && !validarStep1()) return;
+  if (n === 3 && !validarStep2()) return;
+  if (n === 3) mostrarResumen();
+
+  for (var i = 1; i <= 3; i++) {
+    var f = document.getElementById('fStep' + i);
+    if (f) f.style.display = i === n ? 'block' : 'none';
+    var d = document.getElementById('d' + i);
+    var s = document.getElementById('s' + i);
+    if (d && s) {
+      d.className = 'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+      s.className = 'step' + (i === n ? ' active' : '');
+      d.textContent = i < n ? '✓' : String(i);
+    }
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function validarStep1() {
+  var ok = true;
+  var nombre = document.getElementById('solNombre').value.trim();
+  var email  = document.getElementById('solEmail').value.trim();
+  var cliente = document.getElementById('solCliente').value;
+
+  document.getElementById('errNombre').style.display = !nombre ? 'block' : 'none';
+  document.getElementById('errEmail').style.display  = (!email || !email.includes('@')) ? 'block' : 'none';
+  document.getElementById('errCliente').style.display = !cliente ? 'block' : 'none';
+
+  if (!nombre || !email || !email.includes('@') || !cliente) ok = false;
+  return ok;
+}
+
+function validarStep2() {
+  var ok = true;
+  var tipo   = document.getElementById('solTipo').value;
+  var titulo = document.getElementById('solTitulo').value.trim();
+  var desc   = document.getElementById('solDesc').value.trim();
+  var fecha  = document.getElementById('solFecha').value;
+
+  document.getElementById('errTipo').style.display   = !tipo   ? 'block' : 'none';
+  document.getElementById('errTitulo').style.display = !titulo ? 'block' : 'none';
+  document.getElementById('errDesc').style.display   = (desc.length < 10) ? 'block' : 'none';
+  document.getElementById('errFecha').style.display  = !fecha  ? 'block' : 'none';
+
+  if (!tipo || !titulo || desc.length < 10 || !fecha) ok = false;
+  return ok;
+}
+
+function mostrarResumen() {
+  var nombre   = document.getElementById('solNombre').value;
+  var email    = document.getElementById('solEmail').value;
+  var cliente  = document.getElementById('solCliente').value;
+  var tipo     = document.getElementById('solTipo').value;
+  var titulo   = document.getElementById('solTitulo').value;
+  var desc     = document.getElementById('solDesc').value;
+  var piezas   = document.getElementById('solPiezas').value;
+  var fecha    = document.getElementById('solFecha').value;
+  var asignado = document.getElementById('solAsignado').value;
+  var prioLabel = prioridad === 'urgente' ? '🔴 Urgente' : prioridad === 'normal' ? '🟡 Normal' : '🔵 Baja';
+  var fechaF   = fecha ? new Date(fecha + 'T12:00:00').toLocaleDateString('es-CO', {day:'numeric',month:'long',year:'numeric'}) : '—';
+
+  var rows = [
+    ['Solicitante', nombre + ' · ' + email],
+    ['Cliente', cliente],
+    ['Tipo', tipo],
+    ['Solicitud', titulo],
+    ['Descripción', desc.slice(0, 120) + (desc.length > 120 ? '...' : '')],
+    ['Piezas', piezas || '—'],
+    ['Fecha límite', fechaF],
+    ['Prioridad', prioLabel],
+    ['Asignado a', asignado || 'Natalia asignará'],
+  ];
+
+  document.getElementById('resumenSolicitud').innerHTML = rows.map(function(r) {
+    return '<div style="display:flex;gap:10px"><span style="color:var(--muted);min-width:100px;font-size:12px">' + r[0] + '</span><span style="font-weight:500;flex:1">' + r[1] + '</span></div>';
+  }).join('');
+}
+
+async function enviarSolicitud() {
+  var btn = document.getElementById('btnEnviar');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  var nombre   = document.getElementById('solNombre').value;
+  var email    = document.getElementById('solEmail').value;
+  var cliente  = document.getElementById('solCliente').value;
+  var tipo     = document.getElementById('solTipo').value;
+  var titulo   = document.getElementById('solTitulo').value;
+  var desc     = document.getElementById('solDesc').value;
+  var piezas   = document.getElementById('solPiezas').value;
+  var fecha    = document.getElementById('solFecha').value;
+  var asignado = document.getElementById('solAsignado').value;
+
+  // Detectar unidad según cliente
+  var intelClients = ['Sodimac','Páramo','JEP','Homecenter','Global Wine','Banco Falabella','Bodytech','Los Olivos'];
+  var unidad = 'Creatividad';
+  for (var i = 0; i < intelClients.length; i++) {
+    if (cliente.indexOf(intelClients[i]) !== -1) { unidad = 'Intelligence'; break; }
+  }
+  if (cliente.indexOf('Interno') !== -1) unidad = cliente.indexOf('Intelligence') !== -1 ? 'Intelligence' : cliente.indexOf('Ambas') !== -1 ? 'Ambas' : 'Creatividad';
+
+  var num = 'TK-' + Date.now().toString().slice(-5);
+  var ticket = {
+    ticket_number: num,
+    title:         titulo,
+    client_name:   cliente,
+    unit:          unidad,
+    category:      tipo,
+    priority:      prioridad,
+    status:        'inbox',
+    source:        'formulario_publico',
+    email_from:    nombre + ' <' + email + '>',
+    email_subject: tipo + ' · ' + titulo,
+    email_body:    desc + (piezas ? '\n\nPiezas: ' + piezas : '') + (fecha ? '\nFecha límite: ' + fecha : ''),
+    ai_summary:    'Solicitud de ' + nombre + ' (' + cliente + '). ' + tipo + ': ' + titulo.slice(0, 80),
+    assignee:      asignado || null,
+    due_date:      fecha || null,
+  };
+
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/tickets', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(ticket)
+    });
+
+    if (res.ok) {
+      // Show success
+      ['fStep1','fStep2','fStep3'].forEach(function(id){ document.getElementById(id).style.display='none'; });
+      document.getElementById('stepsBar').style.display = 'none';
+      document.getElementById('fSuccess').style.display = 'block';
+
+      var fechaF = fecha ? new Date(fecha + 'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'}) : '—';
+      document.getElementById('successDetail').innerHTML =
+        '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Resumen</div>' +
+        '<div style="font-size:13px;display:flex;flex-direction:column;gap:6px">' +
+          '<div><span style="color:var(--muted)">Ticket:</span> <strong>' + num + '</strong></div>' +
+          '<div><span style="color:var(--muted)">Cliente:</span> ' + cliente + '</div>' +
+          '<div><span style="color:var(--muted)">Solicitud:</span> ' + titulo + '</div>' +
+          '<div><span style="color:var(--muted)">Fecha límite:</span> ' + fechaF + '</div>' +
+        '</div>';
+    } else {
+      throw new Error('Error ' + res.status);
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Enviar solicitud ✓';
+    alert('Hubo un error enviando la solicitud. Por favor intenta de nuevo.');
+    console.error(e);
+  }
+}
+
+function resetForm() {
+  ['solNombre','solEmail','solTitulo','solDesc','solPiezas'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['solCliente','solTipo','solAsignado'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('solFecha').value = '';
+  setPrio('normal');
+  document.getElementById('stepsBar').style.display = 'flex';
+  document.getElementById('fSuccess').style.display = 'none';
+  goStep(1);
+}
+</script>
+</body>
+</html>
