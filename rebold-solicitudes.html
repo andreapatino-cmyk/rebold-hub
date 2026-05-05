@@ -433,6 +433,7 @@ async function enviarSolicitud() {
     due_date:      fecha && fecha.trim() !== '' ? fecha : null,
   };
 
+  console.log('Enviando ticket:', JSON.stringify(ticket));
   try {
     var res = await fetch(SUPABASE_URL + '/rest/v1/tickets', {
       method: 'POST',
@@ -446,6 +447,7 @@ async function enviarSolicitud() {
     });
 
     var resText2 = await res.text();
+    console.log('Respuesta Supabase:', res.status, resText2);
     if (res.ok) {
       // Show success
       ['fStep1','fStep2','fStep3'].forEach(function(id){ document.getElementById(id).style.display='none'; });
@@ -462,7 +464,7 @@ async function enviarSolicitud() {
           '<div><span style="color:var(--muted)">Fecha límite:</span> ' + fechaF + '</div>' +
         '</div>';
     } else {
-      throw new Error('Error ' + res.status);
+      throw new Error('Error ' + res.status + ': ' + resText2);
     }
   } catch(e) {
     btn.disabled = false;
