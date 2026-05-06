@@ -755,7 +755,7 @@ async function loadMisTareas(){
       var sl=t.status==='inbox'?'Sin iniciar':(t.status==='proceso'||t.status==='en_curso')?'En curso':'Pendiente';
       var due=t.due_date?new Date(t.due_date+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'}):'';
       var time=t.created_at?new Date(t.created_at).toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'';
-      var desc=(t.ai_summary||t.email_body||'').trim();
+      var desc=(t.ai_summary||t.email_body||t.notes||'').trim();
       var origen=t.source==='sheet_agente'?'📊 Sheet Henkel':(t.source&&t.source.indexOf('henkel')!==-1)?'📧 Gmail Henkel':t.source==='gmail_auto'?'📧 Gmail automático':t.source==='manual'?'✏️ Manual':t.source||'—';
       var emailInfo=(t.email_from&&t.email_from!=='andrea.patino@letsrebold.com'&&t.email_from!=='')?'<div style="margin-top:8px;padding:10px 12px;background:var(--surface3);border-radius:8px;border-left:2px solid var(--border2)"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Remitente original</div><div style="font-size:12px;font-family:monospace;color:var(--text)">'+(t.email_from||'')+'</div>'+(t.email_subject?'<div style="font-size:11px;color:var(--muted);margin-top:2px">Asunto: '+t.email_subject+'</div>':'')+'</div>':'';
       var did='detail-'+t.id;
