@@ -44,6 +44,9 @@ select option{background:var(--surface2);color:var(--text)}
 .btn-ghost:hover{color:var(--text)}
 .btn-sm{padding:8px 16px;font-size:12px;width:auto;border-radius:8px}
 .login-error{font-size:12px;color:var(--red);margin-top:10px;text-align:center;display:none}
+/* LOGIN HINT PROVEEDOR */
+.login-provider-hint{margin-top:16px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;font-size:12px;color:var(--muted);text-align:center;line-height:1.6}
+.login-provider-hint strong{color:var(--text)}
 #appShell{display:none;min-height:100vh}
 #sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:transform .3s}
 .logo-wrap{padding:26px 22px 18px;border-bottom:1px solid var(--border)}
@@ -112,6 +115,11 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
 .k-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
 .k-card:hover{border-color:var(--red)}
 .k-card-title{font-size:12.5px;font-weight:500;line-height:1.4;margin-bottom:8px}
+/* BANNER PROVEEDOR */
+.provider-banner{background:linear-gradient(135deg,rgba(155,111,255,0.12),rgba(155,111,255,0.06));border:1px solid rgba(155,111,255,0.25);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px}
+.provider-banner-icon{font-size:28px;flex-shrink:0}
+.provider-banner-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--purple);margin-bottom:3px}
+.provider-banner-sub{font-size:12px;color:var(--muted);line-height:1.5}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 @media(max-width:900px){
@@ -134,13 +142,19 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     <div class="login-body">
     <div id="loginStep1">
       <div class="login-title">Bienvenido 👋</div>
-      <div class="login-hint">Ingresa con tu correo corporativo</div>
+      <!-- ✅ FIX 1: hint actualizado para aceptar cualquier correo -->
+      <div class="login-hint">Ingresa con tu correo</div>
       <div class="form-group">
-        <label class="form-label">Correo corporativo</label>
-        <input class="form-input" id="loginEmail" type="email" placeholder="tu.nombre@letsrebold.com" autocomplete="email">
+        <label class="form-label">Correo electrónico</label>
+        <input class="form-input" id="loginEmail" type="email" placeholder="tu.correo@email.com" autocomplete="email">
       </div>
       <button class="btn btn-red" onclick="checkEmail()">Continuar →</button>
-      <div class="login-error" id="loginError">Correo no reconocido. Verifica e intenta de nuevo.</div>
+      <div class="login-error" id="loginError">Correo no reconocido. Contacta a Natalia para que te dé acceso.</div>
+      <!-- Hint para proveedores -->
+      <div class="login-provider-hint">
+        ¿Eres proveedor? Ingresa con tu <strong>correo personal</strong>.<br>
+        Si no tienes acceso aún, escríbele a Natalia.
+      </div>
     </div>
     <div id="loginStep2" style="display:none">
       <div class="login-title">Crea tu contraseña 🔐</div>
@@ -273,6 +287,17 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
       <tr><td>Alejandro Sierra</td><td>Coord. Operaciones</td><td>$5.20M</td><td>50/50</td></tr>
       <tr><td>Gina Benavides</td><td>Practicante SENA</td><td>$1.62M</td><td>50/50</td></tr>
     </tbody></table>
+    <div class="div"></div>
+    <!-- ✅ FIX 1: Sección proveedores en el equipo -->
+    <div class="sec">Proveedores</div>
+    <table class="tbl"><thead><tr><th>Nombre</th><th>Servicio</th><th>Clientes</th><th>Costo aprox.</th></tr></thead>
+    <tbody>
+      <tr><td>Laura Morales</td><td>Diseño</td><td>Corferias, Granite, Stomberg</td><td>~$1.95M</td></tr>
+      <tr><td>Andrés Sánchez</td><td>Diseño</td><td>Pto. de Pago, Parador Rojo, Casa Mayor</td><td>$3.0M</td></tr>
+      <tr><td>Sebastián Barrera</td><td>Diseño + CM</td><td>Henkel, Pto. de Pago, Parador Rojo</td><td>$6.0M</td></tr>
+      <tr><td>Nicole Sierra</td><td>Diseño</td><td>Todos los proyectos</td><td>$2.0M hasta jul</td></tr>
+      <tr><td>Daniel Beltrán</td><td>Monitoreo fines de semana</td><td>Intelligence</td><td>~$900K</td></tr>
+    </tbody></table>
   </div>
 </div>
 
@@ -296,7 +321,11 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
 
 <!-- NUEVO TICKET -->
 <div id="page-nuevo-ticket" class="page">
-  <div class="page-header"><div class="page-title">Nueva <span>solicitud</span></div><div class="page-sub">Crea un ticket interno para una unidad o persona</div></div>
+  <div class="page-header"><div class="page-title">Nueva <span>solicitud</span></div><div class="page-sub">Crea un ticket para una unidad o persona</div></div>
+  <!-- ✅ FIX 2: Banner de advertencia para roles no-director -->
+  <div id="ticketWarningBanner" style="display:none;margin-bottom:20px;padding:14px 18px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25);border-radius:12px;font-size:13px;color:var(--amber);line-height:1.6">
+    ⚠️ <strong>Importante:</strong> Este formulario es para solicitudes reales de clientes o del equipo. No uses este espacio para tareas internas o comunicaciones operativas — esas van directo por Slack o en la reunión semanal.
+  </div>
   <div style="max-width:600px">
   <div class="new-ticket-form">
     <div class="form-group"><label class="form-label">Título de la solicitud</label><input class="form-input" id="ntTitle" placeholder="ej: Pack de piezas para campaña Día de la Madre"></div>
@@ -342,7 +371,14 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     <div class="form-group"><label class="form-label">Fecha límite (opcional)</label><input class="form-input" id="ntDue" type="date"></div>
     <div class="form-group">
       <label class="form-label">Descripción detallada</label>
-      <textarea class="form-input" id="ntDesc" style="height:100px;resize:none;line-height:1.6" placeholder="Describe qué necesitas, formatos, referencias, contexto... Esta descripción la verá el equipo al abrir su tarea."></textarea>
+      <textarea class="form-input" id="ntDesc" style="height:100px;resize:none;line-height:1.6" placeholder="Describe qué necesitas, formatos, referencias, contexto..."></textarea>
+    </div>
+    <!-- ✅ FIX 2: Checkbox de confirmación para evitar tickets falsos -->
+    <div id="ticketConfirmCheck" style="display:none;margin-bottom:16px;padding:12px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border2)">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px">
+        <input type="checkbox" id="ntConfirm" style="margin-top:2px;accent-color:var(--red)">
+        <span>Confirmo que esta es una <strong>solicitud real de un cliente o del equipo</strong>, no una tarea interna ni una comunicación operativa.</span>
+      </label>
     </div>
     <div style="display:flex;gap:10px">
       <button class="btn btn-ghost" style="flex:1" onclick="goBack()">← Cancelar</button>
@@ -434,9 +470,17 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
   </div>
 </div>
 
-<!-- ✅ MIS TAREAS — CON DETALLE EXPANDIBLE -->
+<!-- MIS TAREAS -->
 <div id="page-mis-tareas" class="page">
   <div class="page-header"><div class="page-title">Mis <span>tareas</span></div><div class="page-sub" id="colaboradorSub">Tus solicitudes asignadas</div></div>
+  <!-- ✅ FIX 1: Banner especial para proveedores -->
+  <div id="providerBanner" style="display:none" class="provider-banner">
+    <div class="provider-banner-icon">🎨</div>
+    <div>
+      <div class="provider-banner-title">Portal de Proveedores</div>
+      <div class="provider-banner-sub">Aquí verás las tareas que Natalia te asigne. Puedes marcarlas como iniciadas o completadas y registrar tu check-in diario.</div>
+    </div>
+  </div>
   <div class="g2" style="margin-bottom:20px">
     <div class="stat s-amber"><div class="stat-label">Pendientes</div><div class="stat-val" style="color:var(--amber)" id="statMisPend">—</div><div class="stat-sub">Para completar</div></div>
     <div class="stat s-green"><div class="stat-label">En curso</div><div class="stat-val" style="color:var(--green)" id="statMisCurso">—</div><div class="stat-sub up">Trabajando</div></div>
@@ -454,7 +498,6 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
   </div>
   <div style="display:flex;gap:8px;margin-bottom:16px">
     <button class="btn btn-ghost btn-sm" onclick="loadMisSolicitudes()">↻ Actualizar</button>
-    <button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nueva solicitud</button>
   </div>
   <div id="misSolicitudesList"><div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:24px;margin-bottom:8px">⏳</div><div>Cargando...</div></div></div>
 </div>
@@ -525,7 +568,9 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
 </div><!-- end appShell -->
 
 <script>
+// ✅ FIX 1: USERS ahora incluye proveedores con correos personales (cualquier dominio)
 const USERS = {
+  // ── Equipo Rebold ──────────────────────────────────────────────
   'andrea.patino@letsrebold.com':      {name:'Natalia Patiño',       role:'director',  unit:'Dirección',    code:'NP', color:'var(--red)'},
   'sebastian.castro@letsrebold.com':   {name:'Sebastián Castro',     role:'analyst',   unit:'Intelligence', code:'SC', color:'var(--red)'},
   'adriana.figueredo@letsrebold.com':  {name:'Adriana Figueredo',    role:'analyst',   unit:'Ambas',        code:'AF', color:'var(--amber)'},
@@ -539,15 +584,35 @@ const USERS = {
   'marcela.rondon@letsrebold.com':     {name:'Marcela Rondón',       role:'analyst',   unit:'Intelligence', code:'MR', color:'var(--red)'},
   'daniel.urbina@ispd.com':            {name:'Daniel Urbina',        role:'designer',  unit:'Creatividad',  code:'DU', color:'var(--blue)'},
   'juan.espinosa@ispd.com':            {name:'Juan Camilo Espinosa', role:'designer',  unit:'Creatividad',  code:'JE', color:'var(--blue)'},
+  // ── Proveedores (correo personal, cualquier dominio) ──────────
+  // ⚠️  Agrega aquí el correo real de cada proveedor cuando lo tengas.
+  //     Mientras tanto puedes darles un correo temporal que ellos mismos cambien.
+  'lauramorales.design@gmail.com':     {name:'Laura Morales',        role:'proveedor', unit:'Creatividad',  code:'LM', color:'var(--purple)'},
+  'andres.sanchez.design@gmail.com':   {name:'Andrés Sánchez',       role:'proveedor', unit:'Creatividad',  code:'AS2',color:'var(--purple)'},
+  'seba.barrera@gmail.com':            {name:'Sebastián Barrera',    role:'proveedor', unit:'Creatividad',  code:'SB', color:'var(--purple)'},
+  'nicole.sierra.design@gmail.com':    {name:'Nicole Sierra',        role:'proveedor', unit:'Creatividad',  code:'NS', color:'var(--purple)'},
+  'daniel.beltran.monitor@gmail.com':  {name:'Daniel Beltrán',       role:'proveedor', unit:'Intelligence', code:'DB', color:'var(--purple)'},
 };
-const ROLE_LABELS = {director:'Directora de Unidades',account:'Ejecutivo de Cuentas',analyst:'Analista',designer:'Diseñador',cm:'Community Manager'};
+
+const ROLE_LABELS = {
+  director:'Directora de Unidades',
+  account:'Ejecutivo de Cuentas',
+  analyst:'Analista',
+  designer:'Diseñador',
+  cm:'Community Manager',
+  proveedor:'Proveedor Externo'   // ✅ FIX 1: label para proveedores
+};
+
 const NAV_CONFIG = {
-  director:[{id:'overview',label:'Resumen',icon:'grid'},{id:'equipo',label:'Equipo',icon:'users'},{id:'tareas',label:'Tareas',icon:'check'},{id:'tickets',label:'Tickets',icon:'ticket'},{id:'financiero',label:'Financiero',icon:'dollar'},{id:'dedicacion',label:'Dedicación',icon:'dollar'},{id:'checkin',label:'Check-in',icon:'msg'}],
-  account: [{id:'mis-solicitudes',label:'Mis solicitudes',icon:'ticket'},{id:'nuevo-ticket',label:'Nueva solicitud',icon:'plus'},{id:'checkin',label:'Check-in',icon:'msg'}],
-  analyst: [{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
-  designer:[{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
-  cm:      [{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
+  director:  [{id:'overview',label:'Resumen',icon:'grid'},{id:'equipo',label:'Equipo',icon:'users'},{id:'tareas',label:'Tareas',icon:'check'},{id:'tickets',label:'Tickets',icon:'ticket'},{id:'financiero',label:'Financiero',icon:'dollar'},{id:'dedicacion',label:'Dedicación',icon:'dollar'},{id:'checkin',label:'Check-in',icon:'msg'}],
+  account:   [{id:'mis-solicitudes',label:'Mis solicitudes',icon:'ticket'},{id:'nuevo-ticket',label:'Nueva solicitud',icon:'plus'},{id:'checkin',label:'Check-in',icon:'msg'}],
+  analyst:   [{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
+  designer:  [{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
+  cm:        [{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
+  // ✅ FIX 1: Nav para proveedores — solo ven sus tareas y check-in
+  proveedor: [{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
 };
+
 const ICONS={
   grid:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
   users:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
@@ -569,20 +634,30 @@ tick();setInterval(tick,1000);
 
 function checkEmail(){
   var email=document.getElementById('loginEmail').value.trim().toLowerCase(),user=USERS[email],err=document.getElementById('loginError');
-  if(!user){err.style.display='block';return;}err.style.display='none';
+  if(!user){err.style.display='block';return;}
+  err.style.display='none';
   var storedPwd=localStorage.getItem('rb_pwd_'+email);
   document.getElementById('loginStep1').style.display='none';
-  if(!storedPwd){document.getElementById('loginStep2').style.display='block';document.getElementById('step2Hint').textContent='Hola '+user.name.split(' ')[0]+', es tu primera vez.';document.getElementById('loginPass1').focus();}
-  else{document.getElementById('loginStep3').style.display='block';document.getElementById('step3Name').textContent='Hola '+user.name.split(' ')[0]+' 👋';document.getElementById('loginPassExist').focus();}
+  if(!storedPwd){
+    document.getElementById('loginStep2').style.display='block';
+    document.getElementById('step2Hint').textContent='Hola '+user.name.split(' ')[0]+', es tu primera vez.';
+    document.getElementById('loginPass1').focus();
+  } else {
+    document.getElementById('loginStep3').style.display='block';
+    document.getElementById('step3Name').textContent='Hola '+user.name.split(' ')[0]+' 👋';
+    document.getElementById('loginPassExist').focus();
+  }
 }
 function setPassword(){
   var email=document.getElementById('loginEmail').value.trim().toLowerCase(),p1=document.getElementById('loginPass1').value,p2=document.getElementById('loginPass2').value,err=document.getElementById('loginError2');
-  if(p1.length<6||p1!==p2){err.style.display='block';return;}err.style.display='none';
+  if(p1.length<6||p1!==p2){err.style.display='block';return;}
+  err.style.display='none';
   localStorage.setItem('rb_pwd_'+email,btoa(p1));proceedLogin(email);
 }
 function loginWithPassword(){
   var email=document.getElementById('loginEmail').value.trim().toLowerCase(),p=document.getElementById('loginPassExist').value,stored=localStorage.getItem('rb_pwd_'+email),err=document.getElementById('loginError3');
-  if(!stored||btoa(p)!==stored){err.style.display='block';return;}err.style.display='none';proceedLogin(email);
+  if(!stored||btoa(p)!==stored){err.style.display='block';return;}
+  err.style.display='none';proceedLogin(email);
 }
 function proceedLogin(email){currentUser=Object.assign({},USERS[email],{email:email});initApp();}
 function backToEmail(){
@@ -598,32 +673,60 @@ document.addEventListener('keydown',function(e){
 function logout(){currentUser=null;document.getElementById('appShell').style.display='none';document.getElementById('screenLogin').style.display='flex';document.getElementById('loginEmail').value='';}
 
 function initApp(){
-  document.getElementById('screenLogin').style.display='none';document.getElementById('appShell').style.display='block';
-  document.getElementById('userAv').textContent=currentUser.code;document.getElementById('userAv').style.background=currentUser.color;
-  document.getElementById('userName').textContent=currentUser.name;document.getElementById('userRoleLabel').textContent=ROLE_LABELS[currentUser.role]||currentUser.role;
+  document.getElementById('screenLogin').style.display='none';
+  document.getElementById('appShell').style.display='block';
+  document.getElementById('userAv').textContent=currentUser.code;
+  document.getElementById('userAv').style.background=currentUser.color;
+  // ✅ FIX 1: color morado para proveedores en sidebar
+  if(currentUser.role==='proveedor') document.getElementById('userAv').style.background='var(--purple)';
+  document.getElementById('userName').textContent=currentUser.name;
+  document.getElementById('userRoleLabel').textContent=ROLE_LABELS[currentUser.role]||currentUser.role;
   buildNav();
   var dn=document.getElementById('directorName');if(dn)dn.textContent=currentUser.name.split(' ')[0];
   var cs=document.getElementById('colaboradorSub');if(cs)cs.textContent=currentUser.name+' · '+currentUser.unit;
   buildClientChips();
-  var nav=NAV_CONFIG[currentUser.role]||NAV_CONFIG.analyst;showPage('page-'+nav[0].id);
+  // ✅ FIX 2: Mostrar banner de advertencia en nuevo ticket para roles no-director
+  var wb=document.getElementById('ticketWarningBanner'),cb=document.getElementById('ticketConfirmCheck');
+  if(currentUser.role!=='director'){
+    if(wb)wb.style.display='block';
+    if(cb)cb.style.display='block';
+  }
+  // ✅ FIX 1: Mostrar banner de proveedor en mis tareas
+  var pb=document.getElementById('providerBanner');
+  if(pb)pb.style.display=currentUser.role==='proveedor'?'flex':'none';
+  var nav=NAV_CONFIG[currentUser.role]||NAV_CONFIG.analyst;
+  showPage('page-'+nav[0].id);
 }
 function buildNav(){
-  var nav=NAV_CONFIG[currentUser.role]||NAV_CONFIG.analyst,navEl=document.getElementById('sidebarNav');navEl.innerHTML='';
-  var sec=document.createElement('div');sec.className='nav-sec';sec.textContent=currentUser.unit;navEl.appendChild(sec);
-  nav.forEach(function(item){var btn=document.createElement('button');btn.className='nav-item';btn.id='nav-'+item.id;btn.innerHTML=(ICONS[item.icon]||'')+item.label;btn.onclick=function(){showPage('page-'+item.id,btn);};navEl.appendChild(btn);});
+  var nav=NAV_CONFIG[currentUser.role]||NAV_CONFIG.analyst,navEl=document.getElementById('sidebarNav');
+  navEl.innerHTML='';
+  var sec=document.createElement('div');sec.className='nav-sec';
+  sec.textContent=currentUser.role==='proveedor'?'Proveedor · '+currentUser.unit:currentUser.unit;
+  navEl.appendChild(sec);
+  nav.forEach(function(item){
+    var btn=document.createElement('button');btn.className='nav-item';btn.id='nav-'+item.id;
+    btn.innerHTML=(ICONS[item.icon]||'')+item.label;
+    btn.onclick=function(){showPage('page-'+item.id,btn);};
+    navEl.appendChild(btn);
+  });
 }
 function buildClientChips(){
   var clients=['Sodimac','Páramo Presenta','Páramo Lab','JEP','Homecenter','Global Wine','Banco Falabella','Bodytech','Los Olivos','Corferias','Henkel Regional','Granite','Stormberg','Parador Rojo','Punto de Pago','Supercerdo','Casa Mayor','Blue Digital','Reunión interna'];
   var c=document.getElementById('clientChips');if(!c)return;
-  c.innerHTML=clients.map(function(cl){return '<div class="badge b-gray" style="cursor:pointer;padding:8px 10px;font-size:12px;border-radius:8px;justify-content:center" onclick="toggleChip(this)">'+cl+'</div>';}).join('');
+  c.innerHTML=clients.map(function(cl){
+    return '<div class="badge b-gray" style="cursor:pointer;padding:8px 10px;font-size:12px;border-radius:8px;justify-content:center" onclick="toggleChip(this)">'+cl+'</div>';
+  }).join('');
 }
 function showPage(pageId,btn){
   prevPage=(document.querySelector('.page.active')||{}).id;
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   var page=document.getElementById(pageId);if(page)page.classList.add('active');
-  if(btn)btn.classList.add('active');else{var nb=document.getElementById('nav-'+pageId.replace('page-',''));if(nb)nb.classList.add('active');}
-  if(window.innerWidth<=900)closeSidebar();window.scrollTo({top:0,behavior:'smooth'});onPageOpen(pageId);
+  if(btn)btn.classList.add('active');
+  else{var nb=document.getElementById('nav-'+pageId.replace('page-',''));if(nb)nb.classList.add('active');}
+  if(window.innerWidth<=900)closeSidebar();
+  window.scrollTo({top:0,behavior:'smooth'});
+  onPageOpen(pageId);
 }
 function goBack(){if(prevPage)showPage(prevPage);else{var nav=NAV_CONFIG[currentUser?currentUser.role:'analyst']||NAV_CONFIG.analyst;showPage('page-'+nav[0].id);}}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open');}
@@ -638,12 +741,21 @@ async function submitCheckin(){
   var accounts=Array.from(ac).map(function(c){return {client:c.textContent.trim()};});
   var tasks=Array.from(tc).map(function(c){return c.textContent.trim();});
   var hours=hs?(hs.getAttribute('data-hours')||hs.textContent.replace('h','').trim()):'0';
-  if(!accounts.length){alert('Selecciona al menos un cliente');return;}if(!tasks.length){alert('Selecciona al menos una tarea');return;}if(!hs){alert('Selecciona las horas');return;}
+  if(!accounts.length){alert('Selecciona al menos un cliente');return;}
+  if(!tasks.length){alert('Selecciona al menos una tarea');return;}
+  if(!hs){alert('Selecciona las horas');return;}
   var checkin={member_name:currentUser.name,member_unit:currentUser.unit,checkin_date:new Date().toISOString().split('T')[0],accounts:accounts,tasks:tasks,hours:parseFloat(hours)||0,note:nota,ai_summary:currentUser.name.split(' ')[0]+' trabajó en '+accounts.map(function(a){return a.client;}).join(', ')+'. Realizó: '+tasks.slice(0,2).join(', ')+'. Horas: '+hours+'h.'};
-  try{await sbPost('checkins',checkin);alert('✅ Check-in registrado. ¡Gracias '+currentUser.name.split(' ')[0]+'!');document.querySelectorAll('#clientChips .badge,#taskChips .badge,#hourBtns .badge').forEach(function(el){el.classList.remove('b-red');el.classList.add('b-gray');el.setAttribute('data-selected','false');});document.getElementById('checkinNota').value='';}
-  catch(e){alert('Error guardando el check-in.');}
+  try{
+    await sbPost('checkins',checkin);
+    alert('✅ Check-in registrado. ¡Gracias '+currentUser.name.split(' ')[0]+'!');
+    document.querySelectorAll('#clientChips .badge,#taskChips .badge,#hourBtns .badge').forEach(function(el){el.classList.remove('b-red');el.classList.add('b-gray');el.setAttribute('data-selected','false');});
+    document.getElementById('checkinNota').value='';
+  }catch(e){alert('Error guardando el check-in.');}
 }
-window.addEventListener('load',function(){var params=new URLSearchParams(window.location.search),email=params.get('email');if(email&&USERS[email.toLowerCase()]){document.getElementById('loginEmail').value=email;checkEmail();}});
+window.addEventListener('load',function(){
+  var params=new URLSearchParams(window.location.search),email=params.get('email');
+  if(email&&USERS[email.toLowerCase()]){document.getElementById('loginEmail').value=email;checkEmail();}
+});
 
 // ── SUPABASE ──
 const SB_URL='https://sfdwmldxrjsefoxoqmvv.supabase.co';
@@ -661,11 +773,17 @@ async function loadTickets(){
   list.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)"><div style="font-size:24px">⏳</div>Cargando...</div>';
   try{
     allTickets=await sbGet('tickets','order=created_at.desc&limit=100');
-    var sub=document.getElementById('ticketsSub');if(sub)sub.textContent=allTickets.length+' tickets · '+allTickets.filter(function(t){return t.status==='inbox';}).length+' sin asignar';
+    var sub=document.getElementById('ticketsSub');
+    if(sub)sub.textContent=allTickets.length+' tickets · '+allTickets.filter(function(t){return t.status==='inbox';}).length+' sin asignar';
     renderTickets(currentFilter);
   }catch(e){list.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Error cargando tickets.</div>';}
 }
-function filterTickets(filter,btn){currentFilter=filter;document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});if(btn)btn.classList.add('active');renderTickets(filter);}
+function filterTickets(filter,btn){
+  currentFilter=filter;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+  if(btn)btn.classList.add('active');
+  renderTickets(filter);
+}
 function renderTickets(filter){
   var list=document.getElementById('ticketsList');if(!list)return;
   var tickets=filter==='all'?allTickets:allTickets.filter(function(t){return t.status===filter;});
@@ -688,9 +806,11 @@ function renderTickets(filter){
 }
 async function advanceTicket(id,s){await sbPatch('tickets',id,{status:s==='inbox'?'proceso':'resuelto'});await loadTickets();}
 async function assignTicket(id){
-  var team=['Sebastián Castro','Adriana Figueredo','Laura Correa','Paula Bermúdez','Alejandro Sierra','Gina Benavides','María Camila Castro','Estefanía Prieto','Daniel Urbina','Juan Camilo Espinosa','Juliana Jaramillo','Marcela Rondón','Cristian Santamaría'];
+  var team=['Sebastián Castro','Adriana Figueredo','Laura Correa','Paula Bermúdez','Alejandro Sierra','Gina Benavides','María Camila Castro','Estefanía Prieto','Daniel Urbina','Juan Camilo Espinosa','Juliana Jaramillo','Marcela Rondón'];
   var a=prompt('Asignar a:\n'+team.map(function(n,i){return (i+1)+'. '+n;}).join('\n')+'\n\nEscribe el nombre exacto:');
-  if(!a)return;await sbPatch('tickets',id,{assignee:a,status:'proceso'});await loadTickets();
+  if(!a)return;
+  await sbPatch('tickets',id,{assignee:a,status:'proceso'});
+  await loadTickets();
 }
 
 // KANBAN
@@ -722,34 +842,41 @@ async function saveTask(){
   closeTaskModal();document.getElementById('taskTitle').value='';await loadTasks();
 }
 
-// CREAR TICKET
+// ✅ FIX 2: createTicket con validación de confirmación para no-directores
 async function createTicket(){
   var title=document.getElementById('ntTitle').value.trim(),client=document.getElementById('ntClient').value,unit=document.getElementById('ntUnit').value,category=document.getElementById('ntCategory').value,priority=document.getElementById('ntPriority').value,assignee=document.getElementById('ntAssignee').value,desc=document.getElementById('ntDesc').value;
   if(!title||!client||!unit){alert('Completa: título, cliente y unidad');return;}
+  // ✅ FIX 2: Si no es director, exigir confirmación del checkbox
+  if(currentUser && currentUser.role!=='director'){
+    var confirm=document.getElementById('ntConfirm');
+    if(confirm && !confirm.checked){
+      alert('⚠️ Por favor confirma que esta es una solicitud real antes de crear el ticket.');
+      return;
+    }
+  }
   var num='TK-'+Date.now().toString().slice(-5);
   await sbPost('tickets',{ticket_number:num,title,client_name:client,unit,category,priority,status:'inbox',source:'manual',assignee:assignee||null,ai_summary:desc||'',email_from:currentUser?currentUser.email:''});
   ['ntTitle','ntDesc'].forEach(function(id){document.getElementById(id).value='';});
   ['ntClient','ntUnit','ntCategory','ntAssignee'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('ntPriority').value='normal';
+  var confirm=document.getElementById('ntConfirm');if(confirm)confirm.checked=false;
   alert('Ticket '+num+' creado.');
-  if(currentUser&&currentUser.role==='director')showPage('page-tickets');else showPage('page-mis-solicitudes');
+  if(currentUser&&currentUser.role==='director')showPage('page-tickets');
+  else showPage('page-mis-solicitudes');
 }
 
-// ✅ MIS TAREAS CON DETALLE EXPANDIBLE
+// MIS TAREAS CON DETALLE EXPANDIBLE
 async function loadMisTareas(){
   var list=document.getElementById('myTasksList');if(!list||!currentUser)return;
   try{
     var tickets=await sbGet('tickets','assignee=eq.'+encodeURIComponent(currentUser.name)+'&status=neq.resuelto&order=created_at.desc');
     var tasks=await sbGet('tasks','assignee=eq.'+encodeURIComponent(currentUser.name)+'&status=neq.completado&order=created_at.desc');
     var all=tickets.map(function(t){return Object.assign({},t,{_type:'ticket'});}).concat(tasks.map(function(t){return Object.assign({},t,{_type:'task'});}));
-
     var pend=all.filter(function(t){return t.status==='inbox'||t.status==='pendiente';}).length;
     var curso=all.filter(function(t){return t.status==='proceso'||t.status==='en_curso';}).length;
     var sp=document.getElementById('statMisPend'),sc=document.getElementById('statMisCurso');
     if(sp)sp.textContent=pend;if(sc)sc.textContent=curso;
-
     if(!all.length){list.innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">✅</div><div style="font-family:Syne,sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-bottom:6px">Sin tareas asignadas</div><div style="font-size:12px">Cuando Natalia te asigne algo aparecerá aquí</div></div>';return;}
-
     list.innerHTML=all.map(function(t){
       var pc=t.priority==='urgente'?'var(--red)':t.priority==='baja'?'var(--blue)':'var(--amber)';
       var sl=t.status==='inbox'?'Sin iniciar':(t.status==='proceso'||t.status==='en_curso')?'En curso':'Pendiente';
@@ -759,10 +886,7 @@ async function loadMisTareas(){
       var origen=t.source==='sheet_agente'?'📊 Sheet Henkel':(t.source&&t.source.indexOf('henkel')!==-1)?'📧 Gmail Henkel':t.source==='gmail_auto'?'📧 Gmail automático':t.source==='manual'?'✏️ Manual':t.source||'—';
       var emailInfo=(t.email_from&&t.email_from!=='andrea.patino@letsrebold.com'&&t.email_from!=='')?'<div style="margin-top:8px;padding:10px 12px;background:var(--surface3);border-radius:8px;border-left:2px solid var(--border2)"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Remitente original</div><div style="font-size:12px;font-family:monospace;color:var(--text)">'+(t.email_from||'')+'</div>'+(t.email_subject?'<div style="font-size:11px;color:var(--muted);margin-top:2px">Asunto: '+t.email_subject+'</div>':'')+'</div>':'';
       var did='detail-'+t.id;
-
       return '<div class="task-card" style="border-left:3px solid '+pc+'">'+
-
-        // Cabecera clickeable
         '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;cursor:pointer" data-action="toggle-detail" data-detail="'+did+'">'+
           '<div style="flex:1;min-width:0">'+
             '<div style="font-size:10px;font-family:monospace;color:var(--muted);margin-bottom:4px">'+(t.ticket_number||('ID-'+String(t.id||'').slice(-4)))+' · '+origen+(time?' · '+time:'')+'</div>'+
@@ -779,18 +903,10 @@ async function loadMisTareas(){
             '<span style="font-size:20px;color:var(--muted);line-height:1;transition:transform .25s;display:inline-block" id="arrow-'+did+'">›</span>'+
           '</div>'+
         '</div>'+
-
-        // Barra de progreso
         (t.progress>0?'<div class="prog-bg" style="margin:10px 0 4px"><div class="prog-fill" style="width:'+t.progress+'%;background:'+pc+'"></div></div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Progreso: '+t.progress+'%</div>':'<div style="margin-top:10px"></div>')+
-
-        // Panel detalle oculto
         '<div id="'+did+'" style="display:none;padding-top:14px;border-top:1px solid var(--border);margin-top:4px">'+
-          // Qué debes hacer
-          (desc?
-            '<div style="margin-bottom:14px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px">📋 Qué debes hacer</div><div style="font-size:13px;line-height:1.75;color:var(--text);background:var(--surface3);border-radius:10px;padding:14px 16px;white-space:pre-wrap">'+desc+'</div></div>':
-            '<div style="margin-bottom:14px;padding:12px 16px;background:var(--surface3);border-radius:10px;border:1px dashed var(--border2)"><div style="font-size:12px;color:var(--muted);text-align:center">Sin descripción adicional.<br><span style="font-size:11px">Consulta con Natalia si tienes dudas.</span></div></div>'
-          )+
-          // Grid info
+          (desc?'<div style="margin-bottom:14px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px">📋 Qué debes hacer</div><div style="font-size:13px;line-height:1.75;color:var(--text);background:var(--surface3);border-radius:10px;padding:14px 16px;white-space:pre-wrap">'+desc+'</div></div>':
+            '<div style="margin-bottom:14px;padding:12px 16px;background:var(--surface3);border-radius:10px;border:1px dashed var(--border2)"><div style="font-size:12px;color:var(--muted);text-align:center">Sin descripción adicional.<br><span style="font-size:11px">Consulta con Natalia si tienes dudas.</span></div></div>')+
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
             '<div style="background:var(--surface3);border-radius:8px;padding:10px 12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Cliente</div><div style="font-size:12px;font-weight:600">'+(t.client_name||'—')+'</div></div>'+
             '<div style="background:var(--surface3);border-radius:8px;padding:10px 12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Unidad</div><div style="font-size:12px;font-weight:600">'+(t.unit||'—')+'</div></div>'+
@@ -799,24 +915,15 @@ async function loadMisTareas(){
           '</div>'+
           emailInfo+
         '</div>'+
-
-        // Botones
         '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
           (t._type==='ticket'&&t.status!=='resuelto'?'<button class="btn btn-red btn-sm" data-action="advance-ticket" data-id="'+t.id+'" data-status="'+t.status+'">'+(t.status==='inbox'?'▶ Iniciar':'✓ Resolver')+'</button>':'')+
           (t._type==='task'&&t.status!=='completado'?'<button class="btn btn-red btn-sm" data-action="advance-task" data-id="'+t.id+'" data-status="'+t.status+'">'+(t.status==='pendiente'?'▶ Iniciar':'✓ Completar')+'</button>':'')+
           (t._type==='task'&&t.status==='en_curso'?'<button class="btn btn-ghost btn-sm" data-action="progress-task" data-id="'+t.id+'">% Progreso</button>':'')+
           '<button class="btn btn-ghost btn-sm" style="margin-left:auto" data-action="toggle-detail" data-detail="'+did+'">Ver detalle ↓</button>'+
         '</div>'+
-
       '</div>';
     }).join('');
-
-    // Event delegation — UN solo listener por lista
-    var newList=list.cloneNode(false);
-    newList.innerHTML=list.innerHTML;
-    list.parentNode.replaceChild(newList,list);
-    list=document.getElementById('myTasksList');
-
+    var newList=list.cloneNode(false);newList.innerHTML=list.innerHTML;list.parentNode.replaceChild(newList,list);list=document.getElementById('myTasksList');
     list.addEventListener('click',function(e){
       var btn=e.target.closest('[data-action]');if(!btn)return;
       var action=btn.dataset.action,id=btn.dataset.id,status=btn.dataset.status;
@@ -831,7 +938,6 @@ async function loadMisTareas(){
       if(action==='advance-task')advanceTask(id,status).then(loadMisTareas);
       if(action==='progress-task')updateTaskProgress(id).then(loadMisTareas);
     });
-
   }catch(e){document.getElementById('myTasksList').innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Error cargando tareas.</div>';console.error(e);}
 }
 
