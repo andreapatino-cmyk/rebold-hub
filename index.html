@@ -320,7 +320,23 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
 </div>
 <div id="page-checkin" class="page">
   <div class="page-header"><div class="page-title">Daily <span>Check-in</span></div><div class="page-sub">Registra tu día</div></div>
-  <div style="max-width:500px"><div class="card">
+  <div style="max-width:500px">
+
+  <!-- SELECTOR MODO -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+    <div id="btnModoTrabajo" onclick="setModoCheckin('trabajo')" style="padding:14px;background:var(--red);border-radius:12px;text-align:center;cursor:pointer;border:2px solid var(--red)">
+      <div style="font-size:22px;margin-bottom:4px">💼</div>
+      <div style="font-family:Syne,sans-serif;font-weight:700;font-size:13px;color:#fff">Trabajé hoy</div>
+    </div>
+    <div id="btnModoAusencia" onclick="setModoCheckin('ausencia')" style="padding:14px;background:var(--surface);border:2px solid var(--border);border-radius:12px;text-align:center;cursor:pointer">
+      <div style="font-size:22px;margin-bottom:4px">🏖️</div>
+      <div style="font-family:Syne,sans-serif;font-weight:700;font-size:13px;color:var(--muted)">Ausencia total</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">Vacaciones · Incapacidad · Compensatorio</div>
+    </div>
+  </div>
+
+  <!-- FORMULARIO TRABAJO -->
+  <div id="checkinFormTrabajo"><div class="card">
     <div class="sec">¿Con qué clientes trabajaste hoy?</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px" id="clientChips"></div>
     <div class="sec">¿Qué hiciste?</div>
@@ -334,7 +350,7 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
       <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">PQRS</div>
       <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Reunión cliente</div>
     </div>
-    <div class="sec">Horas del día</div>
+    <div class="sec">Horas trabajadas</div>
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px" id="hourBtns">
       <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'4')">4h</div>
       <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'5')">5h</div>
@@ -343,9 +359,72 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
       <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'8')">8h</div>
       <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'9')">9h</div>
     </div>
-    <div class="form-group"><label class="form-label">Nota del día (opcional)</label><textarea class="form-input" id="checkinNota" style="height:80px;resize:none;line-height:1.6" placeholder="¿Algún bloqueo, entrega o novedad?"></textarea></div>
+    <!-- PERMISO PARCIAL -->
+    <div style="margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-bottom:10px">
+        <input type="checkbox" id="tienePermisoParcial" style="accent-color:var(--purple);width:15px;height:15px" onchange="togglePermisoParcial()">
+        <span>¿Tuviste un permiso parcial hoy?</span>
+      </label>
+      <div id="permisoParcialForm" style="display:none;background:var(--surface2);border-radius:10px;padding:14px;border-left:3px solid var(--purple)">
+        <div style="font-size:10px;color:var(--purple);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:10px">Detalle del permiso</div>
+        <div class="g2">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Tipo</label>
+            <select class="form-select" id="permisoParcialTipo" style="font-size:12px;padding:8px 10px">
+              <option value="permiso">📋 Permiso</option>
+              <option value="cita_medica">🏥 Cita médica</option>
+              <option value="diligencia">📌 Diligencia</option>
+              <option value="compensatorio">⏱️ Compensatorio parcial</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Horas de permiso</label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="horasPermisoBtns">
+              <div class="badge b-gray" style="cursor:pointer;padding:7px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace;font-size:12px" onclick="selectHP(this,'1')">1h</div>
+              <div class="badge b-gray" style="cursor:pointer;padding:7px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace;font-size:12px" onclick="selectHP(this,'2')">2h</div>
+              <div class="badge b-gray" style="cursor:pointer;padding:7px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace;font-size:12px" onclick="selectHP(this,'3')">3h</div>
+              <div class="badge b-gray" style="cursor:pointer;padding:7px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace;font-size:12px" onclick="selectHP(this,'4')">4h</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:10px;margin-bottom:0">
+          <label class="form-label">Nota (opcional)</label>
+          <input class="form-input" id="permisoNota" style="font-size:12px;padding:8px 10px" placeholder="ej: Cita médica por la mañana">
+        </div>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Nota del día (opcional)</label>
+      <textarea class="form-input" id="checkinNota" style="height:80px;resize:none;line-height:1.6" placeholder="¿Algún bloqueo, entrega o novedad?"></textarea>
+    </div>
     <button class="btn btn-red" onclick="submitCheckin()">Registrar mi día ✓</button>
   </div></div>
+
+  <!-- FORMULARIO AUSENCIA TOTAL -->
+  <div id="checkinFormAusencia" style="display:none"><div class="card" style="border-left:3px solid var(--purple)">
+    <div style="font-size:10px;color:var(--purple);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:14px">Registrar ausencia total</div>
+    <div class="form-group">
+      <label class="form-label">Tipo de ausencia</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="badge b-gray" style="cursor:pointer;padding:10px;text-align:center;border-radius:10px;font-size:12px;justify-content:center" onclick="selectAusencia(this,'vacaciones')">🏖️ Vacaciones</div>
+        <div class="badge b-gray" style="cursor:pointer;padding:10px;text-align:center;border-radius:10px;font-size:12px;justify-content:center" onclick="selectAusencia(this,'incapacidad')">🏥 Incapacidad</div>
+        <div class="badge b-gray" style="cursor:pointer;padding:10px;text-align:center;border-radius:10px;font-size:12px;justify-content:center" onclick="selectAusencia(this,'compensatorio')">⏱️ Compensatorio</div>
+        <div class="badge b-gray" style="cursor:pointer;padding:10px;text-align:center;border-radius:10px;font-size:12px;justify-content:center" onclick="selectAusencia(this,'licencia')">📄 Licencia</div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="form-group"><label class="form-label">Fecha inicio</label><input class="form-input" id="ausenciaInicioCheckin" type="date"></div>
+      <div class="form-group"><label class="form-label">Fecha fin</label><input class="form-input" id="ausenciaFinCheckin" type="date"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nota (opcional)</label>
+      <input class="form-input" id="ausenciaNotaCheckin" placeholder="ej: Vacaciones familiares, cirugía...">
+    </div>
+    <button class="btn btn-red" style="background:var(--purple)" onclick="submitAusenciaDesdeCheckin()">Registrar ausencia ✓</button>
+    <button class="btn btn-ghost" style="margin-top:8px" onclick="setModoCheckin('trabajo')">← Volver</button>
+  </div></div>
+
+  </div>
 </div>
 <div id="page-dedicacion" class="page">
   <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
