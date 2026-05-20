@@ -560,9 +560,74 @@ function showPage(pageId,btn){prevPage=(document.querySelector('.page.active')||
 function goBack(){if(prevPage)showPage(prevPage);else{var nav=NAV_CONFIG[currentUser?currentUser.role:'analyst']||NAV_CONFIG.analyst;showPage('page-'+nav[0].id);}}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+function setModoCheckin(modo){
+  var btnT=document.getElementById('btnModoTrabajo'),btnA=document.getElementById('btnModoAusencia');
+  var formT=document.getElementById('checkinFormTrabajo'),formA=document.getElementById('checkinFormAusencia');
+  if(modo==='trabajo'){
+    if(btnT){btnT.style.background='var(--red)';btnT.style.borderColor='var(--red)';}
+    if(btnA){btnA.style.background='var(--surface)';btnA.style.borderColor='var(--border)';}
+    if(formT)formT.style.display='block';if(formA)formA.style.display='none';
+  } else {
+    if(btnA){btnA.style.background='var(--purple)';btnA.style.borderColor='var(--purple)';}
+    if(btnT){btnT.style.background='var(--surface)';btnT.style.borderColor='var(--border)';}
+    if(formA)formA.style.display='block';if(formT)formT.style.display='none';
+    var hoy=new Date().toISOString().split('T')[0];
+    var ini=document.getElementById('ausenciaInicioCheckin'),fin=document.getElementById('ausenciaFinCheckin');
+    if(ini&&!ini.value)ini.value=hoy;if(fin&&!fin.value)fin.value=hoy;
+  }
+}
+function togglePermisoParcial(){
+  var cb=document.getElementById('tienePermisoParcial'),form=document.getElementById('permisoParcialForm');
+  if(form)form.style.display=cb&&cb.checked?'block':'none';
+}
+function selectHP(el,val){
+  document.querySelectorAll('#horasPermisoBtns .badge').forEach(function(b){b.classList.remove('b-purple');b.classList.add('b-gray');b.setAttribute('data-selected','false');});
+  el.classList.remove('b-gray');el.classList.add('b-purple');el.setAttribute('data-selected','true');el.setAttribute('data-hours',val);
+}
+function selectAusencia(el,tipo){
+  document.querySelectorAll('#checkinFormAusencia .badge').forEach(function(b){b.classList.remove('b-purple');b.classList.add('b-gray');b.setAttribute('data-selected','false');});
+  el.classList.remove('b-gray');el.classList.add('b-purple');el.setAttribute('data-selected','true');el.setAttribute('data-tipo',tipo);
+}
+async function submitAusenciaDesdeCheckin(){
+  var tipoEl=document.querySelector('#checkinFormAusencia .badge[data-selected="true"]');
+  var tipo=tipoEl?tipoEl.getAttribute('data-tipo'):'';
+  var inicio=document.getElementById('ausenciaInicioCheckin').value;
+  var fin=document.getElementById('ausenciaFinCheckin').value;
+  var nota=document.getElementById('ausenciaNotaCheckin').value.trim();
+  if(!tipo){alert('Selecciona el tipo de ausencia');return;}
+  if(!inicio||!fin){alert('Selecciona las fechas');return;}
+  if(fin<inicio){alert('La fecha fin debe ser igual o posterior al inicio');return;}
+  var dias=Math.round((new Date(fin)-new Date(inicio))/(1000*60*60*24))+1;
+  try{
+    await sbPost('absences',{member_name:currentUser.name,type:tipo,date_start:inicio,date_end:fin,days:dias,note:nota,registered_by:currentUser.name});
+    alert('Ausencia registrada ('+dias+' dia'+(dias>1?'s':'')+')');
+    document.getElementById('ausenciaInicioCheckin').value='';document.getElementById('ausenciaFinCheckin').value='';document.getElementById('ausenciaNotaCheckin').value='';
+    document.querySelectorAll('#checkinFormAusencia .badge').forEach(function(b){b.classList.remove('b-purple');b.classList.add('b-gray');b.setAttribute('data-selected','false');});
+    setModoCheckin('trabajo');
+  }catch(e){alert('Error: verifica que la tabla absences exista en Supabase.');}
+}
 function toggleChip(el){var s=el.getAttribute('data-selected')==='true';el.setAttribute('data-selected',s?'false':'true');el.classList.toggle('b-gray');el.classList.toggle('b-red');}
 function selectH(el,val){document.querySelectorAll('#hourBtns .badge').forEach(function(b){b.classList.remove('b-red');b.classList.add('b-gray');b.setAttribute('data-selected','false');});el.classList.remove('b-gray');el.classList.add('b-red');el.setAttribute('data-selected','true');el.setAttribute('data-hours',val);}
-async function submitCheckin(){var ac=document.querySelectorAll('#clientChips [data-selected="true"]'),tc=document.querySelectorAll('#taskChips [data-selected="true"]'),hs=document.querySelector('#hourBtns [data-selected="true"]'),nota=document.getElementById('checkinNota').value;var accounts=Array.from(ac).map(function(c){return{client:c.textContent.trim()};});var tasks=Array.from(tc).map(function(c){return c.textContent.trim();});var hours=hs?(hs.getAttribute('data-hours')||hs.textContent.replace('h','').trim()):'0';if(!accounts.length){alert('Selecciona al menos un cliente');return;}if(!tasks.length){alert('Selecciona al menos una tarea');return;}if(!hs){alert('Selecciona las horas');return;}var checkin={member_name:currentUser.name,member_unit:currentUser.unit,checkin_date:new Date().toISOString().split('T')[0],accounts:accounts,tasks:tasks,hours:parseFloat(hours)||0,note:nota,ai_summary:currentUser.name.split(' ')[0]+' trabajó en '+accounts.map(function(a){return a.client;}).join(', ')+'. Realizó: '+tasks.slice(0,2).join(', ')+'. Horas: '+hours+'h.'};try{await sbPost('checkins',checkin);alert('✅ Check-in registrado. ¡Gracias '+currentUser.name.split(' ')[0]+'!');document.querySelectorAll('#clientChips .badge,#taskChips .badge,#hourBtns .badge').forEach(function(el){el.classList.remove('b-red');el.classList.add('b-gray');el.setAttribute('data-selected','false');});document.getElementById('checkinNota').value='';}catch(e){alert('Error guardando el check-in.');}}
+async function submitCheckin(){var ac=document.querySelectorAll('#clientChips [data-selected="true"]'),tc=document.querySelectorAll('#taskChips [data-selected="true"]'),hs=document.querySelector('#hourBtns [data-selected="true"]'),nota=document.getElementById('checkinNota').value;var accounts=Array.from(ac).map(function(c){return{client:c.textContent.trim()};});var tasks=Array.from(tc).map(function(c){return c.textContent.trim();});var hours=hs?(hs.getAttribute('data-hours')||hs.textContent.replace('h','').trim()):'0';if(!accounts.length){alert('Selecciona al menos un cliente');return;}if(!tasks.length){alert('Selecciona al menos una tarea');return;}if(!hs){alert('Selecciona las horas');return;}// Permiso parcial
+  var tienePermiso=document.getElementById('tienePermisoParcial');
+  var permisoParcial=null;
+  if(tienePermiso&&tienePermiso.checked){
+    var hpEl=document.querySelector('#horasPermisoBtns [data-selected="true"]');
+    var hpTipo=(document.getElementById('permisoParcialTipo')||{}).value||'permiso';
+    var hpNota=(document.getElementById('permisoNota')||{}).value||'';
+    var hpHoras=hpEl?parseFloat(hpEl.getAttribute('data-hours')||0):0;
+    if(hpHoras>0){
+      permisoParcial={type:hpTipo,hours:hpHoras,note:hpNota};
+    }
+  }
+  var summaryExtra=permisoParcial?' + '+permisoParcial.hours+'h de '+(permisoParcial.type||'permiso'):'';
+  var checkin={member_name:currentUser.name,member_unit:currentUser.unit,checkin_date:new Date().toISOString().split('T')[0],accounts:accounts,tasks:tasks,hours:parseFloat(hours)||0,note:nota+(permisoParcial?' | Permiso '+permisoParcial.hours+'h: '+(permisoParcial.note||permisoParcial.type):''),ai_summary:currentUser.name.split(' ')[0]+' trabajó en '+accounts.map(function(a){return a.client;}).join(', ')+'. Realizó: '+tasks.slice(0,2).join(', ')+'. Horas: '+hours+'h'+summaryExtra+'.'};try{await sbPost('checkins',checkin);
+    // Si hay permiso parcial, también lo guardamos en absences
+    if(permisoParcial&&permisoParcial.hours>0){
+      var hoy2=new Date().toISOString().split('T')[0];
+      await sbPost('absences',{member_name:currentUser.name,type:permisoParcial.type,date_start:hoy2,date_end:hoy2,days:0,hours_partial:permisoParcial.hours,note:permisoParcial.note||'',registered_by:currentUser.name});
+    }
+    alert('✅ Check-in registrado. ¡Gracias '+currentUser.name.split(' ')[0]+'!');document.querySelectorAll('#clientChips .badge,#taskChips .badge,#hourBtns .badge').forEach(function(el){el.classList.remove('b-red');el.classList.add('b-gray');el.setAttribute('data-selected','false');});document.getElementById('checkinNota').value='';}catch(e){alert('Error guardando el check-in.');}}
 window.addEventListener('load',function(){var params=new URLSearchParams(window.location.search),email=params.get('email');if(email&&USERS[email.toLowerCase()]){document.getElementById('loginEmail').value=email;checkEmail();}});
 const SB_URL='https://sfdwmldxrjsefoxoqmvv.supabase.co';
 const SB_KEY='sb_publishable_XGDo7N3bGUvm0ZqE3Q04Bw_FwvjA7PL';
