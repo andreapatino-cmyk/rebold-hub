@@ -1,471 +1,1076 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rebold Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Figtree:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--red:#DC0C4B;--red-dark:#A80838;--red-glow:rgba(220,12,75,0.14);--black:#08080A;--surface:#0F0F12;--surface2:#161619;--surface3:#1E1E23;--border:#252529;--border2:#2E2E34;--text:#EEEEF2;--muted:#66666F;--muted2:#3A3A41;--green:#00C97A;--green-soft:rgba(0,201,122,0.1);--amber:#F5A623;--amber-soft:rgba(245,166,35,0.1);--blue:#3D8EFF;--blue-soft:rgba(61,142,255,0.1);--purple:#9B6FFF;--purple-soft:rgba(155,111,255,0.1)}
-body{font-family:'Figtree',sans-serif;background:var(--black);color:var(--text);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 40% at 50% -10%,rgba(220,12,75,0.1) 0%,transparent 60%);pointer-events:none;z-index:0}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-#screenLogin{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:1000;background:var(--black);padding:20px;animation:fadeIn .3s ease}
-.login-wrap{width:100%;max-width:420px;animation:slideUp .4s ease}
-.login-logo{text-align:center;margin-bottom:32px}
-.login-logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-1px}
-.login-logo-text span{color:var(--red)}
-.login-logo-sub{font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-top:4px}
-.login-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative}
-.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),transparent)}
-.login-body{padding:32px}
-.login-title{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin-bottom:6px}
-.login-hint{font-size:13px;color:var(--muted);margin-bottom:24px}
-.form-group{margin-bottom:16px}
-.form-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:7px;display:block}
-.form-input,.form-select{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'Figtree',sans-serif;font-size:14px;outline:none;transition:all .2s;-webkit-appearance:none}
-.form-input:focus,.form-select:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow)}
-select option{background:var(--surface2);color:var(--text)}
-.btn{width:100%;padding:13px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:.5px;cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-red{background:var(--red);color:#fff}
-.btn-red:hover{background:var(--red-dark);box-shadow:0 6px 20px rgba(220,12,75,.3);transform:translateY(-1px)}
-.btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border2)}
-.btn-ghost:hover{color:var(--text)}
-.btn-sm{padding:8px 16px;font-size:12px;width:auto;border-radius:8px}
-.login-error{font-size:12px;color:var(--red);margin-top:10px;text-align:center;display:none}
-.proveedor-badge{display:inline-flex;align-items:center;gap:6px;background:var(--purple-soft);border:1px solid rgba(155,111,255,0.25);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--purple);font-weight:700;margin-bottom:16px}
-#loginStepProveedor{display:none}
-#appShell{display:none;min-height:100vh}
-#sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;transition:transform .3s}
-.logo-wrap{padding:26px 22px 18px;border-bottom:1px solid var(--border)}
-.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.5px}
-.logo span{color:var(--red)}
-.logo-sub{font-size:9px;color:var(--muted);letter-spacing:2.5px;text-transform:uppercase;margin-top:2px}
-nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
-.nav-sec{font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;padding:12px 12px 6px;font-weight:700}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;font-size:12.5px;color:var(--muted);transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'Figtree',sans-serif;border-radius:8px}
-.nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--red-glow);color:var(--red);font-weight:600}
-.nav-icon{width:15px;height:15px;flex-shrink:0;opacity:.6}
-.nav-item.active .nav-icon{opacity:1}
-.sidebar-footer{padding:14px 12px;border-top:1px solid var(--border)}
-.user-card{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:var(--surface2)}
-.user-av{width:30px;height:30px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:10px;color:#fff;flex-shrink:0}
-.user-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.user-role{font-size:10px;color:var(--muted)}
-#topbar{display:none;position:fixed;top:0;left:0;right:0;height:54px;background:var(--surface);border-bottom:1px solid var(--border);align-items:center;padding:0 16px;z-index:99;gap:12px}
-#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:98}
-#main{margin-left:240px;min-height:100vh}
-.page{display:none;padding:28px 32px;animation:slideUp .2s ease}
-.page.active{display:block}
-.page-header{margin-bottom:24px}
-.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.5px}
-.page-title span{color:var(--red)}
-.page-sub{font-size:13px;color:var(--muted);margin-top:4px;font-weight:300}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden}
-.stat::after{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;opacity:.06}
-.stat.s-red::after{background:var(--red)}.stat.s-green::after{background:var(--green)}.stat.s-amber::after{background:var(--amber)}.stat.s-blue::after{background:var(--blue)}
-.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;font-weight:700}
-.stat-val{font-family:'Syne',sans-serif;font-weight:800;font-size:30px;letter-spacing:-1px;margin:6px 0 3px}
-.stat-sub{font-size:11px;color:var(--muted)}.stat-sub.up{color:var(--green)}.stat-sub.down{color:var(--red)}
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
-.b-red{background:var(--red-glow);color:var(--red)}.b-green{background:var(--green-soft);color:var(--green)}.b-amber{background:var(--amber-soft);color:var(--amber)}.b-blue{background:var(--blue-soft);color:var(--blue)}.b-purple{background:var(--purple-soft);color:var(--purple)}.b-gray{background:var(--surface3);color:var(--muted)}
-.sec{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.sec::after{content:'';flex:1;height:1px;background:var(--border)}
-.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
-.tbl th{text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;padding:8px 14px;font-weight:700;border-bottom:1px solid var(--border)}
-.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
-.tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:rgba(255,255,255,.02)}
-.prog-bg{background:var(--surface3);border-radius:4px;height:5px;overflow:hidden}
-.prog-fill{height:100%;border-radius:4px;transition:width .5s}
-.div{height:1px;background:var(--border);margin:16px 0}
-.ticket{background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:10px;transition:all .15s;border:1px solid transparent}
-.ticket:hover{border-color:var(--border2)}
-.task-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;transition:all .15s}
-.task-card:hover{border-color:var(--border2)}
-.task-title{font-size:13px;font-weight:600;margin-bottom:6px}
-.task-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
-.new-ticket-form{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px}
-.new-ticket-form::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--red),transparent);margin:-28px -28px 24px;border-radius:16px 16px 0 0}
-.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.k-col{background:var(--surface2);border-radius:12px;padding:14px;min-height:180px}
-.k-col-title{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
-.k-count{background:var(--surface3);border-radius:8px;padding:1px 7px;font-size:10px}
-.k-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
-.k-card:hover{border-color:var(--red)}
-.k-card-title{font-size:12.5px;font-weight:500;line-height:1.4;margin-bottom:8px}
-.provider-banner{background:linear-gradient(135deg,rgba(155,111,255,0.12),rgba(155,111,255,0.06));border:1px solid rgba(155,111,255,0.25);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px}
-.provider-banner-icon{font-size:28px;flex-shrink:0}
-.provider-banner-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--purple);margin-bottom:3px}
-.provider-banner-sub{font-size:12px;color:var(--muted);line-height:1.5}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-@media(max-width:900px){#sidebar{transform:translateX(-240px)}#sidebar.open{transform:translateX(0)}#topbar{display:flex}#main{margin-left:0;padding-top:54px}.page{padding:16px}.g4{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}.kanban{grid-template-columns:1fr}#overlay.open{display:block}}
-</style>
-</head>
-<body>
-<div id="screenLogin">
-<div class="login-wrap">
-  <div class="login-logo"><div class="login-logo-text">re<span>bold</span></div><div class="login-logo-sub">Hub de gestión · Andina</div></div>
-  <div class="login-card"><div class="login-body">
-    <div id="loginStep1">
-      <div class="login-title">Bienvenido 👋</div>
-      <div class="login-hint">Ingresa con tu correo — corporativo o personal</div>
-      <div class="form-group"><label class="form-label">Correo electrónico</label><input class="form-input" id="loginEmail" type="email" placeholder="tu.correo@email.com" autocomplete="email"></div>
-      <button class="btn btn-red" onclick="checkEmail()">Continuar →</button>
-      <div class="login-error" id="loginError">Verifica tu correo e intenta de nuevo.</div>
-    </div>
-    <div id="loginStepProveedor">
-      <div class="proveedor-badge">🎨 Proveedor externo</div>
-      <div class="login-title">Cuéntanos tu nombre</div>
-      <div class="login-hint">Es tu primera vez en el hub.</div>
-      <div class="form-group"><label class="form-label">Tu nombre completo</label><input class="form-input" id="loginNombre" placeholder="ej: Laura Morales"></div>
-      <div class="form-group"><label class="form-label">Nueva contraseña</label><input class="form-input" id="loginPassP1" type="password" placeholder="Mínimo 6 caracteres"></div>
-      <div class="form-group"><label class="form-label">Confirmar contraseña</label><input class="form-input" id="loginPassP2" type="password" placeholder="Repite la contraseña"></div>
-      <button class="btn btn-red" onclick="registerProveedor()">Entrar al hub →</button>
-      <div class="login-error" id="loginErrorP">Revisa que las contraseñas coincidan (mín. 6 caracteres).</div>
-      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="backToEmail()">← Cambiar correo</button>
-    </div>
-    <div id="loginStep2" style="display:none">
-      <div class="login-title">Crea tu contraseña 🔐</div>
-      <div class="login-hint" id="step2Hint">Es tu primera vez.</div>
-      <div class="form-group"><label class="form-label">Nueva contraseña</label><input class="form-input" id="loginPass1" type="password" placeholder="Mínimo 6 caracteres"></div>
-      <div class="form-group"><label class="form-label">Confirmar contraseña</label><input class="form-input" id="loginPass2" type="password" placeholder="Repite la contraseña"></div>
-      <button class="btn btn-red" onclick="setPassword()">Crear contraseña y entrar →</button>
-      <div class="login-error" id="loginError2">Las contraseñas no coinciden o son muy cortas.</div>
-      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="backToEmail()">← Cambiar correo</button>
-    </div>
-    <div id="loginStep3" style="display:none">
-      <div class="login-title">Hola de nuevo 👋</div>
-      <div class="login-hint" id="step3Name">Ingresa tu contraseña</div>
-      <div class="form-group"><label class="form-label">Contraseña</label><input class="form-input" id="loginPassExist" type="password" placeholder="Tu contraseña"></div>
-      <button class="btn btn-red" onclick="loginWithPassword()">Ingresar →</button>
-      <div class="login-error" id="loginError3">Contraseña incorrecta.</div>
-      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="backToEmail()">← Cambiar correo</button>
-    </div>
-  </div></div>
-</div>
-</div>
-<div id="appShell">
-<div id="topbar">
-  <button style="background:none;border:none;color:var(--text);cursor:pointer" onclick="toggleSidebar()"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="5" x2="18" y2="5"/><line x1="2" y1="10" x2="18" y2="10"/><line x1="2" y1="15" x2="18" y2="15"/></svg></button>
-  <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:17px">re<span style="color:var(--red)">bold</span></span>
-</div>
-<div id="overlay" onclick="toggleSidebar()"></div>
-<div id="sidebar">
-  <div class="logo-wrap"><div class="logo">re<span>bold</span></div><div class="logo-sub">Hub · Andina</div></div>
-  <nav id="sidebarNav"></nav>
-  <div class="sidebar-footer"><div class="user-card"><div class="user-av" id="userAv">?</div><div><div class="user-name" id="userName">—</div><div class="user-role" id="userRoleLabel">—</div></div><button style="background:none;border:none;color:var(--muted);cursor:pointer;margin-left:auto;font-size:11px" onclick="logout()">Salir</button></div></div>
-</div>
-<div id="main">
-<div id="page-overview" class="page">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-    <div class="page-header" style="margin-bottom:0"><div class="page-title">Buenos días, <span id="directorName">Natalia</span> 👋</div><div class="page-sub" id="todayDate2">Cargando...</div></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="badge b-red">● Intelligence</span><span class="badge b-blue">● Creatividad</span></div>
-  </div>
-  <div class="g4" style="margin-bottom:20px">
-    <div class="stat s-red"><div class="stat-label">Clientes activos</div><div class="stat-val" style="color:var(--red)">18</div><div class="stat-sub">2 unidades</div></div>
-    <div class="stat s-green"><div class="stat-label">Check-ins hoy</div><div class="stat-val" style="color:var(--green)">8<span style="font-size:16px;color:var(--muted)">/12</span></div><div class="stat-sub up">4 pendientes</div></div>
-    <div class="stat s-amber"><div class="stat-label">Tickets abiertos</div><div class="stat-val" style="color:var(--amber)">7</div><div class="stat-sub down">4 urgentes</div></div>
-    <div class="stat s-blue"><div class="stat-label">Margen abril</div><div class="stat-val" style="color:var(--blue)">~38%</div><div class="stat-sub">Est. vs Vitality</div></div>
-  </div>
-  <div class="g2">
-    <div class="card"><div class="sec">Unidad Intelligence</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><span class="badge b-red">Sodimac</span><span class="badge b-red">Páramo</span><span class="badge b-red">JEP</span><span class="badge b-red">Homecenter</span><span class="badge b-red">Banco Falabella</span><span class="badge b-red">Corferias</span><span class="badge b-red">Global Wine</span></div><div class="div"></div><div class="sec">Últimos check-ins</div><div style="text-align:center;padding:24px 16px;color:var(--muted)"><div style="font-size:28px;margin-bottom:8px">📋</div><div style="font-size:13px;font-weight:500;margin-bottom:4px">Sin check-ins aún</div><div style="font-size:11px">El equipo reporta a las 5:30 PM</div></div></div>
-    <div class="card"><div class="sec">Unidad Creatividad</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><span class="badge b-blue">Corferias</span><span class="badge b-blue">Henkel</span><span class="badge b-blue">Granite</span><span class="badge b-blue">Stormberg</span><span class="badge b-blue">Parador Rojo</span><span class="badge b-blue">Punto de Pago</span><span class="badge b-blue">Supercerdo</span><span class="badge b-blue">Casa Mayor</span></div><div class="div"></div><div class="sec">Tickets urgentes</div><div style="text-align:center;padding:24px 16px;color:var(--muted)"><div style="font-size:28px;margin-bottom:8px">🎫</div><div style="font-size:13px;font-weight:500;margin-bottom:4px">Sin tickets activos</div><div style="font-size:11px">Llegan desde Gmail automáticamente</div></div></div>
-  </div>
-</div>
-<div id="page-equipo" class="page">
-  <div class="page-header"><div class="page-title">Equipo <span>Rebold</span></div><div class="page-sub">Estructura completa</div></div>
-  <div class="card">
-    <div class="sec">Dirección</div>
-    <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Unidad</th><th>Salario</th><th>CE</th></tr></thead><tbody><tr><td><strong>Natalia Patiño</strong></td><td>Directora de Unidades</td><td><span class="badge b-red">Dirección</span></td><td>$12.07M</td><td style="color:var(--red)">$16.9M</td></tr></tbody></table>
-    <div class="div"></div><div class="sec">Intelligence</div>
-    <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Salario</th><th>CE</th></tr></thead><tbody>
-      <tr><td>Sebastián Castro</td><td>Analista SR Insights</td><td>$6.04M</td><td>$8.45M</td></tr>
-      <tr><td>Laura Correa</td><td>Analista Monitoreo</td><td>$3.47M</td><td>$4.85M</td></tr>
-      <tr><td>Paula Bermúdez</td><td>Analista Monitoreo</td><td>$2.37M</td><td>$3.31M</td></tr>
-      <tr><td>Juliana Jaramillo</td><td>Analista PQRS Homecenter</td><td>$3.59M</td><td>$5.03M</td></tr>
-      <tr><td>Marcela Rondón</td><td>Analista PQRS Homecenter</td><td>$3.88M</td><td>$5.43M</td></tr>
-    </tbody></table>
-    <div class="div"></div><div class="sec">Creatividad</div>
-    <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Salario</th><th>CE</th></tr></thead><tbody>
-      <tr><td>María Camila Castro</td><td>CM Corferias</td><td>$4.44M</td><td>$6.22M</td></tr>
-      <tr><td>Estefanía Prieto</td><td>CM Granite/Stomberg</td><td>$3.06M</td><td>$4.28M</td></tr>
-      <tr><td>Daniel Urbina</td><td>Diseñador Gráfico</td><td>$4.17M</td><td>$5.83M</td></tr>
-      <tr><td>Juan Camilo Espinosa</td><td>Diseñador Gráfico Henkel</td><td>$5.25M</td><td>$7.35M</td></tr>
-    </tbody></table>
-    <div class="div"></div><div class="sec">Integrales</div>
-    <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Salario</th><th>Dist.</th></tr></thead><tbody>
-      <tr><td>Adriana Figueredo</td><td>Analista Insights</td><td>$4.90M</td><td>50/50</td></tr>
-      <tr><td>Alejandro Sierra</td><td>Coord. Operaciones</td><td>$5.20M</td><td>50/50</td></tr>
-      <tr><td>Gina Benavides</td><td>Practicante SENA</td><td>$1.62M</td><td>50/50</td></tr>
-    </tbody></table>
-  </div>
-</div>
-<div id="page-tickets" class="page">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-    <div class="page-header" style="margin-bottom:0"><div class="page-title">Portal de <span>tickets</span></div><div class="page-sub" id="ticketsSub">Cargando...</div></div>
-    <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="loadTickets()">↻</button><button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nuevo</button></div>
-  </div>
-  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-    <button class="btn btn-ghost btn-sm filter-btn active" onclick="filterTickets('inbox',this)">Bandeja</button>
-    <button class="btn btn-ghost btn-sm filter-btn" onclick="filterTickets('proceso',this)">En proceso</button>
-    <button class="btn btn-ghost btn-sm filter-btn" onclick="filterTickets('resuelto',this)">Resueltos</button>
-    <button class="btn btn-ghost btn-sm filter-btn" onclick="filterTickets('all',this)">Todos</button>
-  </div>
-  <div id="ticketsList"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Cargando...</div></div>
-</div>
-<div id="page-nuevo-ticket" class="page">
-  <div class="page-header"><div class="page-title">Nueva <span>solicitud</span></div><div class="page-sub">Crea un ticket para una unidad</div></div>
-  <div id="ticketWarningBanner" style="display:none;margin-bottom:20px;padding:14px 18px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25);border-radius:12px;font-size:13px;color:var(--amber);line-height:1.6">⚠️ <strong>Importante:</strong> Solo para solicitudes reales de clientes o del equipo.</div>
-  <div style="max-width:600px"><div class="new-ticket-form">
-    <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="ntTitle" placeholder="ej: Pack de piezas para campaña"></div>
-    <div class="g2">
-      <div class="form-group"><label class="form-label">Cliente</label><select class="form-select" id="ntClient"><option value="">Selecciona...</option><option>Sodimac</option><option>Páramo Presenta</option><option>Páramo Lab</option><option>JEP</option><option>Homecenter</option><option>Banco Falabella</option><option>Corferias</option><option>Henkel Regional</option><option>Granite</option><option>Stormberg</option><option>Parador Rojo</option><option>Punto de Pago</option><option>Supercerdo</option><option>Casa Mayor</option><option>Blue Digital</option><option>Global Wine</option><option>Interno Rebold</option></select></div>
-      <div class="form-group"><label class="form-label">Unidad</label><select class="form-select" id="ntUnit"><option value="">Selecciona...</option><option>Intelligence</option><option>Creatividad</option><option>Ambas</option></select></div>
-    </div>
-    <div class="g2">
-      <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="ntCategory"><option value="">Selecciona...</option><option>Diseño de piezas</option><option>Community Management</option><option>Social Listening / Monitoreo</option><option>Análisis / Reporte</option><option>Estrategia de contenidos</option><option>Estrategia de redes</option><option>PQRS</option><option>Reunión / Presentación</option><option>Propuesta comercial</option><option>Otro</option></select></div>
-      <div class="form-group"><label class="form-label">Prioridad</label><select class="form-select" id="ntPriority"><option value="normal">Normal</option><option value="urgente">Urgente</option><option value="baja">Baja</option></select></div>
-    </div>
-    <div class="form-group"><label class="form-label">Asignar a (opcional)</label><select class="form-select" id="ntAssignee"><option value="">Sin asignar</option><option>Sebastián Castro · Intelligence</option><option>Adriana Figueredo · Ambas</option><option>Laura Correa · Intelligence</option><option>Paula Bermúdez · Intelligence</option><option>Alejandro Sierra · Ambas</option><option>María Camila Castro · Creatividad</option><option>Estefanía Prieto · Creatividad</option><option>Daniel Urbina · Creatividad</option><option>Juan Camilo Espinosa · Creatividad</option><option>Juliana Jaramillo · Intelligence</option><option>Marcela Rondón · Intelligence</option></select></div>
-    <div class="form-group"><label class="form-label">Fecha límite (opcional)</label><input class="form-input" id="ntDue" type="date"></div>
-    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-input" id="ntDesc" style="height:100px;resize:none;line-height:1.6" placeholder="Qué necesitas, formatos, referencias..."></textarea></div>
-    <div id="ticketConfirmCheck" style="display:none;margin-bottom:16px;padding:12px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border2)"><label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px"><input type="checkbox" id="ntConfirm" style="margin-top:2px;accent-color:var(--red)"><span>Confirmo que es una <strong>solicitud real</strong>.</span></label></div>
-    <div style="display:flex;gap:10px"><button class="btn btn-ghost" style="flex:1" onclick="goBack()">← Cancelar</button><button class="btn btn-red" style="flex:2" onclick="createTicket()">Crear solicitud ✓</button></div>
-  </div></div>
-</div>
-<div id="page-tareas" class="page">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-    <div class="page-header" style="margin-bottom:0"><div class="page-title">Gestión de <span>tareas</span></div><div class="page-sub">Kanban por unidad</div></div>
-    <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm" onclick="loadTasks()">↻</button><button class="btn btn-red btn-sm" onclick="showNewTaskModal()">+ Nueva tarea</button></div>
-  </div>
-  <div class="kanban">
-    <div class="k-col"><div class="k-col-title">Pendiente <span class="k-count" id="cnt-pendiente">0</span></div><div id="tasks-pendiente" style="min-height:60px"><div style="text-align:center;padding:20px 12px;color:var(--muted);font-size:12px">Cargando...</div></div></div>
-    <div class="k-col"><div class="k-col-title">En curso <span class="k-count" id="cnt-en_curso">0</span></div><div id="tasks-en_curso" style="min-height:60px"></div></div>
-    <div class="k-col"><div class="k-col-title">Completado <span class="k-count" id="cnt-completado">0</span></div><div id="tasks-completado" style="min-height:60px"></div></div>
-  </div>
-</div>
-<div id="modalTarea" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:500px">
-    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:20px">Nueva tarea</div>
-    <div class="form-group"><label class="form-label">Título</label><input class="form-input" id="taskTitle" placeholder="ej: Reporte mensual listening"></div>
-    <div class="g2">
-      <div class="form-group"><label class="form-label">Cliente</label><select class="form-select" id="taskClient"><option value="">Selecciona...</option><option>Sodimac</option><option>Páramo Presenta</option><option>JEP</option><option>Homecenter</option><option>Banco Falabella</option><option>Corferias</option><option>Henkel Regional</option><option>Granite</option><option>Stormberg</option><option>Parador Rojo</option><option>Punto de Pago</option><option>Supercerdo</option><option>Blue Digital</option><option>Global Wine</option><option>Interno Rebold</option></select></div>
-      <div class="form-group"><label class="form-label">Unidad</label><select class="form-select" id="taskUnit"><option value="Intelligence">Intelligence</option><option value="Creatividad">Creatividad</option><option value="Ambas">Ambas</option></select></div>
-    </div>
-    <div class="g2">
-      <div class="form-group"><label class="form-label">Asignar a</label><select class="form-select" id="taskAssignee"><option value="">Sin asignar</option><option>Sebastián Castro</option><option>Adriana Figueredo</option><option>Laura Correa</option><option>Paula Bermúdez</option><option>Alejandro Sierra</option><option>Gina Benavides</option><option>María Camila Castro</option><option>Estefanía Prieto</option><option>Daniel Urbina</option><option>Juan Camilo Espinosa</option><option>Juliana Jaramillo</option><option>Marcela Rondón</option></select></div>
-      <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-input" id="taskDue" type="date"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Prioridad</label><select class="form-select" id="taskPriority"><option value="normal">Normal</option><option value="urgente">Urgente</option><option value="baja">Baja</option></select></div>
-    <div style="display:flex;gap:10px;margin-top:4px"><button class="btn btn-ghost" style="flex:1" onclick="closeTaskModal()">Cancelar</button><button class="btn btn-red" style="flex:2" onclick="saveTask()">Crear tarea ✓</button></div>
-  </div>
-</div>
-<div id="page-financiero" class="page">
-  <div class="page-header"><div class="page-title">Análisis <span>financiero</span></div><div class="page-sub">Costo vs ingreso por cliente · Abril 2026</div></div>
-  <div class="g4" style="margin-bottom:20px">
-    <div class="stat s-green"><div class="stat-label">Ingresos est.</div><div class="stat-val" style="color:var(--green);font-size:22px">$221M</div><div class="stat-sub">Clientes activos</div></div>
-    <div class="stat s-red"><div class="stat-label">Costo laboral</div><div class="stat-val" style="color:var(--red);font-size:22px">$76.6M</div><div class="stat-sub">Ambas unidades</div></div>
-    <div class="stat s-amber"><div class="stat-label">Herramientas</div><div class="stat-val" style="color:var(--amber);font-size:22px">$26.2M</div><div class="stat-sub">YouScan + Synaptic</div></div>
-    <div class="stat s-blue"><div class="stat-label">Margen est.</div><div class="stat-val" style="color:var(--blue);font-size:22px">~54%</div><div class="stat-sub">Antes costos trans.</div></div>
-  </div>
-  <div class="card"><div class="sec">Rentabilidad por cliente</div>
-    <table class="tbl"><thead><tr><th>Cliente</th><th>Unidad</th><th>Ingreso</th><th>C. Laboral</th><th>Herram.</th><th>Margen</th></tr></thead><tbody>
-      <tr><td><strong>Sodimac</strong></td><td><span class="badge b-red" style="font-size:9px">INT</span></td><td>$26.0M</td><td>$8.4M</td><td>$4.2M</td><td style="font-weight:700;color:var(--green)">51.5%</td></tr>
-      <tr><td><strong>Homecenter</strong></td><td><span class="badge b-red" style="font-size:9px">INT</span></td><td>$24.1M</td><td>$10.5M</td><td>$2.2M</td><td style="font-weight:700;color:var(--green)">47.7%</td></tr>
-      <tr><td><strong>Henkel Regional</strong></td><td><span class="badge b-blue" style="font-size:9px">CRE</span></td><td>$13.0M</td><td>$5.3M</td><td>$3.0M</td><td style="font-weight:700;color:var(--green)">35.4%</td></tr>
-      <tr><td><strong>Supercerdo</strong></td><td><span class="badge b-blue" style="font-size:9px">CRE</span></td><td>$12.5M</td><td>$3.8M</td><td>$1.0M</td><td style="font-weight:700;color:var(--green)">61.6%</td></tr>
-      <tr><td><strong>Granite</strong></td><td><span class="badge b-amber" style="font-size:9px">AMB</span></td><td>$11.4M</td><td>$5.8M</td><td>$2.4M</td><td style="font-weight:700;color:var(--amber)">28.1%</td></tr>
-      <tr><td><strong>Corferias</strong></td><td><span class="badge b-blue" style="font-size:9px">CRE</span></td><td>$6.7M</td><td>$6.2M</td><td>$1.5M</td><td style="font-weight:700;color:var(--red)">-14.9%</td></tr>
-    </tbody></table>
-  </div>
-</div>
-<div id="page-mis-tareas" class="page">
-  <div class="page-header"><div class="page-title">Mis <span>tareas</span></div><div class="page-sub" id="colaboradorSub">Tus solicitudes asignadas</div></div>
-  <div id="providerBanner" style="display:none" class="provider-banner"><div class="provider-banner-icon">🎨</div><div><div class="provider-banner-title">Portal de Proveedores</div><div class="provider-banner-sub">Aquí verás las tareas que Natalia te asigne. Puedes marcarlas como iniciadas o completadas.</div></div></div>
-  <div class="g2" style="margin-bottom:20px">
-    <div class="stat s-amber"><div class="stat-label">Pendientes</div><div class="stat-val" style="color:var(--amber)" id="statMisPend">—</div><div class="stat-sub">Para completar</div></div>
-    <div class="stat s-green"><div class="stat-label">En curso</div><div class="stat-val" style="color:var(--green)" id="statMisCurso">—</div><div class="stat-sub up">Trabajando</div></div>
-  </div>
-  <div id="myTasksList"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Cargando...</div></div>
-</div>
-<div id="page-mis-solicitudes" class="page">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
-    <div class="page-header" style="margin-bottom:0"><div class="page-title">Mis <span>solicitudes</span></div><div class="page-sub">Tickets que has creado</div></div>
-    <button class="btn btn-red btn-sm" onclick="showPage('page-nuevo-ticket')">+ Nueva</button>
-  </div>
-  <div style="display:flex;gap:8px;margin-bottom:16px"><button class="btn btn-ghost btn-sm" onclick="loadMisSolicitudes()">↻ Actualizar</button></div>
-  <div id="misSolicitudesList"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Cargando...</div></div>
-</div>
-<div id="page-checkin" class="page">
-  <div class="page-header"><div class="page-title">Daily <span>Check-in</span></div><div class="page-sub">Registra tu día</div></div>
-  <div style="max-width:500px"><div class="card">
-    <div class="sec">¿Con qué clientes trabajaste hoy?</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px" id="clientChips"></div>
-    <div class="sec">¿Qué hiciste?</div>
-    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px" id="taskChips">
-      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Social listening</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Análisis audiencias</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Reporte / Informe</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Estrategia contenidos</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Community mgmt</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Diseño piezas</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">PQRS</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:6px 12px;font-size:12px" onclick="toggleChip(this)">Reunión cliente</div>
-    </div>
-    <div class="sec">Horas del día</div>
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px" id="hourBtns">
-      <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'4')">4h</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'5')">5h</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'6')">6h</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'7')">7h</div>
-      <div class="badge b-gray" style="cursor:pointer;padding:8px;text-align:center;border-radius:8px;font-family:'DM Mono',monospace" onclick="selectH(this,'8')">8h</div>
-    </div>
-    <div class="form-group"><label class="form-label">Nota del día (opcional)</label><textarea class="form-input" id="checkinNota" style="height:80px;resize:none;line-height:1.6" placeholder="¿Algún bloqueo, entrega o novedad?"></textarea></div>
-    <button class="btn btn-red" onclick="submitCheckin()">Registrar mi día ✓</button>
-  </div></div>
-</div>
-<div id="page-dedicacion" class="page">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-    <div class="page-header" style="margin-bottom:0"><div class="page-title">Dedicación <span>del equipo</span></div><div class="page-sub">Histórico de check-ins</div></div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <select id="filterPersona" class="form-select" style="width:auto;padding:8px 12px;font-size:12px" onchange="loadDedicacion()">
-        <option value="">Todo el equipo</option><option>Sebastián Castro</option><option>Adriana Figueredo</option><option>Laura Correa</option><option>Paula Bermúdez</option><option>Alejandro Sierra</option><option>Gina Benavides</option><option>María Camila Castro</option><option>Estefanía Prieto</option><option>Daniel Urbina</option><option>Juan Camilo Espinosa</option><option>Juliana Jaramillo</option><option>Marcela Rondón</option>
-      </select>
-      <button class="btn btn-ghost btn-sm" onclick="loadDedicacion()">↻</button>
-    </div>
-  </div>
-  <div class="g4" style="margin-bottom:20px">
-    <div class="stat s-green"><div class="stat-label">Check-ins hoy</div><div class="stat-val" style="color:var(--green)" id="statHoy">—</div><div class="stat-sub">Del equipo</div></div>
-    <div class="stat s-blue"><div class="stat-label">Esta semana</div><div class="stat-val" style="color:var(--blue)" id="statSemana">—</div><div class="stat-sub">Registrados</div></div>
-    <div class="stat s-amber"><div class="stat-label">Horas prom./día</div><div class="stat-val" style="color:var(--amber)" id="statHoras">—</div><div class="stat-sub">Promedio</div></div>
-    <div class="stat s-red"><div class="stat-label">Sin reportar hoy</div><div class="stat-val" style="color:var(--red)" id="statPendientes">—</div><div class="stat-sub">De 12 personas</div></div>
-  </div>
-  <div class="card"><div class="sec">Histórico de check-ins</div><div id="dedicacionTable"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Cargando...</div></div></div>
-</div>
-</div></div>
-<script>
-// EQUIPO REBOLD — correos fijos. Cualquier otro correo = proveedor automático.
-const USERS={
-  'andrea.patino@letsrebold.com':{name:'Natalia Patiño',role:'director',unit:'Dirección',code:'NP',color:'var(--red)'},
-  'sebastian.castro@letsrebold.com':{name:'Sebastián Castro',role:'analyst',unit:'Intelligence',code:'SC',color:'var(--red)'},
-  'adriana.figueredo@letsrebold.com':{name:'Adriana Figueredo',role:'analyst',unit:'Ambas',code:'AF',color:'var(--amber)'},
-  'laura.correa@letsrebold.com':{name:'Laura Correa',role:'analyst',unit:'Intelligence',code:'LC',color:'var(--red)'},
-  'paula.bermudez@letsrebold.com':{name:'Paula Bermúdez',role:'analyst',unit:'Intelligence',code:'PB',color:'var(--red)'},
-  'alejandro.sierra@letsrebold.com':{name:'Alejandro Sierra',role:'account',unit:'Ambas',code:'AS',color:'var(--amber)'},
-  'gina.benavides@ispd.com':{name:'Gina Benavides',role:'analyst',unit:'Ambas',code:'GB',color:'var(--amber)'},
-  'maria.castro@letsrebold.com':{name:'María Camila Castro',role:'cm',unit:'Creatividad',code:'MC',color:'var(--blue)'},
-  'alicia.prieto@letsrebold.com':{name:'Estefanía Prieto',role:'cm',unit:'Creatividad',code:'EP',color:'var(--blue)'},
-  'jessica.jaramillo@ispd.com':{name:'Juliana Jaramillo',role:'analyst',unit:'Intelligence',code:'JJ',color:'var(--red)'},
-  'marcela.rondon@letsrebold.com':{name:'Marcela Rondón',role:'analyst',unit:'Intelligence',code:'MR',color:'var(--red)'},
-  'daniel.urbina@ispd.com':{name:'Daniel Urbina',role:'designer',unit:'Creatividad',code:'DU',color:'var(--blue)'},
-  'juan.espinosa@ispd.com':{name:'Juan Camilo Espinosa',role:'designer',unit:'Creatividad',code:'JE',color:'var(--blue)'},
+// ══════════════════════════════════════════════════════════════════
+// REBOLD HUB · Google Apps Script · Versión Final v3
+// ──────────────────────────────────────────────────────────────────
+// CAMBIOS v2:
+// ✅ Fix 1: enviarRecordatorioAdmin() ahora consulta Supabase (no Gmail)
+//           y usa hora Colombia (UTC-5) para comparar fechas
+// ✅ Fix 2: Cristian Santamaría eliminado del array EQUIPO
+//           (sigue en CRISTIAN_EMAIL para alertas Henkel)
+// CAMBIOS v3:
+// ✅ GID mayo agregado: 955820397
+// ✅ Bodytech y Los Olivos eliminados de clientes (no activos en las unidades)
+// ✅ Estefanía Prieto confirmada: alicia.prieto@letsrebold.com
+// ──────────────────────────────────────────────────────────────────
+// FUNCIONES AUTOMÁTICAS:
+// 1. enviarCheckinDiario()      → Lun-Vie 5:30 PM → Check-in equipo
+// 2. enviarReporteProveedores() → Viernes 5:30 PM → Reporte proveedores
+// 3. enviarRecordatorioAdmin()  → Lun-Vie 7:00 PM → Quién no respondió
+// 4. sincronizarVitality()      → Todos los días 11:00 PM → Sync Vitality → Supabase
+// ══════════════════════════════════════════════════════════════════
+
+const CONFIG = {
+  HUB_URL:      'https://rebold-hub.vercel.app',
+  CHECKIN_URL:  'https://rebold-hub.vercel.app',
+  ADMIN_EMAIL:  'andrea.patino@letsrebold.com',
+  SUPABASE_URL: 'https://sfdwmldxrjsefoxoqmvv.supabase.co',
+  SUPABASE_KEY: 'sb_publishable_XGDo7N3bGUvm0ZqE3Q04Bw_FwvjA7PL',
+  VITALITY_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSaZYmftCEQAbBvbgxVhILd288o01zgjl5hg7LZp2Fa_pEzaet69t3sTPufyxglcAnNCkyqVWR6HSLq/pub?gid=215544678&single=true&output=csv',
 };
-const ROLE_LABELS={director:'Directora de Unidades',account:'Ejecutivo de Cuentas',analyst:'Analista',designer:'Diseñador',cm:'Community Manager',proveedor:'Proveedor Externo'};
-const NAV_CONFIG={
-  director:[{id:'overview',label:'Resumen',icon:'grid'},{id:'equipo',label:'Equipo',icon:'users'},{id:'tareas',label:'Tareas',icon:'check'},{id:'tickets',label:'Tickets',icon:'ticket'},{id:'financiero',label:'Financiero',icon:'dollar'},{id:'dedicacion',label:'Dedicación',icon:'dollar'},{id:'checkin',label:'Check-in',icon:'msg'}],
-  account:[{id:'mis-solicitudes',label:'Mis solicitudes',icon:'ticket'},{id:'nuevo-ticket',label:'Nueva solicitud',icon:'plus'},{id:'checkin',label:'Check-in',icon:'msg'}],
-  analyst:[{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
-  designer:[{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
-  cm:[{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
-  proveedor:[{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
+
+// GID por mes — agregar el GID cuando crees cada pestaña nueva en el Vitality
+const COSTOS_MESES = {
+  enero: '', febrero: '', marzo: '',
+  abril: '1668189501', // ✅ Ya configurado
+  mayo: '955820397',  // ✅ Ya configurado
+  junio: '', julio: '', agosto: '',
+  septiembre: '', octubre: '', noviembre: '', diciembre: '',
 };
-const ICONS={grid:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',users:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',check:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',ticket:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 20h.01M7 20v-4"/><path d="M12 20V10"/><path d="M17 20V4"/></svg>',dollar:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',msg:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',plus:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'};
-let currentUser=null,prevPage=null;
-function tick(){var n=new Date(),days=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],months=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];var el=document.getElementById('todayDate2');if(el)el.textContent=days[n.getDay()]+' '+n.getDate()+' de '+months[n.getMonth()]+' · '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
-tick();setInterval(tick,1000);
-function checkEmail(){
-  var email=document.getElementById('loginEmail').value.trim().toLowerCase();
-  if(!email||!email.includes('@')){document.getElementById('loginError').style.display='block';return;}
-  document.getElementById('loginError').style.display='none';
-  document.getElementById('loginStep1').style.display='none';
-  var knownUser=USERS[email],storedPwd=localStorage.getItem('rb_pwd_'+email),storedName=localStorage.getItem('rb_name_'+email);
-  if(knownUser){
-    if(!storedPwd){document.getElementById('loginStep2').style.display='block';document.getElementById('step2Hint').textContent='Hola '+knownUser.name.split(' ')[0]+', es tu primera vez.';document.getElementById('loginPass1').focus();}
-    else{document.getElementById('loginStep3').style.display='block';document.getElementById('step3Name').textContent='Hola '+knownUser.name.split(' ')[0]+' 👋';document.getElementById('loginPassExist').focus();}
-  } else {
-    if(storedPwd&&storedName){document.getElementById('loginStep3').style.display='block';document.getElementById('step3Name').textContent='Hola '+storedName.split(' ')[0]+' 👋';document.getElementById('loginPassExist').focus();}
-    else{document.getElementById('loginStepProveedor').style.display='block';document.getElementById('loginNombre').focus();}
+
+// ── EQUIPO INTERNO ────────────────────────────────────────────────
+// ✅ Fix 2: Cristian Santamaría eliminado de este array
+const EQUIPO = [
+  { name: 'Sebastián Castro',     email: 'sebastian.castro@letsrebold.com',  unit: 'Intelligence' },
+  { name: 'Adriana Figueredo',    email: 'adriana.figueredo@letsrebold.com', unit: 'Ambas' },
+  { name: 'Laura Correa',         email: 'laura.correa@letsrebold.com',      unit: 'Intelligence' },
+  { name: 'Paula Bermúdez',       email: 'paula.bermudez@letsrebold.com',    unit: 'Intelligence' },
+  { name: 'Alejandro Sierra',     email: 'alejandro.sierra@letsrebold.com',  unit: 'Ambas' },
+  { name: 'Gina Benavides',       email: 'gina.benavides@ispd.com',          unit: 'Ambas' },
+  { name: 'María Camila Castro',  email: 'maria.castro@letsrebold.com',      unit: 'Creatividad' },
+  { name: 'Estefanía Prieto',     email: 'alicia.prieto@letsrebold.com',     unit: 'Creatividad' },
+  { name: 'Juliana Jaramillo',    email: 'jessica.jaramillo@ispd.com',       unit: 'Intelligence' },
+  { name: 'Marcela Rondón',       email: 'marcela.rondon@letsrebold.com',    unit: 'Intelligence' },
+  { name: 'Daniel Urbina',        email: 'daniel.urbina@ispd.com',           unit: 'Creatividad' },
+  { name: 'Juan Camilo Espinosa', email: 'juan.espinosa@ispd.com',           unit: 'Creatividad' },
+];
+
+// ── PROVEEDORES ───────────────────────────────────────────────────
+// IMPORTANTE: Las tarifas son SOLO internas — NO se muestran al proveedor
+const PROVEEDORES = [
+  {
+    name: 'Laura Morales', email: 'lauramlopez3004@gmail.com',
+    clientes: ['Corferias', 'Granite', 'Stormberg'], tipo: 'piezas',
+    tarifas_internas: {
+      con_ia:  { min: 1, max: 20, valor: 720000,  nombre: '1-20 piezas con IA' },
+      con_ia2: { min: 21, max: 40, valor: 1350000, nombre: '21-40 piezas con IA' },
+      con_ia3: { min: 41, max: 60, valor: 1920000, nombre: '41-60 piezas con IA' },
+      sin_ia:  { min: 1, max: 20, valor: 1040000,  nombre: '1-20 piezas sin IA' },
+      sin_ia2: { min: 21, max: 40, valor: 1950000, nombre: '21-40 piezas sin IA' },
+      sin_ia3: { min: 41, max: 60, valor: 2760000, nombre: '41-60 piezas sin IA' },
+    }
+  },
+  {
+    name: 'Andrés Sánchez', email: 'dg17sanchez@gmail.com',
+    clientes: ['Punto de Pago', 'Parador Rojo', 'Casa Mayor'], tipo: 'piezas',
+    nota: 'Activo hasta 15 mayo 2026',
+    tarifas_internas: {
+      p10: 1300000, p20: 2000000, p30: 2700000,
+      p40: 3200000, p50: 3600000, p60: 3900000,
+      adaptaciones5: 850000, adaptaciones6: 1500000,
+      adaptaciones7: 2100000, adaptaciones8: 2600000,
+    }
+  },
+  {
+    name: 'Sebastián Barrera', email: 'sbarrera.agenciatap@gmail.com',
+    clientes: ['Henkel Regional', 'Parador Rojo', 'Punto de Pago'], tipo: 'mixto',
+    tarifas_internas: {
+      henkel_fijo: 3000000,
+      parador_1_20: 1600000, parador_21_30: 2100000, parador_adicional: 65000,
+      puntopago_1_20: 1400000, puntopago_21_30: 1750000, puntopago_adicional: 55000,
+      audiovisual: 4500000,
+    }
+  },
+  {
+    name: 'Nicole Sierra', email: 'nidasiza7@gmail.com',
+    clientes: ['Multimarca'], tipo: 'fijo_mensual',
+    nota: 'Contrato hasta julio 2026',
+    tarifas_internas: { mayo: 1748000, junio: 1428000, julio: 600000 }
+  },
+  {
+    name: 'Daniel Beltrán', email: 'danielbeltranmz07@gmail.com',
+    clientes: ['Monitoreo Intelligence'], tipo: 'fijo_variable',
+    tarifas_internas: { fijo: 875000, hora_extra: 20500, festivo: 218750 }
+  },
+];
+
+
+// ── FESTIVOS COLOMBIA ─────────────────────────────────
+function esFestivo() {
+  const hoy  = new Date();
+  const dia  = hoy.getDate();
+  const mes  = hoy.getMonth() + 1;
+  const anio = hoy.getFullYear();
+
+  const fijos = [
+    '1-1', '5-1', '7-20', '8-7', '12-8', '12-25',
+  ];
+  if (fijos.includes(mes + '-' + dia)) return true;
+
+  const trasladables = [
+    { mes: 1,  dia: 6  },
+    { mes: 3,  dia: 19 },
+    { mes: 6,  dia: 29 },
+    { mes: 8,  dia: 15 },
+    { mes: 10, dia: 12 },
+    { mes: 11, dia: 1  },
+    { mes: 11, dia: 11 },
+  ];
+  for (const f of trasladables) {
+    const fecha  = new Date(anio, f.mes - 1, f.dia);
+    const diaSem = fecha.getDay();
+    let lunes    = new Date(fecha);
+    if (diaSem !== 1) {
+      const diff = diaSem === 0 ? 1 : 8 - diaSem;
+      lunes = new Date(fecha.getTime() + diff * 24 * 60 * 60 * 1000);
+    }
+    if (lunes.getDate() === dia && lunes.getMonth() + 1 === mes) return true;
+  }
+
+  const pascua        = calcularPascua(anio);
+  const juevesSanto   = new Date(pascua.getTime() - 3 * 24 * 60 * 60 * 1000);
+  const viernesSanto  = new Date(pascua.getTime() - 2 * 24 * 60 * 60 * 1000);
+  const ascension     = new Date(pascua.getTime() + 43 * 24 * 60 * 60 * 1000);
+  const corpusChristi = new Date(pascua.getTime() + 64 * 24 * 60 * 60 * 1000);
+  const sagradoCorazon= new Date(pascua.getTime() + 71 * 24 * 60 * 60 * 1000);
+
+  for (const f of [juevesSanto, viernesSanto, ascension, corpusChristi, sagradoCorazon]) {
+    if (f.getDate() === dia && f.getMonth() + 1 === mes) return true;
+  }
+  return false;
+}
+
+function calcularPascua(anio) {
+  const a = anio % 19;
+  const b = Math.floor(anio / 100);
+  const c = anio % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const mes = Math.floor((h + l - 7 * m + 114) / 31);
+  const dia = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(anio, mes - 1, dia);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 1 — CHECK-IN DIARIO (Lun-Vie 5:30 PM)
+// ✅ Respeta ausencias registradas en Supabase
+// ══════════════════════════════════════════════════════════════════
+function enviarCheckinDiario() {
+  const hoy = new Date();
+  if (hoy.getDay() === 0 || hoy.getDay() === 6) return;
+  if (esFestivo()) { Logger.log("🎉 Hoy es festivo — no se envía check-in."); return; }
+
+  // ✅ Consultar ausentes de hoy en Supabase
+  const fechaHoy  = Utilities.formatDate(hoy, 'GMT-5', 'yyyy-MM-dd');
+  const urlAus    = CONFIG.SUPABASE_URL + '/rest/v1/absences?date_start=lte.' + fechaHoy + '&date_end=gte.' + fechaHoy + '&select=member_name';
+  let ausentesHoy = [];
+  try {
+    const res = UrlFetchApp.fetch(urlAus, {
+      headers: { 'apikey': CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY },
+      muteHttpExceptions: true,
+    });
+    if (res.getResponseCode() === 200) {
+      ausentesHoy = JSON.parse(res.getContentText()).map(a => a.member_name.toLowerCase().trim());
+    }
+  } catch(e) { Logger.log('⚠️ No se pudo consultar ausencias: ' + e.message); }
+
+  const fecha = capitalize(hoy.toLocaleDateString('es-CO', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  }));
+
+  let enviados = 0, omitidos = 0;
+  EQUIPO.forEach(p => {
+    // ✅ Si está ausente hoy, saltar
+    if (ausentesHoy.includes(p.name.toLowerCase().trim())) {
+      Logger.log('⏭️ Omitido (ausente): ' + p.name);
+      omitidos++;
+      return;
+    }
+
+    const nombre = p.name.split(' ')[0];
+    const link   = CONFIG.CHECKIN_URL + '?email=' + encodeURIComponent(p.email);
+    const unidad = p.unit === 'Intelligence' ? '🔴 Intelligence' :
+                   p.unit === 'Creatividad'  ? '🔵 Creatividad'  : '🟡 Ambas unidades';
+
+    GmailApp.sendEmail(p.email,
+      '✅ Check-in Rebold · ' + fecha,
+      `Hola ${nombre} 👋\n\n` +
+      `Es hora de registrar tu check-in del día.\n\n` +
+      `📅 ${fecha}\n🏢 Unidad: ${unidad}\n\n` +
+      `👉 Registra aquí (2 minutos):\n${link}\n\n` +
+      `• ¿Con qué clientes trabajaste?\n` +
+      `• ¿Qué tareas realizaste?\n` +
+      `• ¿Cuántas horas dedicaste?\n\n` +
+      `¡Gracias! 💪\n\n— Natalia · Rebold Hub`
+    );
+    Logger.log('✓ Check-in → ' + p.name);
+    enviados++;
+  });
+  Logger.log('✅ Check-ins enviados: ' + enviados + ' · Omitidos por ausencia: ' + omitidos);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 2 — REPORTE SEMANAL PROVEEDORES (Viernes 5:30 PM)
+// ══════════════════════════════════════════════════════════════════
+function enviarReporteProveedores() {
+  const hoy = new Date();
+  if (hoy.getDay() !== 5) return;
+  if (esFestivo()) { Logger.log("🎉 Viernes festivo — se pospone reporte proveedores."); return; }
+
+  const semana = obtenerNumeroSemana(hoy);
+  const ini    = new Date(hoy); ini.setDate(hoy.getDate() - 4);
+  const rango  = ini.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }) +
+                 ' – ' + hoy.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+
+  PROVEEDORES.forEach(p => {
+    const nombre   = p.name.split(' ')[0];
+    const link     = CONFIG.HUB_URL + '?email=' + encodeURIComponent(p.email) + '&semana=' + semana;
+    const clientes = p.clientes.join(', ');
+
+    const preguntas = p.tipo === 'fijo_variable'
+      ? `• ¿Cuántos días trabajaste esta semana?\n• ¿Hubo horas extras? ¿Cuántas?\n• ¿Trabajaste algún festivo?\n• ¿Alguna novedad del monitoreo?`
+      : `• ¿Cuántas piezas entregaste por cliente?\n• ¿Usaste herramienta IA?\n• ¿Alguna novedad?`;
+
+    GmailApp.sendEmail(p.email,
+      '📋 Reporte semanal Rebold · Semana ' + semana + ' · ' + rango,
+      `Hola ${nombre} 👋\n\n` +
+      `Es viernes — hora de reportar tu semana.\n\n` +
+      `📅 Semana ${semana} · ${rango}\n🏢 Clientes: ${clientes}\n\n` +
+      `👉 Registra aquí:\n${link}\n\n` +
+      preguntas + '\n\n¡Gracias por tu trabajo! 🙌\n\n— Natalia · Rebold Hub'
+    );
+    Logger.log('✓ Reporte → ' + p.name);
+  });
+
+  GmailApp.sendEmail(CONFIG.ADMIN_EMAIL,
+    '📊 Reportes semanales enviados · Semana ' + semana,
+    `Hola Natalia,\n\nReportes enviados a ${PROVEEDORES.length} proveedores:\n\n` +
+    PROVEEDORES.map(p => `• ${p.name} (${p.clientes.join(', ')})`).join('\n') +
+    `\n\nVer en: ${CONFIG.HUB_URL}\n\n— Rebold Hub`
+  );
+  Logger.log('✅ Reportes proveedores: ' + PROVEEDORES.length);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 3 — RECORDATORIO ADMIN (Lun-Vie 7:00 PM)
+// ✅ Fix 1: Consulta Supabase con fecha Colombia (UTC-5)
+// ══════════════════════════════════════════════════════════════════
+function enviarRecordatorioAdmin() {
+  const hoy = new Date();
+  if (hoy.getDay() === 0 || hoy.getDay() === 6) return;
+  if (esFestivo()) return;
+
+  // ✅ Fecha en hora Colombia (UTC-5), no UTC
+  const col     = new Date(hoy.getTime() - 5 * 60 * 60 * 1000);
+  const fecha   = capitalize(col.toLocaleDateString('es-CO', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  }));
+  const fechaHoy = Utilities.formatDate(col, 'GMT-5', 'yyyy-MM-dd');
+
+  // ✅ Consultar Supabase (no Gmail) para saber quién hizo check-in hoy
+  const url = CONFIG.SUPABASE_URL + '/rest/v1/checkins?checkin_date=eq.' + fechaHoy + '&select=member_name';
+  const res  = UrlFetchApp.fetch(url, {
+    headers: {
+      'apikey':        CONFIG.SUPABASE_KEY,
+      'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY,
+    },
+    muteHttpExceptions: true,
+  });
+
+  const checkins = JSON.parse(res.getContentText());
+  const nombres  = checkins.map(c => c.member_name.toLowerCase().trim());
+
+  // ✅ Excluir ausentes de hoy del conteo de pendientes
+  let ausentesHoy = [];
+  try {
+    const urlAus = CONFIG.SUPABASE_URL + '/rest/v1/absences?date_start=lte.' + fechaHoy + '&date_end=gte.' + fechaHoy + '&select=member_name';
+    const resAus = UrlFetchApp.fetch(urlAus, {
+      headers: { 'apikey': CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY },
+      muteHttpExceptions: true,
+    });
+    if (resAus.getResponseCode() === 200)
+      ausentesHoy = JSON.parse(resAus.getContentText()).map(a => a.member_name.toLowerCase().trim());
+  } catch(e) { Logger.log('⚠️ No se pudo consultar ausencias: ' + e.message); }
+
+  const pend = EQUIPO.filter(p =>
+    !nombres.includes(p.name.toLowerCase().trim()) &&
+    !ausentesHoy.includes(p.name.toLowerCase().trim())
+  );
+
+  if (pend.length === 0) { Logger.log('✅ Todos registraron check-in.'); return; }
+
+  GmailApp.sendEmail(CONFIG.ADMIN_EMAIL,
+    '⏳ Check-ins pendientes · ' + fecha,
+    `Hola Natalia,\n\nAún no registraron check-in (${fecha}):\n\n` +
+    pend.map(p => `• ${p.name} (${p.unit})`).join('\n') +
+    `\n\nVer: ${CONFIG.HUB_URL}\n\n— Rebold Hub`
+  );
+  Logger.log('⚠️ Pendientes: ' + pend.length);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 4 — SINCRONIZAR VITALITY → SUPABASE (11:00 PM diario)
+// ══════════════════════════════════════════════════════════════════
+function sincronizarVitality() {
+  Logger.log('🔄 Sincronizando Vitality → Supabase...');
+  try {
+    sincClientes();
+    sincCostosMes();
+    Logger.log('✅ Sincronización completada.');
+  } catch(e) {
+    Logger.log('❌ Error: ' + e.message);
+    GmailApp.sendEmail(CONFIG.ADMIN_EMAIL,
+      '⚠️ Rebold Hub · Error sincronización Vitality',
+      `Error sincronizando:\n\n${e.message}\n\nRevisa el log en script.google.com`
+    );
   }
 }
-function registerProveedor(){
-  var email=document.getElementById('loginEmail').value.trim().toLowerCase();
-  var nombre=document.getElementById('loginNombre').value.trim();
-  var p1=document.getElementById('loginPassP1').value,p2=document.getElementById('loginPassP2').value;
-  if(!nombre||p1.length<6||p1!==p2){document.getElementById('loginErrorP').style.display='block';return;}
-  document.getElementById('loginErrorP').style.display='none';
-  localStorage.setItem('rb_pwd_'+email,btoa(p1));localStorage.setItem('rb_name_'+email,nombre);
-  var initials=nombre.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
-  currentUser={name:nombre,role:'proveedor',unit:'Proveedor',code:initials,color:'var(--purple)',email:email};
-  initApp();
+
+function sincClientes() {
+  const csv     = UrlFetchApp.fetch(CONFIG.VITALITY_URL).getContentText();
+  const rows    = Utilities.parseCsv(csv);
+  const headers = rows[0].map(h => h.trim().toLowerCase());
+  const data    = [];
+
+  for (let i = 1; i < rows.length; i++) {
+    const r      = rows[i];
+    const nombre = getVal(r, headers, ['cliente','client','cuenta','nombre']);
+    const estado = getVal(r, headers, ['estado','status','stage']);
+    const unidad = getVal(r, headers, ['unidad','unit','servicio']);
+    const fee    = getVal(r, headers, ['fee','ingreso','valor','revenue']);
+    if (!nombre) continue;
+    const est = (estado||'').toLowerCase();
+    if (!est.includes('base') && !est.includes('won')) continue;
+    data.push({
+      name:        nombre.trim(),
+      status:      est.includes('won') ? 'Won' : 'Base',
+      unit:        normUnidad(unidad),
+      monthly_fee: parseVal(fee),
+      active:      true,
+    });
+  }
+
+  if (!data.length) return;
+  supaPost('/rest/v1/clients', data, 'resolution=merge-duplicates');
+  Logger.log('✓ Clientes sync: ' + data.length);
 }
-function setPassword(){var email=document.getElementById('loginEmail').value.trim().toLowerCase(),p1=document.getElementById('loginPass1').value,p2=document.getElementById('loginPass2').value,err=document.getElementById('loginError2');if(p1.length<6||p1!==p2){err.style.display='block';return;}err.style.display='none';localStorage.setItem('rb_pwd_'+email,btoa(p1));proceedLogin(email);}
-function loginWithPassword(){
-  var email=document.getElementById('loginEmail').value.trim().toLowerCase(),p=document.getElementById('loginPassExist').value,stored=localStorage.getItem('rb_pwd_'+email),err=document.getElementById('loginError3');
-  if(!stored||btoa(p)!==stored){err.style.display='block';return;}err.style.display='none';
-  var knownUser=USERS[email];
-  if(knownUser){proceedLogin(email);}
-  else{var nombre=localStorage.getItem('rb_name_'+email)||email.split('@')[0];var initials=nombre.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);currentUser={name:nombre,role:'proveedor',unit:'Proveedor',code:initials,color:'var(--purple)',email:email};initApp();}
+
+function sincCostosMes() {
+  const meses = ['enero','febrero','marzo','abril','mayo','junio',
+                 'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const mes   = meses[new Date().getMonth()];
+  const gid   = COSTOS_MESES[mes];
+  if (!gid) { Logger.log('⚠️ Sin GID para ' + mes); return; }
+
+  const url     = CONFIG.VITALITY_URL.replace('gid=215544678', 'gid=' + gid);
+  const csv     = UrlFetchApp.fetch(url).getContentText();
+  const rows    = Utilities.parseCsv(csv);
+  const headers = rows[0].map(h => h.trim().toLowerCase());
+  const año     = new Date().getFullYear();
+  const mesNum  = new Date().getMonth() + 1;
+  const data    = [];
+
+  for (let i = 1; i < rows.length; i++) {
+    const r       = rows[i];
+    const cliente = getVal(r, headers, ['cliente','client','cuenta']);
+    if (!cliente) continue;
+    const tools = parseVal(getVal(r, headers, ['brandwatch'])) +
+                  parseVal(getVal(r, headers, ['synaptic']));
+    const provs = parseVal(getVal(r, headers, ['laura morales','laura'])) +
+                  parseVal(getVal(r, headers, ['andrés sánchez','andres sanchez'])) +
+                  parseVal(getVal(r, headers, ['sebastián barrera','sebastian barrera'])) +
+                  parseVal(getVal(r, headers, ['nicole sierra','nicole'])) +
+                  parseVal(getVal(r, headers, ['daniel beltrán','daniel beltran']));
+    if (tools === 0 && provs === 0) continue;
+    data.push({ month: mesNum, year: año, client_name: cliente.trim(), tools_cost: tools, providers_cost: provs });
+  }
+
+  if (!data.length) return;
+  supaPost('/rest/v1/financials', data, 'resolution=merge-duplicates');
+  Logger.log('✓ Costos sync: ' + data.length + ' clientes · ' + mes);
 }
-function proceedLogin(email){currentUser=Object.assign({},USERS[email],{email:email});initApp();}
-function backToEmail(){['loginStep1','loginStep2','loginStep3','loginStepProveedor'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=id==='loginStep1'?'block':'none';});['loginPass1','loginPass2','loginPassExist','loginPassP1','loginPassP2','loginNombre'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});}
-document.addEventListener('keydown',function(e){if(e.key!=='Enter')return;var s1=document.getElementById('loginStep1'),s2=document.getElementById('loginStep2'),s3=document.getElementById('loginStep3'),sp=document.getElementById('loginStepProveedor');if(s1&&s1.style.display!=='none')checkEmail();else if(s2&&s2.style.display!=='none')setPassword();else if(s3&&s3.style.display!=='none')loginWithPassword();else if(sp&&sp.style.display!=='none')registerProveedor();});
-function logout(){currentUser=null;document.getElementById('appShell').style.display='none';document.getElementById('screenLogin').style.display='flex';document.getElementById('loginEmail').value='';backToEmail();}
-function initApp(){
-  document.getElementById('screenLogin').style.display='none';document.getElementById('appShell').style.display='block';
-  document.getElementById('userAv').textContent=currentUser.code;document.getElementById('userAv').style.background=currentUser.role==='proveedor'?'var(--purple)':currentUser.color;
-  document.getElementById('userName').textContent=currentUser.name;document.getElementById('userRoleLabel').textContent=ROLE_LABELS[currentUser.role]||currentUser.role;
-  buildNav();
-  var dn=document.getElementById('directorName');if(dn)dn.textContent=currentUser.name.split(' ')[0];
-  var cs=document.getElementById('colaboradorSub');if(cs)cs.textContent=currentUser.name+' · '+currentUser.unit;
-  buildClientChips();
-  var wb=document.getElementById('ticketWarningBanner'),cb=document.getElementById('ticketConfirmCheck');
-  if(currentUser.role!=='director'){if(wb)wb.style.display='block';if(cb)cb.style.display='block';}
-  var pb=document.getElementById('providerBanner');if(pb)pb.style.display=currentUser.role==='proveedor'?'flex':'none';
-  var nav=NAV_CONFIG[currentUser.role]||NAV_CONFIG.analyst;showPage('page-'+nav[0].id);
+
+// ── UTILIDADES ────────────────────────────────────────────────────
+function supaPost(path, data, prefer) {
+  UrlFetchApp.fetch(CONFIG.SUPABASE_URL + path, {
+    method: 'POST',
+    headers: {
+      'apikey':        CONFIG.SUPABASE_KEY,
+      'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY,
+      'Content-Type':  'application/json',
+      'Prefer':        prefer || 'return=representation',
+    },
+    payload:            JSON.stringify(data),
+    muteHttpExceptions: true,
+  });
 }
-function buildNav(){var nav=NAV_CONFIG[currentUser.role]||NAV_CONFIG.analyst,navEl=document.getElementById('sidebarNav');navEl.innerHTML='';var sec=document.createElement('div');sec.className='nav-sec';sec.textContent=currentUser.role==='proveedor'?'Proveedor Externo':currentUser.unit;navEl.appendChild(sec);nav.forEach(function(item){var btn=document.createElement('button');btn.className='nav-item';btn.id='nav-'+item.id;btn.innerHTML=(ICONS[item.icon]||'')+item.label;btn.onclick=function(){showPage('page-'+item.id,btn);};navEl.appendChild(btn);});}
-function buildClientChips(){var clients=['Sodimac','Páramo Presenta','Páramo Lab','JEP','Homecenter','Global Wine','Banco Falabella','Corferias','Henkel Regional','Granite','Stormberg','Parador Rojo','Punto de Pago','Supercerdo','Casa Mayor','Blue Digital','Reunión interna'];var c=document.getElementById('clientChips');if(!c)return;c.innerHTML=clients.map(function(cl){return '<div class="badge b-gray" style="cursor:pointer;padding:8px 10px;font-size:12px;border-radius:8px;justify-content:center" onclick="toggleChip(this)">'+cl+'</div>';}).join('');}
-function showPage(pageId,btn){prevPage=(document.querySelector('.page.active')||{}).id;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});var page=document.getElementById(pageId);if(page)page.classList.add('active');if(btn)btn.classList.add('active');else{var nb=document.getElementById('nav-'+pageId.replace('page-',''));if(nb)nb.classList.add('active');}if(window.innerWidth<=900)closeSidebar();window.scrollTo({top:0,behavior:'smooth'});onPageOpen(pageId);}
-function goBack(){if(prevPage)showPage(prevPage);else{var nav=NAV_CONFIG[currentUser?currentUser.role:'analyst']||NAV_CONFIG.analyst;showPage('page-'+nav[0].id);}}
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
-function toggleChip(el){var s=el.getAttribute('data-selected')==='true';el.setAttribute('data-selected',s?'false':'true');el.classList.toggle('b-gray');el.classList.toggle('b-red');}
-function selectH(el,val){document.querySelectorAll('#hourBtns .badge').forEach(function(b){b.classList.remove('b-red');b.classList.add('b-gray');b.setAttribute('data-selected','false');});el.classList.remove('b-gray');el.classList.add('b-red');el.setAttribute('data-selected','true');el.setAttribute('data-hours',val);}
-async function submitCheckin(){var ac=document.querySelectorAll('#clientChips [data-selected="true"]'),tc=document.querySelectorAll('#taskChips [data-selected="true"]'),hs=document.querySelector('#hourBtns [data-selected="true"]'),nota=document.getElementById('checkinNota').value;var accounts=Array.from(ac).map(function(c){return{client:c.textContent.trim()};});var tasks=Array.from(tc).map(function(c){return c.textContent.trim();});var hours=hs?(hs.getAttribute('data-hours')||hs.textContent.replace('h','').trim()):'0';if(!accounts.length){alert('Selecciona al menos un cliente');return;}if(!tasks.length){alert('Selecciona al menos una tarea');return;}if(!hs){alert('Selecciona las horas');return;}var checkin={member_name:currentUser.name,member_unit:currentUser.unit,checkin_date:new Date().toISOString().split('T')[0],accounts:accounts,tasks:tasks,hours:parseFloat(hours)||0,note:nota,ai_summary:currentUser.name.split(' ')[0]+' trabajó en '+accounts.map(function(a){return a.client;}).join(', ')+'. Realizó: '+tasks.slice(0,2).join(', ')+'. Horas: '+hours+'h.'};try{await sbPost('checkins',checkin);alert('✅ Check-in registrado. ¡Gracias '+currentUser.name.split(' ')[0]+'!');document.querySelectorAll('#clientChips .badge,#taskChips .badge,#hourBtns .badge').forEach(function(el){el.classList.remove('b-red');el.classList.add('b-gray');el.setAttribute('data-selected','false');});document.getElementById('checkinNota').value='';}catch(e){alert('Error guardando el check-in.');}}
-window.addEventListener('load',function(){var params=new URLSearchParams(window.location.search),email=params.get('email');if(email&&USERS[email.toLowerCase()]){document.getElementById('loginEmail').value=email;checkEmail();}});
-const SB_URL='https://sfdwmldxrjsefoxoqmvv.supabase.co';
-const SB_KEY='sb_publishable_XGDo7N3bGUvm0ZqE3Q04Bw_FwvjA7PL';
-const SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
-let currentFilter='inbox',allTickets=[],allTasks=[];
-async function sbGet(t,q){var r=await fetch(SB_URL+'/rest/v1/'+t+'?'+(q||''),{headers:SB_HDR});return r.ok?r.json():[];}
-async function sbPost(t,d){var r=await fetch(SB_URL+'/rest/v1/'+t,{method:'POST',headers:Object.assign({},SB_HDR,{'Prefer':'return=representation'}),body:JSON.stringify(d)});return r.ok?r.json():null;}
-async function sbPatch(t,id,d){var r=await fetch(SB_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'PATCH',headers:SB_HDR,body:JSON.stringify(d)});return r.ok;}
-async function loadTickets(){var list=document.getElementById('ticketsList');if(!list)return;list.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">⏳ Cargando...</div>';try{allTickets=await sbGet('tickets','order=created_at.desc&limit=100');var sub=document.getElementById('ticketsSub');if(sub)sub.textContent=allTickets.length+' tickets · '+allTickets.filter(function(t){return t.status==='inbox';}).length+' sin asignar';renderTickets(currentFilter);}catch(e){list.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Error cargando tickets.</div>';}}
-function filterTickets(filter,btn){currentFilter=filter;document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});if(btn)btn.classList.add('active');renderTickets(filter);}
-function renderTickets(filter){var list=document.getElementById('ticketsList');if(!list)return;var tickets=filter==='all'?allTickets:allTickets.filter(function(t){return t.status===filter;});if(!tickets.length){list.innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--muted)"><div style="font-size:36px;margin-bottom:12px">🎫</div><div style="font-size:14px;font-weight:600;color:var(--text)">Sin tickets</div></div>';return;}list.innerHTML='';tickets.forEach(function(t){var pc=t.priority==='urgente'?'var(--red)':t.priority==='normal'?'var(--amber)':'var(--blue)';var sl=t.status==='inbox'?'Sin asignar':t.status==='proceso'?'En proceso':'Resuelto';var sb=t.status==='inbox'?'b-amber':t.status==='proceso'?'b-blue':'b-green';var uc=t.unit==='Intelligence'?'b-red':'b-blue';var src=t.source==='sheet_agente'?'📊 Sheet':(t.source&&t.source.indexOf('henkel')!==-1)?'📧 Henkel':t.source==='gmail_auto'?'📧 Gmail':'✏️ Manual';var time=t.created_at?new Date(t.created_at).toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'';var div=document.createElement('div');div.className='ticket '+(t.priority||'');div.style.cssText='border-left:3px solid '+pc+';margin-bottom:10px';var ab=t.status==='inbox'?'<button class="btn btn-ghost btn-sm" style="padding:4px 10px;font-size:11px" data-action="assign" data-id="'+t.id+'">Asignar</button>':'';var advB=t.status!=='resuelto'?'<button class="btn btn-red btn-sm" style="padding:4px 10px;font-size:11px" data-action="advance" data-id="'+t.id+'" data-status="'+t.status+'">'+(t.status==='inbox'?'▶ Iniciar':'✓ Resolver')+'</button>':'<span class="badge b-green" style="font-size:10px">✓ Resuelto</span>';div.innerHTML='<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px"><div style="flex:1;min-width:0"><div style="font-family:monospace;font-size:10px;color:var(--muted);margin-bottom:4px">'+(t.ticket_number||'TK-?')+' · '+src+' · '+time+'</div><div style="font-size:13px;font-weight:600;line-height:1.4">'+(t.title||'Sin título')+'</div></div><span class="badge '+sb+'" style="flex-shrink:0;font-size:10px">'+sl+'</span></div>'+(t.ai_summary?'<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.5">'+(t.ai_summary||'').slice(0,120)+'</div>':'')+'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="badge '+uc+'" style="font-size:9px">'+(t.unit||'—')+'</span><span style="font-size:11px;color:var(--muted)">'+(t.client_name||'—')+'</span>'+(t.assignee?'<span style="font-size:11px;color:var(--muted)">→ '+t.assignee+'</span>':'')+'<div style="margin-left:auto;display:flex;gap:6px">'+ab+advB+'</div></div>';div.addEventListener('click',function(e){var b=e.target.closest('[data-action]');if(!b)return;if(b.dataset.action==='assign')assignTicket(b.dataset.id);if(b.dataset.action==='advance')advanceTicket(b.dataset.id,b.dataset.status);});list.appendChild(div);});}
-async function advanceTicket(id,s){await sbPatch('tickets',id,{status:s==='inbox'?'proceso':'resuelto'});await loadTickets();}
-async function assignTicket(id){var team=['Sebastián Castro','Adriana Figueredo','Laura Correa','Paula Bermúdez','Alejandro Sierra','Gina Benavides','María Camila Castro','Estefanía Prieto','Daniel Urbina','Juan Camilo Espinosa','Juliana Jaramillo','Marcela Rondón'];var a=prompt('Asignar a:\n'+team.map(function(n,i){return(i+1)+'. '+n;}).join('\n')+'\n\nEscribe el nombre exacto:');if(!a)return;await sbPatch('tickets',id,{assignee:a,status:'proceso'});await loadTickets();}
-async function loadTasks(){try{allTasks=await sbGet('tasks','order=created_at.desc&limit=100');renderKanban();}catch(e){console.error(e);}}
-function renderKanban(){['pendiente','en_curso','completado'].forEach(function(status){var tasks=allTasks.filter(function(t){return t.status===status;}),col=document.getElementById('tasks-'+status),cnt=document.getElementById('cnt-'+status);if(cnt)cnt.textContent=tasks.length;if(!col)return;if(!tasks.length){col.innerHTML='<div style="text-align:center;padding:20px 12px;color:var(--muted);font-size:12px">Sin tareas</div>';return;}col.innerHTML='';tasks.forEach(function(t){var pc=t.priority==='urgente'?'var(--red)':'var(--amber)',due=t.due_date?new Date(t.due_date).toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'';var card=document.createElement('div');card.className='k-card';card.style.cssText='border-left:2px solid '+pc;var advB=t.status!=='completado'?'<button class="btn btn-red btn-sm" style="flex:1;padding:5px;font-size:11px" data-action="advance" data-id="'+t.id+'" data-status="'+t.status+'">'+(t.status==='pendiente'?'▶ Iniciar':'✓ Completar')+'</button>':'<span style="font-size:11px;color:var(--green)">✓ Listo</span>';var pctB=t.status==='en_curso'?'<button class="btn btn-ghost btn-sm" style="padding:5px 8px;font-size:11px" data-action="progress" data-id="'+t.id+'">%</button>':'';card.innerHTML='<div class="k-card-title">'+(t.title||'Sin título')+'</div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;color:var(--muted)">'+(t.client_name||'—')+'</span>'+(due?'<span style="font-size:10px;color:var(--muted)">'+due+'</span>':'')+'</div>'+(t.assignee?'<div style="font-size:11px;color:var(--muted);margin-bottom:6px">→ '+t.assignee+'</div>':'')+(t.progress>0?'<div class="prog-bg" style="margin-bottom:6px"><div class="prog-fill" style="width:'+t.progress+'%;background:'+pc+'"></div></div>':'')+'<div style="display:flex;gap:6px">'+advB+pctB+'</div>';card.addEventListener('click',function(e){var b=e.target.closest('[data-action]');if(!b)return;if(b.dataset.action==='advance')advanceTask(b.dataset.id,b.dataset.status);if(b.dataset.action==='progress')updateTaskProgress(b.dataset.id);});col.appendChild(card);});});}
-async function advanceTask(id,s){await sbPatch('tasks',id,{status:s==='pendiente'?'en_curso':'completado'});await loadTasks();}
-async function updateTaskProgress(id){var v=prompt('¿Qué porcentaje? (0-100)');if(!v)return;await sbPatch('tasks',id,{progress:Math.min(100,Math.max(0,parseInt(v)||0))});await loadTasks();}
-function showNewTaskModal(){document.getElementById('modalTarea').style.display='flex';}
-function closeTaskModal(){document.getElementById('modalTarea').style.display='none';}
-async function saveTask(){var title=document.getElementById('taskTitle').value.trim();if(!title){alert('El título es obligatorio');return;}await sbPost('tasks',{title,client_name:document.getElementById('taskClient').value,unit:document.getElementById('taskUnit').value,assignee:document.getElementById('taskAssignee').value||null,due_date:document.getElementById('taskDue').value||null,priority:document.getElementById('taskPriority').value,status:'pendiente',progress:0});closeTaskModal();document.getElementById('taskTitle').value='';await loadTasks();}
-async function createTicket(){var title=document.getElementById('ntTitle').value.trim(),client=document.getElementById('ntClient').value,unit=document.getElementById('ntUnit').value,category=document.getElementById('ntCategory').value,priority=document.getElementById('ntPriority').value,assignee=document.getElementById('ntAssignee').value,desc=document.getElementById('ntDesc').value;if(!title||!client||!unit){alert('Completa: título, cliente y unidad');return;}if(currentUser&&currentUser.role!=='director'){var cf=document.getElementById('ntConfirm');if(cf&&!cf.checked){alert('⚠️ Confirma que es una solicitud real antes de continuar.');return;}}var num='TK-'+Date.now().toString().slice(-5);await sbPost('tickets',{ticket_number:num,title,client_name:client,unit,category,priority,status:'inbox',source:'manual',assignee:assignee||null,ai_summary:desc||'',email_from:currentUser?currentUser.email:''});['ntTitle','ntDesc'].forEach(function(id){document.getElementById(id).value='';});['ntClient','ntUnit','ntCategory','ntAssignee'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('ntPriority').value='normal';var cf=document.getElementById('ntConfirm');if(cf)cf.checked=false;alert('Ticket '+num+' creado.');if(currentUser&&currentUser.role==='director')showPage('page-tickets');else showPage('page-mis-solicitudes');}
-async function loadMisTareas(){var list=document.getElementById('myTasksList');if(!list||!currentUser)return;try{var tickets=await sbGet('tickets','assignee=eq.'+encodeURIComponent(currentUser.name)+'&status=neq.resuelto&order=created_at.desc');var tasks=await sbGet('tasks','assignee=eq.'+encodeURIComponent(currentUser.name)+'&status=neq.completado&order=created_at.desc');var all=tickets.map(function(t){return Object.assign({},t,{_type:'ticket'});}).concat(tasks.map(function(t){return Object.assign({},t,{_type:'task'});}));var pend=all.filter(function(t){return t.status==='inbox'||t.status==='pendiente';}).length;var curso=all.filter(function(t){return t.status==='proceso'||t.status==='en_curso';}).length;var sp=document.getElementById('statMisPend'),sc=document.getElementById('statMisCurso');if(sp)sp.textContent=pend;if(sc)sc.textContent=curso;if(!all.length){list.innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">✅</div><div style="font-family:Syne,sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-bottom:6px">Sin tareas asignadas</div><div style="font-size:12px">Cuando Natalia te asigne algo aparecerá aquí</div></div>';return;}list.innerHTML=all.map(function(t){var pc=t.priority==='urgente'?'var(--red)':t.priority==='baja'?'var(--blue)':'var(--amber)';var sl=t.status==='inbox'?'Sin iniciar':(t.status==='proceso'||t.status==='en_curso')?'En curso':'Pendiente';var due=t.due_date?new Date(t.due_date+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'}):'';var time=t.created_at?new Date(t.created_at).toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'';var desc=(t.ai_summary||t.email_body||t.notes||'').trim();var origen=t.source==='sheet_agente'?'📊 Sheet':(t.source&&t.source.indexOf('henkel')!==-1)?'📧 Henkel':t.source==='gmail_auto'?'📧 Gmail':t.source==='manual'?'✏️ Manual':t.source||'—';var did='detail-'+t.id;return '<div class="task-card" style="border-left:3px solid '+pc+'"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;cursor:pointer" data-action="toggle-detail" data-detail="'+did+'"><div style="flex:1;min-width:0"><div style="font-size:10px;font-family:monospace;color:var(--muted);margin-bottom:4px">'+(t.ticket_number||('ID-'+String(t.id||'').slice(-4)))+' · '+origen+(time?' · '+time:'')+'</div><div class="task-title" style="margin-bottom:6px">'+(t.title||'Sin título')+'</div><div class="task-meta"><span class="badge b-gray" style="font-size:9px">'+(t.client_name||'—')+'</span>'+(t.category?'<span class="badge b-purple" style="font-size:9px">'+t.category+'</span>':'')+(due?'<span>📅 '+due+'</span>':'')+'<span style="color:var(--amber)">'+sl+'</span></div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0"><span class="badge b-'+(t.priority==='urgente'?'red':t.priority==='baja'?'blue':'amber')+'">'+(t.priority||'normal')+'</span><span style="font-size:20px;color:var(--muted);line-height:1;transition:transform .25s;display:inline-block" id="arrow-'+did+'">›</span></div></div>'+(t.progress>0?'<div class="prog-bg" style="margin:10px 0 4px"><div class="prog-fill" style="width:'+t.progress+'%;background:'+pc+'"></div></div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Progreso: '+t.progress+'%</div>':'<div style="margin-top:10px"></div>')+'<div id="'+did+'" style="display:none;padding-top:14px;border-top:1px solid var(--border);margin-top:4px">'+(desc?'<div style="margin-bottom:14px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px">📋 Qué debes hacer</div><div style="font-size:13px;line-height:1.75;color:var(--text);background:var(--surface3);border-radius:10px;padding:14px 16px;white-space:pre-wrap">'+desc+'</div></div>':'<div style="margin-bottom:14px;padding:12px 16px;background:var(--surface3);border-radius:10px;border:1px dashed var(--border2)"><div style="font-size:12px;color:var(--muted);text-align:center">Sin descripción. Consulta con Natalia.</div></div>')+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px"><div style="background:var(--surface3);border-radius:8px;padding:10px 12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Cliente</div><div style="font-size:12px;font-weight:600">'+(t.client_name||'—')+'</div></div><div style="background:var(--surface3);border-radius:8px;padding:10px 12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Unidad</div><div style="font-size:12px;font-weight:600">'+(t.unit||'—')+'</div></div><div style="background:var(--surface3);border-radius:8px;padding:10px 12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Tipo</div><div style="font-size:12px;font-weight:600">'+(t.category||'—')+'</div></div><div style="background:var(--surface3);border-radius:8px;padding:10px 12px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Fecha límite</div><div style="font-size:12px;font-weight:600;color:'+(due?'var(--amber)':'var(--muted)')+'">'+( due||'Sin fecha')+'</div></div></div></div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+(t._type==='ticket'&&t.status!=='resuelto'?'<button class="btn btn-red btn-sm" data-action="advance-ticket" data-id="'+t.id+'" data-status="'+t.status+'">'+(t.status==='inbox'?'▶ Iniciar':'✓ Resolver')+'</button>':'')+(t._type==='task'&&t.status!=='completado'?'<button class="btn btn-red btn-sm" data-action="advance-task" data-id="'+t.id+'" data-status="'+t.status+'">'+(t.status==='pendiente'?'▶ Iniciar':'✓ Completar')+'</button>':'')+(t._type==='task'&&t.status==='en_curso'?'<button class="btn btn-ghost btn-sm" data-action="progress-task" data-id="'+t.id+'">% Progreso</button>':'')+'<button class="btn btn-ghost btn-sm" style="margin-left:auto" data-action="toggle-detail" data-detail="'+did+'">Ver detalle ↓</button></div></div>';}).join('');var newList=list.cloneNode(false);newList.innerHTML=list.innerHTML;list.parentNode.replaceChild(newList,list);list=document.getElementById('myTasksList');list.addEventListener('click',function(e){var btn=e.target.closest('[data-action]');if(!btn)return;var action=btn.dataset.action,id=btn.dataset.id,status=btn.dataset.status;if(action==='toggle-detail'){var panel=document.getElementById(btn.dataset.detail),arrow=document.getElementById('arrow-'+btn.dataset.detail);if(!panel)return;var isOpen=panel.style.display!=='none';panel.style.display=isOpen?'none':'block';if(arrow)arrow.style.transform=isOpen?'rotate(0deg)':'rotate(90deg)';list.querySelectorAll('[data-action="toggle-detail"][data-detail="'+btn.dataset.detail+'"]').forEach(function(b){b.textContent=isOpen?'Ver detalle ↓':'Ocultar ↑';});return;}if(action==='advance-ticket')advanceTicket(id,status).then(loadMisTareas);if(action==='advance-task')advanceTask(id,status).then(loadMisTareas);if(action==='progress-task')updateTaskProgress(id).then(loadMisTareas);});}catch(e){document.getElementById('myTasksList').innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Error.</div>';console.error(e);}}
-async function loadMisSolicitudes(){var list=document.getElementById('misSolicitudesList');if(!list||!currentUser)return;try{var tickets=await sbGet('tickets','email_from=ilike.*'+encodeURIComponent(currentUser.email)+'*&order=created_at.desc&limit=50');if(!tickets.length){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:36px;margin-bottom:12px">📋</div><div style="font-size:14px;font-weight:600;color:var(--text)">Sin solicitudes aún</div></div>';return;}list.innerHTML=tickets.map(function(t){var sl=t.status==='inbox'?'Sin asignar':t.status==='proceso'?'En proceso':'Resuelto';var sc=t.status==='inbox'?'b-amber':t.status==='proceso'?'b-blue':'b-green';var time=t.created_at?new Date(t.created_at).toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'';return'<div class="ticket '+(t.priority||'')+'" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:6px"><div><div style="font-family:monospace;font-size:10px;color:var(--muted);margin-bottom:4px">'+(t.ticket_number||'TK-?')+' · '+time+'</div><div style="font-size:13px;font-weight:600">'+(t.title||'Sin título')+'</div></div><span class="badge '+sc+'" style="font-size:10px;flex-shrink:0">'+sl+'</span></div><div style="display:flex;gap:8px;font-size:11px;color:var(--muted)"><span>'+(t.client_name||'—')+'</span>'+(t.assignee?'<span>→ '+t.assignee+'</span>':'')+'</div></div>';}).join('');}catch(e){list.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Error.</div>';}}
-async function loadDedicacion(){var persona=(document.getElementById('filterPersona')||{}).value||'';var query='order=checkin_date.desc&limit=200';if(persona)query+='&member_name=eq.'+encodeURIComponent(persona);try{var checkins=await sbGet('checkins',query);renderDedicacion(checkins);}catch(e){console.error(e);}}
-function renderDedicacion(checkins){var today=new Date().toISOString().split('T')[0],ws=new Date();ws.setDate(ws.getDate()-ws.getDay()+1);var wss=ws.toISOString().split('T')[0];var hoy=checkins.filter(function(c){return c.checkin_date===today;}),semana=checkins.filter(function(c){return c.checkin_date>=wss;});var horas=checkins.filter(function(c){return c.hours>0;}),ph=horas.length>0?(horas.reduce(function(s,c){return s+parseFloat(c.hours||0);},0)/horas.length).toFixed(1):'—';var eH=document.getElementById('statHoy'),eS=document.getElementById('statSemana'),eHr=document.getElementById('statHoras'),eP=document.getElementById('statPendientes');if(eH)eH.textContent=hoy.length+'/12';if(eS)eS.textContent=semana.length;if(eHr)eHr.textContent=ph+'h';if(eP)eP.textContent=Math.max(0,12-hoy.length);var tbl=document.getElementById('dedicacionTable');if(!tbl)return;if(!checkins.length){tbl.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:32px;margin-bottom:8px">📋</div><div>Sin check-ins aún</div></div>';return;}var byWeek={};checkins.forEach(function(c){var d=new Date(c.checkin_date+'T12:00:00'),wn=getWeekNumber(d),wk=d.getFullYear()+'-W'+wn;if(!byWeek[wk])byWeek[wk]={label:'Semana '+wn,checkins:[]};byWeek[wk].checkins.push(c);});var html='<table class="tbl"><thead><tr><th>Fecha</th><th>Persona</th><th>Unidad</th><th>Cuentas</th><th>Tareas</th><th>Horas</th><th>Nota</th></tr></thead><tbody>';Object.keys(byWeek).sort().reverse().forEach(function(wk){var week=byWeek[wk];html+='<tr><td colspan="7" style="background:var(--surface2);font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:700;padding:8px 14px">'+week.label+' · '+week.checkins.length+' check-ins</td></tr>';week.checkins.forEach(function(c){var accounts=c.accounts?(Array.isArray(c.accounts)?c.accounts.map(function(a){return a.client||a;}).join(', '):String(c.accounts)):'—';var tasks=c.tasks?(Array.isArray(c.tasks)?c.tasks.slice(0,2).join(', '):String(c.tasks)):'—';var fecha=c.checkin_date?new Date(c.checkin_date+'T12:00:00').toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'}):'—';var uc=c.member_unit==='Intelligence'?'var(--red)':c.member_unit==='Creatividad'?'var(--blue)':'var(--amber)';var hc=parseFloat(c.hours)>=7?'var(--green)':parseFloat(c.hours)>=4?'var(--amber)':'var(--muted)';html+='<tr><td style="font-family:monospace;font-size:11px;white-space:nowrap">'+fecha+'</td><td><strong>'+(c.member_name||'—')+'</strong></td><td><span class="badge" style="background:rgba(0,0,0,.2);color:'+uc+';border:1px solid '+uc+';font-size:9px">'+(c.member_unit||'—')+'</span></td><td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+accounts+'">'+accounts+'</td><td style="font-size:11px;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+tasks+'</td><td><strong style="color:'+hc+'">'+(c.hours||'—')+'h</strong></td><td style="font-size:11px;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(c.note||'')+'">'+( c.note||'—')+'</td></tr>';});});html+='</tbody></table>';tbl.innerHTML=html;}
-function getWeekNumber(d){var date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())),dayNum=date.getUTCDay()||7;date.setUTCDate(date.getUTCDate()+4-dayNum);var ys=new Date(Date.UTC(date.getUTCFullYear(),0,1));return Math.ceil((((date-ys)/86400000)+1)/7);}
-function onPageOpen(pageId){if(pageId==='page-tickets')setTimeout(loadTickets,200);if(pageId==='page-tareas')setTimeout(loadTasks,200);if(pageId==='page-dedicacion')setTimeout(loadDedicacion,200);if(pageId==='page-mis-tareas')setTimeout(loadMisTareas,200);if(pageId==='page-mis-solicitudes')setTimeout(loadMisSolicitudes,200);}
-</script>
-</body>
-</html>
+
+function getVal(row, headers, nombres) {
+  for (const n of nombres) {
+    const i = headers.findIndex(h => h.includes(n));
+    if (i !== -1 && row[i]) return row[i];
+  }
+  return '';
+}
+
+function parseVal(v) {
+  if (!v) return 0;
+  const n = parseFloat(String(v).replace(/[^0-9.]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
+function normUnidad(u) {
+  const s = (u||'').toLowerCase();
+  if (s.includes('intel'))  return 'Intelligence';
+  if (s.includes('creati')) return 'Creatividad';
+  return 'Ambas';
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function obtenerNumeroSemana(f) {
+  const ini = new Date(f.getFullYear(), 0, 1);
+  return Math.ceil(((f - ini) / (7*24*60*60*1000) + ini.getDay() + 1) / 7);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 5 — RECORDATORIO MENSUAL GID VITALITY (día 25 de cada mes)
+// ══════════════════════════════════════════════════════════════════
+function recordatorioGIDMensual() {
+  const hoy = new Date();
+  if (hoy.getDate() !== 25) return;
+
+  const meses  = ['enero','febrero','marzo','abril','mayo','junio',
+                  'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const mesSig = meses[(hoy.getMonth() + 1) % 12];
+  const mesCap = mesSig.charAt(0).toUpperCase() + mesSig.slice(1);
+
+  GmailApp.sendEmail(CONFIG.ADMIN_EMAIL,
+    '📌 Rebold Hub · Recordatorio: agregar costos ' + mesCap + ' al Vitality',
+    `Hola Natalia,\n\n` +
+    `Este mes termina pronto. Recuerda hacer esto antes del 1 de ${mesCap}:\n\n` +
+    `1️⃣  Crea la pestaña "Costos transversales ${mesCap}" en el Vitality\n` +
+    `2️⃣  Abre esa pestaña → mira la URL del navegador\n` +
+    `3️⃣  Copia el número después de "gid=" (ej: gid=1234567890)\n` +
+    `4️⃣  Ve a script.google.com → abre "Rebold Check-in Diario"\n` +
+    `5️⃣  Busca la línea: ${mesSig}: ''\n` +
+    `6️⃣  Reemplaza por: ${mesSig}: 'XXXXXXXX' (el número que copiaste)\n` +
+    `7️⃣  Guarda con Ctrl+S\n\n` +
+    `✅ Listo — el sistema sincronizará los costos de ${mesCap} automáticamente cada noche.\n\n` +
+    `Ver hub: ${CONFIG.HUB_URL}\n\n— Rebold Hub`
+  );
+  Logger.log('✓ Recordatorio GID enviado para: ' + mesCap);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 6 — DETECTAR CORREOS DE CLIENTES Y CREAR TICKETS (cada 15 min)
+// ══════════════════════════════════════════════════════════════════
+function detectarTicketsGmail() {
+  const CLIENTES_DOMINIOS = [
+    'corferias.com', 'homecenter.co', 'sodimac.com',
+    'paramolab.com', 'paramopresenta.com', 'granite.com.co',
+    'henkel.com', 'supercerdo.com.co', 'falabella.com.co',
+    'bancofalabella.com.co', 'jagermeister.com', 'bodytech.com.co',
+    'losolivos.com.co', 'bluedigital.com.co', 'stormberg.com',
+    'puntodigitalpago.com', 'paradorrojobar.com',
+  ];
+
+  const hace30min = new Date(Date.now() - 30 * 60 * 1000);
+  const fechaBusq = Utilities.formatDate(hace30min, 'GMT-5', 'yyyy/MM/dd');
+  const query     = 'is:unread after:' + fechaBusq + ' (' +
+                    CLIENTES_DOMINIOS.map(d => 'from:' + d).join(' OR ') + ')';
+
+  const hilos = GmailApp.search(query, 0, 10);
+  if (hilos.length === 0) { Logger.log('Sin correos nuevos de clientes.'); return; }
+
+  let ticketsCreados = 0;
+
+  hilos.forEach(hilo => {
+    const msg     = hilo.getMessages()[0];
+    const from    = msg.getFrom();
+    const subject = msg.getSubject();
+    const body    = msg.getPlainBody().slice(0, 800);
+    const msgId   = msg.getId();
+    if (yaFueProcesado(msgId)) return;
+
+    const clasificacion = clasificarCorreo(subject, body, from);
+
+    const ticket = {
+      ticket_number: 'TK-' + Date.now().toString().slice(-5),
+      title:         clasificacion.titulo,
+      client_name:   clasificacion.cliente,
+      unit:          clasificacion.unidad,
+      category:      clasificacion.categoria,
+      priority:      clasificacion.prioridad,
+      status:        'inbox',
+      source:        'gmail_auto',
+      email_from:    from,
+      email_subject: subject,
+      email_body:    body,
+      ai_summary:    clasificacion.resumen,
+    };
+
+    supaPost('/rest/v1/tickets', ticket, 'return=representation');
+    PropertiesService.getScriptProperties().setProperty('processed_' + msgId, 'true');
+    etiquetarCorreo(hilo, '🎫 Rebold · Ticket creado');
+
+    ticketsCreados++;
+    Logger.log('✓ Ticket creado: ' + clasificacion.titulo + ' ← ' + from);
+  });
+
+  if (ticketsCreados > 0) {
+    GmailApp.sendEmail(
+      CONFIG.ADMIN_EMAIL,
+      '🎫 ' + ticketsCreados + ' ticket(s) nuevo(s) · Rebold Hub',
+      `Hola Natalia,\n\nSe detectaron ${ticketsCreados} correo(s) nuevo(s) de clientes y se crearon como tickets.\n\nVer en: ${CONFIG.HUB_URL}\n\n— Rebold Hub`
+    );
+  }
+
+  Logger.log('✅ Tickets creados: ' + ticketsCreados);
+}
+
+function etiquetarCorreo(hilo, nombreEtiqueta) {
+  try {
+    let etiqueta = GmailApp.getUserLabelByName(nombreEtiqueta);
+    if (!etiqueta) etiqueta = GmailApp.createLabel(nombreEtiqueta);
+    etiqueta.addToThread(hilo);
+    Logger.log('✓ Etiqueta aplicada: ' + nombreEtiqueta);
+  } catch(e) {
+    Logger.log('⚠️ Error etiquetando: ' + e.message);
+  }
+}
+
+function yaFueProcesado(msgId) {
+  return PropertiesService.getScriptProperties().getProperty('processed_' + msgId) === 'true';
+}
+
+function clasificarCorreo(subject, body, from) {
+  const texto = (subject + ' ' + body).toLowerCase();
+
+  const clienteMap = {
+    'corferias':      'Corferias',
+    'homecenter':     'Homecenter',
+    'sodimac':        'Sodimac',
+    'paramolab':      'Páramo Lab',
+    'paramopresenta': 'Páramo Presenta',
+    'granite':        'Granite',
+    'henkel':         'Henkel Regional',
+    'supercerdo':     'Supercerdo',
+    'falabella':      'Banco Falabella',
+    'jagermeister':   'Jägermeister',
+    'bodytech':       'Bodytech',
+    'stormberg':      'Stormberg',
+  };
+  let cliente = 'Por identificar';
+  for (const [key, val] of Object.entries(clienteMap)) {
+    if (from.toLowerCase().includes(key)) { cliente = val; break; }
+  }
+
+  const urgente   = ['urgente','urgent','hoy','ahora','asap','inmediato','crisis',
+                     'junta','directiva','escalar','emergencia'];
+  const prioridad = urgente.some(u => texto.includes(u)) ? 'urgente' : 'normal';
+
+  let unidad    = 'Intelligence';
+  let categoria = 'General';
+
+  if (/diseño|pieza|banner|story|stories|post|feed|carrusel|creativ|cm|community/.test(texto)) {
+    unidad = 'Creatividad'; categoria = 'Diseño de piezas';
+  } else if (/pqrs|queja|reclamo|complaint|escalamiento|tweet|comentario negativo/.test(texto)) {
+    unidad = 'Intelligence'; categoria = 'PQRS';
+  } else if (/reporte|informe|análisis|analisis|listening|monitoreo|audiencia/.test(texto)) {
+    unidad = 'Intelligence'; categoria = 'Análisis / Reporte';
+  } else if (/estrategia|contenido|parrilla|grid|calendario/.test(texto)) {
+    unidad = 'Intelligence'; categoria = 'Estrategia';
+  } else if (/reunión|reunion|meeting|llamada|videollamada/.test(texto)) {
+    categoria = 'Reunión';
+  }
+
+  const titulo  = subject.replace(/\[EXTERNAL\]/gi, '').replace(/RE:|FWD:|FW:/gi, '').trim().slice(0, 80);
+  const resumen = `Correo de ${cliente} · ${categoria} · Detectado automáticamente desde Gmail.`;
+
+  return { titulo, cliente, unidad, categoria, prioridad, resumen };
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 7 — AGENTE HENKEL: SHEETS + GMAIL → TICKETS (cada 15 min)
+// ══════════════════════════════════════════════════════════════════
+const HENKEL_SHEETS = {
+  regional: {
+    url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRP3FO63Y-mb5pWl8jgfscJc1POFG_kaOo68jhzdFVNRnWaueZHGZ76KXjwPjeZ8byj9A3VHsWahvGP/pub?output=csv',
+    cliente: 'Henkel Regional',
+    spreadsheetId: '1316ZPR_kh7A89g31Go8leTZE7XldKZcjyGeI1KBLj4M',
+  },
+  colombia: {
+    url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQeqM-mx3ZmrAoyCpqmkn2yiuRLW1xyrZ1sbSPN8hGEV6cqw833hxR9mnsnvAe4CK4EHF_c-3kzPY0k/pub?output=csv',
+    cliente: 'Henkel Colombia',
+    spreadsheetId: '1mgVOfAZGGnrigJk34dqKouYplqGFNdoeDloq9N8v1gw',
+  }
+};
+
+const HENKEL_ASSIGNEE  = 'Juan Camilo Espinosa';
+const CRISTIAN_EMAIL   = 'cristian.santamaria@letsrebold.com'; // Solo para alertas Henkel
+const HENKEL_AGENT_TAG = '🤖 Creado por agente';
+
+function agenteHenkel() {
+  Logger.log('🤖 Agente Henkel iniciando...');
+  let totalTickets = 0;
+
+  for (const [key, sheet] of Object.entries(HENKEL_SHEETS)) {
+    try {
+      totalTickets += procesarSheetHenkel(sheet);
+    } catch(e) {
+      Logger.log('❌ Error procesando sheet ' + key + ': ' + e.message);
+    }
+  }
+
+  try {
+    totalTickets += procesarCorreosHenkel();
+  } catch(e) {
+    Logger.log('❌ Error procesando correos Henkel: ' + e.message);
+  }
+
+  if (totalTickets > 0) {
+    GmailApp.sendEmail(
+      CONFIG.ADMIN_EMAIL,
+      '🤖 Agente Henkel · ' + totalTickets + ' ticket(s) creados automáticamente',
+      `Hola Natalia,\n\nEl agente detectó y creó ${totalTickets} ticket(s) nuevos de Henkel.\n\nTodos asignados a Juan Camilo Espinosa.\n\nVer en: ${CONFIG.HUB_URL}\n\n— Rebold Hub · Agente Henkel`
+    );
+  }
+
+  Logger.log('✅ Agente Henkel completado. Tickets creados: ' + totalTickets);
+}
+
+function evaluarSolicitudConClaude(solicitud) {
+  var faltantes    = [];
+  var advertencias = [];
+
+  if (!solicitud.tipo || solicitud.tipo.trim().length < 5)
+    faltantes.push('Tipo de solicitud (vago o vacío)');
+  if (!solicitud.piezas || solicitud.piezas === '0')
+    faltantes.push('Número de piezas');
+  if (!solicitud.detalle || solicitud.detalle.trim().length < 10)
+    faltantes.push('Detalle o especificaciones');
+  if (!solicitud.fechaEntrega)
+    faltantes.push('Fecha de entrega');
+  if (!solicitud.marca)
+    faltantes.push('Marca');
+  if (!solicitud.assets || solicitud.assets.trim() === '')
+    advertencias.push('Sin assets adjuntos (logos, imágenes, referencias)');
+
+  var ejecutable      = faltantes.length === 0;
+  var mensajeCliente  = '';
+  if (!ejecutable) {
+    mensajeCliente = 'Hola Johanna, gracias por tu solicitud. Para ejecutarla necesitamos: ' +
+                     faltantes.join(', ') + '. Con estos datos arrancamos de inmediato. ¡Gracias!';
+  }
+  var resumen = ejecutable
+    ? 'Solicitud completa - lista para ejecutar' + (advertencias.length ? ' (advertencia: ' + advertencias.join(', ') + ')' : '')
+    : 'Incompleta - faltan ' + faltantes.length + ' campo(s): ' + faltantes.join(', ');
+
+  return { ejecutable, campos_faltantes: faltantes, advertencias, mensaje_cliente: mensajeCliente, resumen_evaluacion: resumen };
+}
+
+function enviarAlertaIncompleta(solicitud, evaluacion, cliente) {
+  const asunto  = '⚠️ Solicitud incompleta · ' + cliente + ' · ' + (solicitud.tipo || 'Sin tipo').slice(0, 50);
+  const cuerpo  =
+    'Hola,\n\nEl agente detectó una solicitud de ' + cliente + ' que NO tiene suficiente información para ejecutarse.\n\n' +
+    'SOLICITUD:\n' +
+    '- Tipo: '           + (solicitud.tipo        || '-') + '\n' +
+    '- Marca: '          + (solicitud.marca        || '-') + '\n' +
+    '- Piezas: '         + (solicitud.piezas       || '-') + '\n' +
+    '- Detalle: '        + (solicitud.detalle      || '-') + '\n' +
+    '- Fecha entrega: '  + (solicitud.fechaEntrega || '-') + '\n\n' +
+    'EVALUACIÓN: '       + evaluacion.resumen_evaluacion + '\n\n' +
+    'CAMPOS FALTANTES: ' + evaluacion.campos_faltantes.join(', ') + '\n\n' +
+    'MENSAJE PARA EL CLIENTE: ' + evaluacion.mensaje_cliente + '\n\n' +
+    'Ver en: ' + CONFIG.HUB_URL + '\n\n— Rebold Hub Agente Henkel';
+
+  GmailApp.sendEmail(CONFIG.ADMIN_EMAIL, asunto, cuerpo);
+  GmailApp.sendEmail(CRISTIAN_EMAIL, asunto, cuerpo);
+  Logger.log('⚠️ Alerta incompleta enviada: ' + solicitud.tipo);
+}
+
+function procesarSheetHenkel(sheetConfig) {
+  const csv     = UrlFetchApp.fetch(sheetConfig.url).getContentText();
+  const rows    = Utilities.parseCsv(csv);
+  if (rows.length < 2) return 0;
+
+  const headers   = rows[0].map(h => h.trim().toLowerCase());
+  const ss        = SpreadsheetApp.openById(sheetConfig.spreadsheetId);
+  const ws        = ss.getActiveSheet();
+  const lastCol   = ws.getLastColumn();
+  const headerRow = ws.getRange(1, 1, 1, lastCol).getValues()[0];
+  let origenCol   = headerRow.findIndex(h => String(h).toLowerCase().includes('origen')) + 1;
+
+  if (origenCol === 0) {
+    origenCol = lastCol + 1;
+    ws.getRange(1, origenCol).setValue('Origen / Agente');
+    ws.getRange(1, origenCol).setBackground('#E8F0FE').setFontWeight('bold');
+  }
+
+  let ticketsCreados = 0;
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row[0] && !row[6]) continue;
+
+    const origenVal = ws.getRange(i + 1, origenCol).getValue();
+    if (String(origenVal).includes('agente')) continue;
+
+    const fechaRecep   = getHenkelVal(row, headers, ['fecha recepción', 'fecha recepcion']);
+    const marca        = getHenkelVal(row, headers, ['marca']);
+    const fechaEntrega = getHenkelVal(row, headers, ['fecha de entrega', 'fecha entrega']);
+    const prioridad    = getHenkelVal(row, headers, ['prioridad']);
+    const quien        = getHenkelVal(row, headers, ['quién solicita', 'quien solicita']);
+    const tipo         = getHenkelVal(row, headers, ['tipo de solicitud', 'tipo solicitud']);
+    const piezas       = getHenkelVal(row, headers, ['# piezas', 'piezas']);
+    const detalle      = getHenkelVal(row, headers, ['detalle']);
+
+    if (!tipo && !detalle) continue;
+
+    const prioNorm   = (prioridad || '').toLowerCase();
+    const prioTicket = prioNorm.includes('urgent') || prioNorm.includes('alta') ? 'urgente' : 'normal';
+
+    const ticket = {
+      ticket_number: 'TK-HNK-' + Date.now().toString().slice(-5),
+      title:         (tipo || detalle || 'Solicitud Henkel').slice(0, 80),
+      client_name:   sheetConfig.cliente,
+      unit:          'Creatividad',
+      category:      'Diseño de piezas',
+      priority:      prioTicket,
+      status:        'inbox',
+      source:        'sheet_agente',
+      email_from:    quien || sheetConfig.cliente,
+      email_subject: tipo || 'Solicitud desde Sheet',
+      email_body:    `Marca: ${marca}\nFecha entrega: ${fechaEntrega}\nPiezas: ${piezas}\nDetalle: ${detalle}`,
+      ai_summary:    `Solicitud de ${sheetConfig.cliente} recibida el ${fechaRecep}. ${tipo || ''}. ${piezas ? piezas + ' piezas.' : ''} ${detalle ? 'Detalle: ' + detalle.slice(0, 100) : ''}`.trim(),
+      assignee:      HENKEL_ASSIGNEE,
+    };
+
+    supaPost('/rest/v1/tickets', ticket, 'return=representation');
+
+    const timestamp = Utilities.formatDate(new Date(), 'GMT-5', 'dd/MM/yyyy HH:mm');
+    ws.getRange(i + 1, origenCol).setValue(HENKEL_AGENT_TAG + ' · ' + timestamp);
+    ws.getRange(i + 1, origenCol).setBackground('#E6F4EA').setFontColor('#137333');
+
+    ticketsCreados++;
+    Logger.log('✓ Ticket creado desde Sheet: ' + ticket.title);
+  }
+
+  Logger.log('✓ Sheet ' + sheetConfig.cliente + ': ' + ticketsCreados + ' tickets');
+  return ticketsCreados;
+}
+
+function procesarCorreosHenkel() {
+  const HENKEL_DOMINIOS = ['henkel.com', 'henkel.co', 'clorox.com'];
+  const hace30min  = new Date(Date.now() - 30 * 60 * 1000);
+  const fechaBusq  = Utilities.formatDate(hace30min, 'GMT-5', 'yyyy/MM/dd');
+  const query      = 'is:unread after:' + fechaBusq + ' (' +
+                     HENKEL_DOMINIOS.map(d => 'from:' + d).join(' OR ') + ')';
+
+  const hilos          = GmailApp.search(query, 0, 10);
+  let ticketsCreados   = 0;
+
+  hilos.forEach(hilo => {
+    const msg   = hilo.getMessages()[0];
+    const msgId = msg.getId();
+    if (yaFueProcesado(msgId)) return;
+
+    const from    = msg.getFrom();
+    const subject = msg.getSubject();
+    const body    = msg.getPlainBody().slice(0, 600);
+
+    const esRegional = from.toLowerCase().includes('regional') ||
+                       subject.toLowerCase().includes('regional') ||
+                       body.toLowerCase().includes('regional');
+    const cliente = esRegional ? 'Henkel Regional' : 'Henkel Colombia';
+
+    const texto   = (subject + ' ' + body).toLowerCase();
+    const urgente = ['urgente','urgent','hoy','asap','inmediato','prioritario'].some(u => texto.includes(u));
+
+    const ticket = {
+      ticket_number: 'TK-HNK-' + Date.now().toString().slice(-5),
+      title:         subject.replace(/RE:|FWD:|FW:/gi, '').trim().slice(0, 80),
+      client_name:   cliente,
+      unit:          'Creatividad',
+      category:      'Diseño de piezas',
+      priority:      urgente ? 'urgente' : 'normal',
+      status:        'inbox',
+      source:        'gmail_agente_henkel',
+      email_from:    from,
+      email_subject: subject,
+      email_body:    body,
+      ai_summary:    `Correo de ${cliente} detectado automáticamente. Asunto: ${subject.slice(0, 100)}`,
+      assignee:      HENKEL_ASSIGNEE,
+    };
+
+    supaPost('/rest/v1/tickets', ticket, 'return=representation');
+    PropertiesService.getScriptProperties().setProperty('processed_' + msgId, 'true');
+    etiquetarCorreo(hilo, '🎫 Rebold · Ticket creado');
+
+    ticketsCreados++;
+    Logger.log('✓ Ticket creado desde Gmail Henkel: ' + subject);
+  });
+
+  return ticketsCreados;
+}
+
+function getHenkelVal(row, headers, nombres) {
+  for (const n of nombres) {
+    const i = headers.findIndex(h => h.includes(n));
+    if (i !== -1 && row[i]) return row[i];
+  }
+  return '';
+}
+
+function diagnosticoHenkel() {
+  const ss   = SpreadsheetApp.openById('1316ZPR_kh7A89g31Go8leTZE7XldKZcjyGeI1KBLj4M');
+  const ws   = ss.getActiveSheet();
+  const data = ws.getDataRange().getValues();
+
+  Logger.log('Total filas: ' + data.length);
+  Logger.log('Total columnas: ' + (data[0] ? data[0].length : 0));
+  Logger.log('Headers: ' + JSON.stringify(data[0]));
+
+  if (data.length > 1) {
+    Logger.log('Fila 2: ' + JSON.stringify(data[1]));
+    Logger.log('Fila 3: ' + JSON.stringify(data[2] || 'N/A'));
+    Logger.log('Fila 4: ' + JSON.stringify(data[3] || 'N/A'));
+  }
+
+  for (let i = 1; i < Math.min(data.length, 6); i++) {
+    const row  = data[i];
+    const col0 = String(row[0] || '');
+    const col6 = String(row[6] || '');
+    Logger.log('Fila ' + (i+1) + ' → col0: "' + col0 + '" col6: "' + col6 + '" → vacía: ' + (!col0 && !col6));
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 8 — NOTIFICAR TICKETS ASIGNADOS (cada 15 min)
+// ══════════════════════════════════════════════════════════════════
+function notificarTicketsAsignados() {
+  const props = PropertiesService.getScriptProperties();
+  const url   = CONFIG.SUPABASE_URL + '/rest/v1/tickets?assignee=not.is.null&status=neq.resuelto&order=created_at.desc&limit=50';
+
+  const response = UrlFetchApp.fetch(url, {
+    headers: {
+      'apikey':        CONFIG.SUPABASE_KEY,
+      'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY,
+    },
+    muteHttpExceptions: true,
+  });
+
+  if (response.getResponseCode() !== 200) {
+    Logger.log('Error consultando tickets: ' + response.getResponseCode());
+    return;
+  }
+
+  const tickets  = JSON.parse(response.getContentText());
+  const emailMap = {};
+  EQUIPO.forEach(p => { emailMap[p.name] = p.email; });
+
+  tickets.forEach(t => {
+    const notifKey = 'notif_' + t.id;
+    if (props.getProperty(notifKey)) return;
+
+    const emailDestinatario = emailMap[t.assignee];
+    if (!emailDestinatario) { Logger.log('No se encontró correo para: ' + t.assignee); return; }
+
+    const nombre = t.assignee.split(' ')[0];
+    const due    = t.due_date
+      ? new Date(t.due_date).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })
+      : 'Sin fecha límite';
+
+    GmailApp.sendEmail(emailDestinatario,
+      '🎫 Nuevo ticket asignado · ' + (t.client_name || '') + ' · ' + (t.title || '').slice(0, 50),
+      `Hola ${nombre},\n\nNatalia te asignó un nuevo ticket.\n\n` +
+      `Ticket: ${t.ticket_number || '-'}\nCliente: ${t.client_name || '-'}\n` +
+      `Solicitud: ${t.title || '-'}\nPrioridad: ${t.priority || 'normal'}\nFecha límite: ${due}\n\n` +
+      `Ver en: ${CONFIG.HUB_URL}\n\n— Rebold Hub`
+    );
+
+    props.setProperty(notifKey, 'true');
+    Logger.log('✓ Notificación enviada a: ' + t.assignee);
+  });
+
+  Logger.log('✅ Notificaciones de tickets completadas.');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FUNCIÓN 9 — AUTO-CIERRE DE TICKETS POR RESPUESTA DE CORREO
+// Cada 15 min: busca respuestas enviadas a hilos de tickets y los marca
+// como resueltos automáticamente en Supabase
+// ══════════════════════════════════════════════════════════════════
+function autoCierreTicketsPorRespuesta() {
+  const props = PropertiesService.getScriptProperties();
+
+  // Buscar correos ENVIADOS en los últimos 30 min que sean respuestas (RE:)
+  // a correos de clientes o tickets del hub
+  const hace30min = new Date(Date.now() - 30 * 60 * 1000);
+  const fechaBusq = Utilities.formatDate(hace30min, 'GMT-5', 'yyyy/MM/dd');
+
+  // Buscar en Enviados: respuestas a dominios de clientes
+  const CLIENTES_DOMINIOS = [
+    'corferias.com', 'homecenter.co', 'sodimac.com',
+    'paramolab.com', 'paramopresenta.com', 'granite.com.co',
+    'henkel.com', 'henkel.co', 'supercerdo.com.co', 'falabella.com.co',
+    'bancofalabella.com.co', 'bodytech.com.co', 'stormberg.com',
+    'puntodigitalpago.com', 'paradorrojobar.com', 'bluedigital.com.co',
+  ];
+
+  const query = 'in:sent after:' + fechaBusq + ' (' +
+                CLIENTES_DOMINIOS.map(d => 'to:' + d).join(' OR ') + ')';
+
+  const hilos = GmailApp.search(query, 0, 20);
+  if (!hilos.length) { Logger.log('Sin respuestas enviadas a clientes.'); return; }
+
+  let cerrados = 0;
+
+  hilos.forEach(hilo => {
+    const msgs   = hilo.getMessages();
+    const ultimo = msgs[msgs.length - 1];
+
+    // Solo procesar si el último mensaje fue enviado POR nosotros (no por el cliente)
+    const from = ultimo.getFrom().toLowerCase();
+    if (!from.includes('letsrebold') && !from.includes('ispd.com')) return;
+
+    const hiloId  = hilo.getId();
+    const cierreKey = 'cierre_hilo_' + hiloId;
+    if (props.getProperty(cierreKey)) return; // Ya procesado
+
+    // Buscar el subject original para encontrar el ticket en Supabase
+    const primerMsg = msgs[0];
+    const subject   = primerMsg.getSubject().replace(/RE:|FWD:|FW:/gi, '').trim();
+    const fromOrig  = primerMsg.getFrom();
+
+    // Buscar ticket en Supabase por email_from o email_subject
+    const encSubject = encodeURIComponent(subject.slice(0, 60));
+    const urlBuscar  = CONFIG.SUPABASE_URL + '/rest/v1/tickets?status=neq.resuelto&email_subject=ilike.*' +
+                       encSubject + '*&limit=5&select=id,ticket_number,title,status';
+
+    const resBuscar = UrlFetchApp.fetch(urlBuscar, {
+      headers: { 'apikey': CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY },
+      muteHttpExceptions: true,
+    });
+
+    if (resBuscar.getResponseCode() !== 200) return;
+    const tickets = JSON.parse(resBuscar.getContentText());
+    if (!tickets.length) {
+      // Intentar buscar por from del correo original
+      const encFrom = encodeURIComponent(fromOrig.slice(0, 60));
+      const urlFrom = CONFIG.SUPABASE_URL + '/rest/v1/tickets?status=neq.resuelto&email_from=ilike.*' + encFrom + '*&limit=5&select=id,ticket_number,title,status';
+      const resFrom = UrlFetchApp.fetch(urlFrom, {
+        headers: { 'apikey': CONFIG.SUPABASE_KEY, 'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY },
+        muteHttpExceptions: true,
+      });
+      if (resFrom.getResponseCode() !== 200) return;
+      const ticketsFrom = JSON.parse(resFrom.getContentText());
+      if (!ticketsFrom.length) { Logger.log('⚠️ No se encontró ticket para: ' + subject.slice(0,50)); return; }
+      ticketsFrom.forEach(t => cerrarTicket(t, hiloId, props, ultimo));
+    } else {
+      tickets.forEach(t => cerrarTicket(t, hiloId, props, ultimo));
+    }
+
+    cerrados++;
+    props.setProperty(cierreKey, 'true');
+  });
+
+  if (cerrados > 0) {
+    Logger.log('✅ Tickets cerrados automáticamente por respuesta: ' + cerrados);
+  }
+}
+
+function cerrarTicket(ticket, hiloId, props, mensajeRespuesta) {
+  const ticketCierreKey = 'cierre_ticket_' + ticket.id;
+  if (props.getProperty(ticketCierreKey)) return; // Ya cerrado
+
+  // Marcar como resuelto en Supabase
+  const url = CONFIG.SUPABASE_URL + '/rest/v1/tickets?id=eq.' + ticket.id;
+  const res = UrlFetchApp.fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'apikey':        CONFIG.SUPABASE_KEY,
+      'Authorization': 'Bearer ' + CONFIG.SUPABASE_KEY,
+      'Content-Type':  'application/json',
+    },
+    payload: JSON.stringify({
+      status:        'resuelto',
+      resolved_at:   new Date().toISOString(),
+      resolved_by:   mensajeRespuesta.getFrom(),
+    }),
+    muteHttpExceptions: true,
+  });
+
+  if (res.getResponseCode() === 204 || res.getResponseCode() === 200) {
+    props.setProperty(ticketCierreKey, 'true');
+    Logger.log('✅ Ticket resuelto automáticamente: ' + ticket.ticket_number + ' · ' + ticket.title);
+
+    // Notificar a Natalia
+    GmailApp.sendEmail(
+      CONFIG.ADMIN_EMAIL,
+      '✅ Ticket resuelto · ' + (ticket.ticket_number || '') + ' · ' + (ticket.title || '').slice(0, 50),
+      `Hola Natalia,\n\n` +
+      `El ticket fue marcado automáticamente como resuelto porque se envió una respuesta al cliente.\n\n` +
+      `Ticket: ${ticket.ticket_number || '-'}\n` +
+      `Solicitud: ${ticket.title || '-'}\n` +
+      `Respondido por: ${mensajeRespuesta.getFrom()}\n\n` +
+      `Ver en: ${CONFIG.HUB_URL}\n\n— Rebold Hub`
+    );
+  }
+}
+function probarSistema() {
+  GmailApp.sendEmail(CONFIG.ADMIN_EMAIL,
+    '🧪 PRUEBA · Rebold Hub Apps Script v4 listo',
+    `Hola Natalia,\n\n` +
+    `El sistema está configurado (v4 con ausencias). Resumen:\n\n` +
+    `✅ Check-in diario Lun-Vie 5:30 PM → ${EQUIPO.length} personas (omite ausentes)\n` +
+    `✅ Reporte proveedores Viernes 5:30 PM → ${PROVEEDORES.length} proveedores\n` +
+    `✅ Recordatorio admin Lun-Vie 7:00 PM → excluye ausentes del conteo\n` +
+    `✅ Sync Vitality → Supabase 11:00 PM diario\n` +
+    `✅ Agente Henkel: Sheets + Gmail → Tickets cada 15 min\n\n` +
+    `Nuevo en v4:\n` +
+    `• Sistema de ausencias — vacaciones, incapacidades, compensatorios, permisos\n` +
+    `• Check-in y alerta no molestan a quien está ausente ese día\n\n` +
+    `⚠️ Asegúrate de crear la tabla "absences" en Supabase (ver instrucciones).\n\n` +
+    `Hub: ${CONFIG.HUB_URL}\n\n— Rebold Hub`
+  );
+  Logger.log('✅ Prueba v4 OK');
+}
+
+/*
+══════════════════════════════════════════════════════════════════
+CONFIGURAR TRIGGERS (ACTIVADORES) — Ícono ⏰ en el menú izquierdo
+══════════════════════════════════════════════════════════════════
+
+1. enviarCheckinDiario        → Temporizador diario  → 17:00 - 18:00
+2. enviarReporteProveedores   → Temporizador diario  → 17:00 - 18:00
+3. enviarRecordatorioAdmin    → Temporizador diario  → 19:00 - 20:00
+4. sincronizarVitality        → Temporizador diario  → 23:00 - 00:00
+5. recordatorioGIDMensual     → Temporizador mensual → día 25 → cualquier hora
+6. detectarTicketsGmail       → Temporizador cada 15 min
+7. agenteHenkel               → Temporizador cada 15 min
+8. notificarTicketsAsignados  → Temporizador cada 15 min
+9. autoCierreTicketsPorRespuesta → Temporizador cada 15 min ✅ NUEVO
+
+CUANDO CREES UNA NUEVA PESTAÑA DE COSTOS EN EL VITALITY:
+- Ve a la pestaña nueva en Google Sheets
+- Mira la URL: ...gid=XXXXXXXX
+- Copia ese número y agrégalo en COSTOS_MESES arriba
+══════════════════════════════════════════════════════════════════
+*/
