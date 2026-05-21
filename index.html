@@ -983,15 +983,21 @@ const COSTOS_GIDS = {
 
 // Mapa de nombres: cliente en Vitality → nombre(s) en Costos transversales
 const CLIENTE_COSTOS_MAP = {
-  'Sodimac':                         ['Homecenter'],
-  'Páramo - Promo Páramo':           ['Páramo Activación', 'Páramo Intelligence'],
+  'Sodimac':                          ['Homecenter'],
+  'Páramo - Promo Páramo':            ['Páramo Activación', 'Páramo Intelligence'],
   'Corferias - Corporación de Ferias':['Corferias', 'Corferias Redes'],
-  'Global Wine':                     ['Global Wine'],
-  'Tezania':                         ['Tezania'],
-  'Daniel Bernál Candidato':         [],
+  'Global Wine':                      ['Global Wine'],
+  'Tezania':                          ['Tezania'],
+  'Daniel Bernál Candidato':          [],
   'Banco Falabella':                  ['Banco Falabella'],
-  'JEP':                             ['JEP'],
+  'JEP':                              ['JEP'],
+  'Granite':                          ['Granite'],
+  'For Life Nutrition':               ['For Life Nutrition'],
 };
+
+// Para Granite y For Life: usar solo la fila "PPTO Pauta" del Vitality
+// Esto se controla en el filtro de proyectos abajo (PROYECTOS_PAUTA)
+const PROYECTOS_PAUTA = ['PPTO Pauta', 'Fee Pauta', 'pauta'];
 
 // Columnas revenue por mes en el CSV (0-indexed, fila 2 del xlsx = fila 1 del CSV)
 // El CSV publicado tiene los valores calculados
@@ -1034,7 +1040,12 @@ async function loadFinanciero(){
       var estado=String(row[16]||'').trim().toLowerCase();
       var cliente=String(row[5]||'').trim();
       if(!cliente)continue;
-      if(bu!=='Intelligence')continue;
+      // Para Intelligence filtramos por BU=Intelligence
+      // Intelligence directo. Granite y For Life facturan por Activation pero los gestiona Creatividad
+      var esIntel = bu==='Intelligence';
+      var esActCreat = bu==='Activation' && (cliente==='Granite' || cliente==='For Life Nutrition');
+      if(!esIntel && !esActCreat) continue;
+      if(cliente==='Granite' && !esGranitePauta) continue; // Solo fila PPTO Pauta
       if(!estado.includes('won')&&!estado.includes('base'))continue;
       var rev=parseNum(row[mesCol]);
       if(!revenue[cliente])revenue[cliente]=0;
@@ -1163,7 +1174,13 @@ function parseCSV(text){
 
 function parseNum(v){
   if(v===null||v===undefined||v==='')return 0;
-  var s=String(v).replace(/[$,\s]/g,'').replace(/'/g,'');
+  var s=String(v).trim().replace(/[$\s']/g,'');
+  var dots=( s.match(/\./g)||[]).length;
+  var commas=(s.match(/,/g)||[]).length;
+  // Formato europeo con puntos como miles: 8.790.874 o 8.790.874,50
+  if(dots>1){s=s.replace(/\./g,'').replace(',','.');}
+  // Formato con comas como miles: 1,681,666
+  else if(dots<=1&&commas>=1){s=s.replace(/,/g,'');}
   var n=parseFloat(s);
   return isNaN(n)?0:n;
 }
