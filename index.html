@@ -1059,35 +1059,44 @@ async function loadFinanciero(){
   };
 
   try{
-    // 1. Leer clientes con fee mensual desde Supabase (tabla clients)
-    var clientesData=await sbGet('clients','active=eq.true&limit=100');
+    // 1. Leer financials del mes — contiene revenue Y costos
+    var financialsData=await sbGet('financials','month=eq.'+mesNum+'&year=eq.'+anio+'&limit=200');
 
-    // 2. Leer costos transversales del mes desde Supabase (tabla financials)
-    var financialsData=await sbGet('financials','month=eq.'+mesNum+'&year=eq.'+anio+'&limit=100');
-
-    // Construir mapa de costos por nombre de cliente
+    // Construir mapa de revenue y costos por nombre de cliente
+    var revenuePorCliente={};
     var costosPorCliente={};
     financialsData.forEach(function(f){
       var nombre=(f.client_name||'').trim();
-      costosPorCliente[nombre]=(costosPorCliente[nombre]||0)+(f.tools_cost||0)+(f.providers_cost||0);
+      // Revenue mensual (guardado por sincClientes)
+      if(f.monthly_revenue>0){
+        revenuePorCliente[nombre]=(revenuePorCliente[nombre]||0)+(f.monthly_revenue||0);
+      }
+      // Costos transversales (guardados por sincCostosMes)
+      if(f.tools_cost>0||f.providers_cost>0){
+        costosPorCliente[nombre]=(costosPorCliente[nombre]||0)+(f.tools_cost||0)+(f.providers_cost||0);
+      }
     });
 
-    // 3. Construir filas — solo clientes de las unidades de Natalia
+    // 2. Construir filas — solo clientes de las unidades de Natalia
     var CLIENTES_NATALIA=Object.keys(CLIENTE_UNIDAD);
     var totalRev=0,totalCosto=0;
 
     var filas=CLIENTES_NATALIA.map(function(nombre){
-      // Buscar fee en tabla clients
-      var clienteReg=clientesData.find(function(c){
-        return c.name&&c.name.trim().toLowerCase()===nombre.toLowerCase();
-      });
-      var rev=clienteReg?(parseFloat(clienteReg.monthly_fee)||0):0;
+      // Revenue desde financials.monthly_revenue
+      var rev=revenuePorCliente[nombre]||0;
+      // Si no hay en financials, buscar en tabla clients como fallback
+      if(!rev){
+        var nombresAlt=CLIENTE_COSTOS_MAP[nombre]||[nombre];
+        nombresAlt.forEach(function(n){if(revenuePorCliente[n])rev+=revenuePorCliente[n];});
+      }
 
-      // Buscar costos usando el mapa
+      // Costos usando el mapa de nombres
       var nombresEnCostos=CLIENTE_COSTOS_MAP[nombre]||[nombre];
       var costo=nombresEnCostos.reduce(function(s,n){
         return s+(costosPorCliente[n]||costosPorCliente[n.toLowerCase()]||0);
       },0);
+      // También intentar directo por nombre del cliente
+      if(!costo) costo=costosPorCliente[nombre]||0;
 
       var gm=rev-costo;
       var pct=rev>0?(gm/rev*100):0;
