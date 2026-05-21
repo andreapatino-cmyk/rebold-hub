@@ -394,6 +394,47 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
         </div>
       </div>
     </div>
+    <!-- PIEZAS DISEÑADORES (solo visible para designer y cm) -->
+    <div id="seccionPiezas" style="display:none;margin-bottom:16px">
+      <div class="sec">Piezas entregadas hoy</div>
+      <div id="piezasContainer">
+        <div class="pieza-row" style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:8px">
+          <div class="g2" style="margin-bottom:8px">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Cliente</label>
+              <select class="form-select pieza-cliente" style="font-size:12px;padding:8px 10px">
+                <option value="">Selecciona...</option>
+                <option>Henkel Regional</option><option>Corferias</option><option>Granite</option>
+                <option>Stormberg</option><option>Parador Rojo</option><option>Punto de Pago</option>
+                <option>Supercerdo</option><option>Casa Mayor</option><option>Blue Digital</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Cantidad</label>
+              <input type="number" class="form-input pieza-cantidad" min="1" max="99" placeholder="ej: 5" style="font-size:12px;padding:8px 10px">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:8px">
+            <label class="form-label">Tipo de pieza</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px" class="pieza-tipos">
+              <div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">📱 Story</div>
+              <div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">🖼️ Post</div>
+              <div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">🏷️ Banner</div>
+              <div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">🎠 Carrusel</div>
+              <div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">🎬 Video</div>
+              <div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">📧 Mailing</div>
+              <div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">🎨 Otro</div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Especificación (opcional)</label>
+            <input class="form-input pieza-especificacion" placeholder="ej: Adaptaciones para Reels, piezas para campaña Día Madre..." style="font-size:12px;padding:8px 10px">
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:4px" onclick="agregarFilaPieza()">+ Agregar otro cliente</button>
+    </div>
     <div class="form-group"><label class="form-label">Nota del día (opcional)</label>
       <textarea class="form-input" id="checkinNota" style="height:80px;resize:none;line-height:1.6" placeholder="¿Algún bloqueo, entrega o novedad?"></textarea>
     </div>
@@ -631,6 +672,9 @@ function initApp(){
   var wb=document.getElementById('ticketWarningBanner'),cb=document.getElementById('ticketConfirmCheck');
   if(currentUser.role!=='director'){if(wb)wb.style.display='block';if(cb)cb.style.display='block';}
   var pb=document.getElementById('providerBanner');if(pb)pb.style.display=currentUser.role==='proveedor'?'flex':'none';
+  // Mostrar sección piezas solo para designer y cm
+  var sp=document.getElementById('seccionPiezas');
+  if(sp)sp.style.display=(currentUser.role==='designer'||currentUser.role==='cm')?'block':'none';
   var nav=NAV_CONFIG[currentUser.role]||NAV_CONFIG.analyst;showPage('page-'+nav[0].id);
 }
 function buildNav(){var nav=NAV_CONFIG[currentUser.role]||NAV_CONFIG.analyst,navEl=document.getElementById('sidebarNav');navEl.innerHTML='';var sec=document.createElement('div');sec.className='nav-sec';sec.textContent=currentUser.role==='proveedor'?'Proveedor Externo':currentUser.unit;navEl.appendChild(sec);nav.forEach(function(item){var btn=document.createElement('button');btn.className='nav-item';btn.id='nav-'+item.id;btn.innerHTML=(ICONS[item.icon]||'')+item.label;btn.onclick=function(){showPage('page-'+item.id,btn);};navEl.appendChild(btn);});}
@@ -639,6 +683,57 @@ function showPage(pageId,btn){prevPage=(document.querySelector('.page.active')||
 function goBack(){if(prevPage)showPage(prevPage);else{var nav=NAV_CONFIG[currentUser?currentUser.role:'analyst']||NAV_CONFIG.analyst;showPage('page-'+nav[0].id);}}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open');}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+function togglePiezaTipo(el){
+  el.classList.toggle('b-gray');
+  el.classList.toggle('b-blue');
+  el.setAttribute('data-selected', el.classList.contains('b-blue') ? 'true' : 'false');
+}
+function agregarFilaPieza(){
+  var container=document.getElementById('piezasContainer');
+  var row=document.createElement('div');
+  row.className='pieza-row';
+  row.style.cssText='background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:8px;position:relative';
+  row.innerHTML=
+    '<button onclick="this.parentElement.remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">✕</button>'+
+    '<div class="g2" style="margin-bottom:8px">'+
+      '<div class="form-group" style="margin-bottom:0"><label class="form-label">Cliente</label>'+
+      '<select class="form-select pieza-cliente" style="font-size:12px;padding:8px 10px">'+
+        '<option value="">Selecciona...</option>'+
+        '<option>Henkel Regional</option><option>Corferias</option><option>Granite</option>'+
+        '<option>Stormberg</option><option>Parador Rojo</option><option>Punto de Pago</option>'+
+        '<option>Supercerdo</option><option>Casa Mayor</option><option>Blue Digital</option><option>Otro</option>'+
+      '</select></div>'+
+      '<div class="form-group" style="margin-bottom:0"><label class="form-label">Cantidad</label>'+
+      '<input type="number" class="form-input pieza-cantidad" min="1" max="99" placeholder="ej: 5" style="font-size:12px;padding:8px 10px"></div>'+
+    '</div>'+
+    '<div class="form-group" style="margin-bottom:8px"><label class="form-label">Tipo de pieza</label>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:6px" class="pieza-tipos">'+
+      '<div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">📱 Story</div>'+
+      '<div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">🖼️ Post</div>'+
+      '<div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">🏷️ Banner</div>'+
+      '<div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">🎠 Carrusel</div>'+
+      '<div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">🎬 Video</div>'+
+      '<div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">📧 Mailing</div>'+
+      '<div class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:11px" onclick="togglePiezaTipo(this)">🎨 Otro</div>'+
+    '</div></div>'+
+    '<div class="form-group" style="margin-bottom:0"><label class="form-label">Especificación (opcional)</label>'+
+    '<input class="form-input pieza-especificacion" placeholder="ej: Adaptaciones para Reels..." style="font-size:12px;padding:8px 10px"></div>';
+  container.appendChild(row);
+}
+function recolectarPiezas(){
+  var rows=document.querySelectorAll('.pieza-row');
+  var piezas=[];
+  rows.forEach(function(row){
+    var cliente=(row.querySelector('.pieza-cliente')||{}).value||'';
+    var cantidad=parseInt((row.querySelector('.pieza-cantidad')||{}).value||0);
+    var tipos=Array.from(row.querySelectorAll('.pieza-tipos [data-selected="true"]')).map(function(t){return t.textContent.trim();});
+    var spec=(row.querySelector('.pieza-especificacion')||{}).value||'';
+    if(cliente&&cantidad>0){
+      piezas.push({cliente:cliente,cantidad:cantidad,tipos:tipos,especificacion:spec});
+    }
+  });
+  return piezas;
+}
 function setModoCheckin(modo){
   var btnT=document.getElementById('btnModoTrabajo'),btnA=document.getElementById('btnModoAusencia');
   var formT=document.getElementById('checkinFormTrabajo'),formA=document.getElementById('checkinFormAusencia');
@@ -700,7 +795,8 @@ async function submitCheckin(){var ac=document.querySelectorAll('#clientChips [d
     }
   }
   var summaryExtra=permisoParcial?' + '+permisoParcial.hours+'h de '+(permisoParcial.type||'permiso'):'';
-  var checkin={member_name:currentUser.name,member_unit:currentUser.unit,checkin_date:new Date().toISOString().split('T')[0],accounts:accounts,tasks:tasks,hours:parseFloat(hours)||0,note:nota+(permisoParcial?' | Permiso '+permisoParcial.hours+'h: '+(permisoParcial.note||permisoParcial.type):''),ai_summary:currentUser.name.split(' ')[0]+' trabajó en '+accounts.map(function(a){return a.client;}).join(', ')+'. Realizó: '+tasks.slice(0,2).join(', ')+'. Horas: '+hours+'h'+summaryExtra+'.'};try{await sbPost('checkins',checkin);
+  var piezas=(currentUser.role==='designer'||currentUser.role==='cm')?recolectarPiezas():[];
+  var checkin={member_name:currentUser.name,member_unit:currentUser.unit,checkin_date:new Date().toISOString().split('T')[0],accounts:accounts,tasks:tasks,hours:parseFloat(hours)||0,piezas:piezas,note:nota+(permisoParcial?' | Permiso '+permisoParcial.hours+'h: '+(permisoParcial.note||permisoParcial.type):''),ai_summary:currentUser.name.split(' ')[0]+' trabajó en '+accounts.map(function(a){return a.client;}).join(', ')+'. Realizó: '+tasks.slice(0,2).join(', ')+'. Horas: '+hours+'h'+summaryExtra+'.'};try{await sbPost('checkins',checkin);
     // Si hay permiso parcial, también lo guardamos en absences
     if(permisoParcial&&permisoParcial.hours>0){
       var hoy2=new Date().toISOString().split('T')[0];
