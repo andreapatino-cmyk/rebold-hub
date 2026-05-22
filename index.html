@@ -146,7 +146,18 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
       <div class="form-group"><label class="form-label">Contraseña</label><input class="form-input" id="loginPassExist" type="password" placeholder="Tu contraseña"></div>
       <button class="btn btn-red" onclick="loginWithPassword()">Ingresar →</button>
       <div class="login-error" id="loginError3">Contraseña incorrecta.</div>
-      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="backToEmail()">← Cambiar correo</button>
+      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:8px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="showResetPassword()">¿Olvidaste tu contraseña?</button>
+      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:4px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="backToEmail()">← Cambiar correo</button>
+    </div>
+    <!-- PASO RESET CONTRASEÑA -->
+    <div id="loginStepReset" style="display:none">
+      <div class="login-title">Nueva contraseña 🔑</div>
+      <div class="login-hint">Crea una nueva contraseña para tu cuenta.</div>
+      <div class="form-group"><label class="form-label">Nueva contraseña</label><input class="form-input" id="resetPass1" type="password" placeholder="Mínimo 6 caracteres"></div>
+      <div class="form-group"><label class="form-label">Confirmar contraseña</label><input class="form-input" id="resetPass2" type="password" placeholder="Repite la contraseña"></div>
+      <button class="btn btn-red" onclick="confirmResetPassword()">Guardar nueva contraseña →</button>
+      <div class="login-error" id="loginErrorReset">Las contraseñas no coinciden o son muy cortas.</div>
+      <button style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;margin-top:12px;font-family:Figtree,sans-serif;width:100%;text-align:center" onclick="cancelReset()">← Volver</button>
     </div>
   </div></div>
 </div>
@@ -284,11 +295,12 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     </div>
   </div>
   <!-- Stats globales -->
-  <div class="g4" style="margin-bottom:20px">
-    <div class="stat s-green"><div class="stat-label">Revenue Intelligence</div><div class="stat-val" style="color:var(--green);font-size:22px" id="finRevTotal">—</div><div class="stat-sub">Vitality en vivo</div></div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:20px">
+    <div class="stat s-green"><div class="stat-label">Revenue Intel+Crea</div><div class="stat-val" style="color:var(--green);font-size:22px" id="finRevTotal">—</div><div class="stat-sub">Vitality en vivo</div></div>
     <div class="stat s-red"><div class="stat-label">Costos transversales</div><div class="stat-val" style="color:var(--red);font-size:22px" id="finCostoTotal">—</div><div class="stat-sub">Herram. + proveedores</div></div>
     <div class="stat s-blue"><div class="stat-label">Gross Margin</div><div class="stat-val" style="color:var(--blue);font-size:22px" id="finGM">—</div><div class="stat-sub" id="finGMPct">—</div></div>
-    <div class="stat s-amber"><div class="stat-label">Clientes activos</div><div class="stat-val" style="color:var(--amber);font-size:22px" id="finClientes">—</div><div class="stat-sub">Intelligence Won/Base</div></div>
+    <div class="stat s-amber"><div class="stat-label">C. Laboral dist.</div><div class="stat-val" style="color:var(--amber);font-size:22px" id="finLaboralTotal">—</div><div class="stat-sub">Proporcional a horas</div></div>
+    <div class="stat s-blue"><div class="stat-label">Clientes activos</div><div class="stat-val" style="color:var(--blue);font-size:22px" id="finClientes">—</div><div class="stat-sub">INT + CRE</div></div>
   </div>
   <!-- Tabla por cliente -->
   <div class="card" style="margin-bottom:16px">
@@ -659,6 +671,34 @@ function loginWithPassword(){
   else{var nombre=localStorage.getItem('rb_name_'+email)||email.split('@')[0];var initials=nombre.split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);currentUser={name:nombre,role:'proveedor',unit:'Proveedor',code:initials,color:'var(--purple)',email:email};initApp();}
 }
 function proceedLogin(email){currentUser=Object.assign({},USERS[email],{email:email});initApp();}
+function showResetPassword(){
+  ['loginStep1','loginStep2','loginStep3','loginStepProveedor'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.style.display='none';
+  });
+  var r=document.getElementById('loginStepReset');if(r)r.style.display='block';
+  var p1=document.getElementById('resetPass1'),p2=document.getElementById('resetPass2');
+  if(p1)p1.value='';if(p2)p2.value='';
+  document.getElementById('loginErrorReset').style.display='none';
+  if(p1)p1.focus();
+}
+function confirmResetPassword(){
+  var email=document.getElementById('loginEmail').value.trim().toLowerCase();
+  var p1=document.getElementById('resetPass1').value;
+  var p2=document.getElementById('resetPass2').value;
+  var err=document.getElementById('loginErrorReset');
+  if(p1.length<6||p1!==p2){err.style.display='block';return;}
+  err.style.display='none';
+  localStorage.setItem('rb_pwd_'+email,btoa(p1));
+  alert('✅ Contraseña actualizada. Ingresa con tu nueva contraseña.');
+  cancelReset();
+  // Volver al paso 3 con la nueva contraseña lista
+  document.getElementById('loginStep3').style.display='block';
+  document.getElementById('loginStepReset').style.display='none';
+}
+function cancelReset(){
+  document.getElementById('loginStepReset').style.display='none';
+  document.getElementById('loginStep3').style.display='block';
+}
 function backToEmail(){['loginStep1','loginStep2','loginStep3','loginStepProveedor'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=id==='loginStep1'?'block':'none';});['loginPass1','loginPass2','loginPassExist','loginPassP1','loginPassP2','loginNombre'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});}
 document.addEventListener('keydown',function(e){if(e.key!=='Enter')return;var s1=document.getElementById('loginStep1'),s2=document.getElementById('loginStep2'),s3=document.getElementById('loginStep3'),sp=document.getElementById('loginStepProveedor');if(s1&&s1.style.display!=='none')checkEmail();else if(s2&&s2.style.display!=='none')setPassword();else if(s3&&s3.style.display!=='none')loginWithPassword();else if(sp&&sp.style.display!=='none')registerProveedor();});
 function logout(){currentUser=null;document.getElementById('appShell').style.display='none';document.getElementById('screenLogin').style.display='flex';document.getElementById('loginEmail').value='';backToEmail();}
@@ -1052,15 +1092,37 @@ async function loadFinanciero(){
   };
 
   var CLIENTE_UNIDAD={
-    'Sodimac':'INT','Páramo - Promo Páramo':'INT','Corferias - Corporación de Ferias':'INT',
-    'Global Wine':'INT','Tezania':'INT','Banco Falabella':'INT','JEP':'INT',
-    'Henkel Regional':'CRE','Parador rojo':'CRE','Casa Mayor/ 4 patas':'CRE',
-    'Punto de pago':'CRE','Granite':'CRE','Stormberg Foods':'CRE',
-  };
+      'Sodimac':'INT','Páramo - Promo Páramo':'INT','Corferias - Corporación de Ferias':'INT',
+      'Global Wine':'INT','Tezania':'INT','Banco Falabella':'INT','JEP':'INT',
+      'Henkel Regional':'CRE','Parador rojo':'CRE','Casa Mayor/ 4 patas':'CRE',
+      'Punto de pago':'CRE','Granite':'CRE','Stormberg Foods':'CRE',
+    };
+
+    // CE mensual por persona (Costo Empleador)
+    var CE_EQUIPO={
+      'Natalia Patiño':16900000,
+      'Sebastián Castro':8450000,
+      'Laura Correa':4850000,
+      'Paula Bermúdez':3310000,
+      'Juliana Jaramillo':5030000,
+      'Marcela Rondón':5430000,
+      'Adriana Figueredo':6860000,
+      'Alejandro Sierra':7280000,
+      'Gina Benavides':2270000,
+      'María Camila Castro':6220000,
+      'Estefanía Prieto':4280000,
+      'Daniel Urbina':5830000,
+      'Juan Camilo Espinosa':7350000,
+    };
 
   try{
     // 1. Leer financials del mes — contiene revenue Y costos
     var financialsData=await sbGet('financials','month=eq.'+mesNum+'&year=eq.'+anio+'&limit=200');
+
+    // 1b. Leer check-ins del mes para calcular costo laboral proporcional
+    var primerDia=anio+'-'+String(mesNum).padStart(2,'0')+'-01';
+    var ultimoDia=anio+'-'+String(mesNum).padStart(2,'0')+'-'+new Date(anio,mesNum,0).getDate();
+    var checkinsData=await sbGet('checkins','checkin_date=gte.'+primerDia+'&checkin_date=lte.'+ultimoDia+'&limit=500');
 
     // Construir mapa de revenue y costos por nombre de cliente
     var revenuePorCliente={};
@@ -1085,6 +1147,45 @@ async function loadFinanciero(){
       }
     });
 
+    // 1c. Calcular costo laboral proporcional por cliente
+    // Sumar horas por persona por cliente
+    var horasPorPersonaCliente={};  // {persona: {cliente: horas}}
+    var horasTotalesPorPersona={}; // {persona: horas_total}
+    checkinsData.forEach(function(c){
+      var persona=c.member_name||'';
+      var horas=parseFloat(c.hours)||0;
+      if(!persona||horas<=0)return;
+      var accounts=[];
+      try{ accounts=Array.isArray(c.accounts)?c.accounts:(c.accounts?JSON.parse(c.accounts):[]);}catch(e){}
+      if(!horasTotalesPorPersona[persona])horasTotalesPorPersona[persona]=0;
+      horasTotalesPorPersona[persona]+=horas;
+      var numCli=accounts.length||1;
+      var hPorCli=horas/numCli;
+      if(accounts.length>0){
+        accounts.forEach(function(a){
+          var cli=a.client||a||'';
+          if(!horasPorPersonaCliente[persona])horasPorPersonaCliente[persona]={};
+          if(!horasPorPersonaCliente[persona][cli])horasPorPersonaCliente[persona][cli]=0;
+          horasPorPersonaCliente[persona][cli]+=hPorCli;
+        });
+      }
+    });
+
+    // Distribuir CE proporcional a horas por cliente
+    var costoLaboralPorCliente={};
+    Object.keys(CE_EQUIPO).forEach(function(persona){
+      var ce=CE_EQUIPO[persona];
+      var totalH=horasTotalesPorPersona[persona]||0;
+      if(totalH<=0||!horasPorPersonaCliente[persona])return;
+      Object.keys(horasPorPersonaCliente[persona]).forEach(function(cli){
+        var hCli=horasPorPersonaCliente[persona][cli]||0;
+        var pct=hCli/totalH;
+        var costoCliente=ce*pct;
+        if(!costoLaboralPorCliente[cli])costoLaboralPorCliente[cli]=0;
+        costoLaboralPorCliente[cli]+=costoCliente;
+      });
+    });
+
     // 2. Construir filas — solo clientes de las unidades de Natalia
     var CLIENTES_NATALIA=Object.keys(CLIENTE_UNIDAD);
     var totalRev=0,totalCosto=0;
@@ -1106,11 +1207,19 @@ async function loadFinanciero(){
       // También intentar directo por nombre del cliente
       if(!costo) costo=costosPorCliente[nombre]||0;
 
-      var gm=rev-costo;
+      // Costo laboral — buscar por nombre exacto y variantes
+      var costoLaboral=costoLaboralPorCliente[nombre]||0;
+      // Buscar también por nombres alternativos del mapa
+      if(!costoLaboral){
+        var aliases=CLIENTE_COSTOS_MAP[nombre]||[];
+        aliases.forEach(function(a){if(costoLaboralPorCliente[a])costoLaboral+=costoLaboralPorCliente[a];});
+      }
+      var costoTotal=costo+costoLaboral;
+      var gm=rev-costoTotal;
       var pct=rev>0?(gm/rev*100):0;
       var unidad=CLIENTE_UNIDAD[nombre]||'';
-      totalRev+=rev;totalCosto+=costo;
-      return {cliente:nombre,rev:rev,costo:costo,gm:gm,pct:pct,unidad:unidad};
+      totalRev+=rev;totalCosto+=costoTotal;
+      return {cliente:nombre,rev:rev,costo:costo,costoLaboral:costoLaboral,costoTotal:costoTotal,gm:gm,pct:pct,unidad:unidad};
     }).filter(function(f){return f.rev>0||f.costo>0;})
       .sort(function(a,b){return b.rev-a.rev;});
 
@@ -1120,12 +1229,16 @@ async function loadFinanciero(){
     if(sub)sub.textContent='Intelligence + Creatividad · '+(MESES_LABELS[mes]||mes)+' '+anio+' · Fuente: Supabase (sync diario 11PM)';
 
     // Actualizar stats
+    var totalTransvFinal=filas.reduce(function(s,f){return s+f.costo;},0);
+    var totalLaboralFinal=filas.reduce(function(s,f){return s+f.costoLaboral;},0);
     var elR=document.getElementById('finRevTotal'),elC=document.getElementById('finCostoTotal');
     var elG=document.getElementById('finGM'),elGP=document.getElementById('finGMPct'),elCl=document.getElementById('finClientes');
+    var elL=document.getElementById('finLaboralTotal');
     if(elR)elR.textContent=fmt(totalRev);
-    if(elC)elC.textContent=fmt(totalCosto);
+    if(elC)elC.textContent=fmt(totalTransvFinal);
+    if(elL)elL.textContent=fmt(totalLaboralFinal);
     if(elG)elG.textContent=fmt(totalGM);
-    if(elGP)elGP.textContent=totalPct.toFixed(1)+'% margen';
+    if(elGP)elGP.textContent=totalPct.toFixed(1)+'% margen real';
     if(elCl)elCl.textContent=filas.length;
 
     if(!filas.length){
@@ -1134,7 +1247,7 @@ async function loadFinanciero(){
     }
 
     // Tabla
-    var htmlTabla='<table class="tbl"><thead><tr><th>Cliente</th><th>Revenue</th><th>Costos trans.</th><th>Gross Margin</th><th>%</th></tr></thead><tbody>';
+    var htmlTabla='<table class="tbl"><thead><tr><th>Cliente</th><th>Revenue</th><th>Costos trans.</th><th>C. Laboral</th><th>Ganancia real</th><th>%</th></tr></thead><tbody>';
     filas.forEach(function(f){
       var color=f.pct>=40?'var(--green)':f.pct>=20?'var(--amber)':'var(--red)';
       var badge=f.pct>=40?'b-green':f.pct>=20?'b-amber':'b-red';
@@ -1142,15 +1255,19 @@ async function loadFinanciero(){
       htmlTabla+='<tr>'+
         '<td><strong>'+f.cliente+'</strong> <span class="badge '+badgeU+'" style="font-size:8px">'+f.unidad+'</span></td>'+
         '<td style="font-family:DM Mono,monospace;font-size:12px">'+fmt(f.rev)+'</td>'+
-        '<td style="font-family:DM Mono,monospace;font-size:12px;color:var(--red)">'+(f.costo>0?fmt(f.costo):'<span style="color:var(--muted)">Sin dato</span>')+'</td>'+
+        '<td style="font-family:DM Mono,monospace;font-size:12px;color:var(--red)">'+(f.costo>0?fmt(f.costo):'<span style="color:var(--muted)">—</span>')+'</td>'+
+        '<td style="font-family:DM Mono,monospace;font-size:12px;color:var(--amber)">'+(f.costoLaboral>0?fmt(f.costoLaboral):'<span style="color:var(--muted)">—</span>')+'</td>'+
         '<td style="font-family:DM Mono,monospace;font-size:12px;color:'+color+'">'+fmt(f.gm)+'</td>'+
         '<td><span class="badge '+badge+'" style="font-family:DM Mono,monospace">'+f.pct.toFixed(1)+'%</span></td>'+
       '</tr>';
     });
+    var totalLaboral=filas.reduce(function(s,f){return s+f.costoLaboral;},0);
+    var totalTransv=filas.reduce(function(s,f){return s+f.costo;},0);
     htmlTabla+='<tr style="border-top:2px solid var(--border)">'+
       '<td style="font-weight:700">TOTAL</td>'+
       '<td style="font-family:DM Mono,monospace;font-size:12px;font-weight:700">'+fmt(totalRev)+'</td>'+
-      '<td style="font-family:DM Mono,monospace;font-size:12px;font-weight:700;color:var(--red)">'+fmt(totalCosto)+'</td>'+
+      '<td style="font-family:DM Mono,monospace;font-size:12px;font-weight:700;color:var(--red)">'+fmt(totalTransv)+'</td>'+
+      '<td style="font-family:DM Mono,monospace;font-size:12px;font-weight:700;color:var(--amber)">'+fmt(totalLaboral)+'</td>'+
       '<td style="font-family:DM Mono,monospace;font-size:12px;font-weight:700">'+fmt(totalGM)+'</td>'+
       '<td><span class="badge '+(totalPct>=40?'b-green':totalPct>=20?'b-amber':'b-red')+'" style="font-family:DM Mono,monospace;font-weight:700">'+totalPct.toFixed(1)+'%</span></td>'+
     '</tr></tbody></table>';
