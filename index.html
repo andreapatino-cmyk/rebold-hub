@@ -719,7 +719,7 @@ function initApp(){
   var nav=NAV_CONFIG[currentUser.role]||NAV_CONFIG.analyst;showPage('page-'+nav[0].id);
 }
 function buildNav(){var nav=NAV_CONFIG[currentUser.role]||NAV_CONFIG.analyst,navEl=document.getElementById('sidebarNav');navEl.innerHTML='';var sec=document.createElement('div');sec.className='nav-sec';sec.textContent=currentUser.role==='proveedor'?'Proveedor Externo':currentUser.unit;navEl.appendChild(sec);nav.forEach(function(item){var btn=document.createElement('button');btn.className='nav-item';btn.id='nav-'+item.id;btn.innerHTML=(ICONS[item.icon]||'')+item.label;btn.onclick=function(){showPage('page-'+item.id,btn);};navEl.appendChild(btn);});}
-function buildClientChips(){var clients=['Sodimac','Páramo Presenta','Páramo Lab','JEP','Homecenter','Global Wine','Banco Falabella','Corferias','Henkel Regional','Granite','Stormberg','Parador Rojo','Punto de Pago','Supercerdo','Casa Mayor','Blue Digital','For Life Nutrition','Reunión interna'];var c=document.getElementById('clientChips');if(!c)return;c.innerHTML=clients.map(function(cl){return '<div class="badge b-gray" style="cursor:pointer;padding:8px 10px;font-size:12px;border-radius:8px;justify-content:center" onclick="toggleChip(this)">'+cl+'</div>';}).join('');}
+function buildClientChips(){var clients=['Sodimac','Páramo Presenta / Promo Páramo','Páramo Lab','JEP','Homecenter','Global Wine','Banco Falabella','Corferias','Henkel Regional','Granite','Stormberg','Parador Rojo','Punto de Pago','Supercerdo','Casa Mayor','Blue Digital','For Life Nutrition','Reunión interna'];var c=document.getElementById('clientChips');if(!c)return;c.innerHTML=clients.map(function(cl){return '<div class="badge b-gray" style="cursor:pointer;padding:8px 10px;font-size:12px;border-radius:8px;justify-content:center" onclick="toggleChip(this)">'+cl+'</div>';}).join('');}
 function showPage(pageId,btn){prevPage=(document.querySelector('.page.active')||{}).id;document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});var page=document.getElementById(pageId);if(page)page.classList.add('active');if(btn)btn.classList.add('active');else{var nb=document.getElementById('nav-'+pageId.replace('page-',''));if(nb)nb.classList.add('active');}if(window.innerWidth<=900)closeSidebar();window.scrollTo({top:0,behavior:'smooth'});onPageOpen(pageId);}
 function goBack(){if(prevPage)showPage(prevPage);else{var nav=NAV_CONFIG[currentUser?currentUser.role:'analyst']||NAV_CONFIG.analyst;showPage('page-'+nav[0].id);}}
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('open');}
@@ -1027,6 +1027,7 @@ const CLIENTE_COSTOS_MAP = {
   // Intelligence
   'Sodimac':                          ['Homecenter'],
   'Páramo - Promo Páramo':            ['Páramo Activación', 'Páramo Intelligence'],
+  'Páramo Presenta':                  ['Páramo Activación', 'Páramo Intelligence'],
   'Corferias - Corporación de Ferias':['Corferias', 'Corferias Redes'],
   'Global Wine':                      ['Global Wine'],
   'Tezania':                          ['Tezania'],
@@ -1092,8 +1093,9 @@ async function loadFinanciero(){
   };
 
   var CLIENTE_UNIDAD={
-      'Sodimac':'INT','Páramo - Promo Páramo':'INT','Corferias - Corporación de Ferias':'INT',
-      'Global Wine':'INT','Tezania':'INT','Banco Falabella':'INT','JEP':'INT',
+      'Sodimac':'INT','Páramo - Promo Páramo':'INT','Páramo Presenta':'INT',
+      'Corferias - Corporación de Ferias':'INT','Global Wine':'INT',
+      'Tezania':'INT','Banco Falabella':'INT','JEP':'INT',
       'Henkel Regional':'CRE','Parador rojo':'CRE','Casa Mayor/ 4 patas':'CRE',
       'Punto de pago':'CRE','Granite':'CRE','Stormberg Foods':'CRE',
     };
