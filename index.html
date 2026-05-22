@@ -1067,13 +1067,21 @@ async function loadFinanciero(){
     var costosPorCliente={};
     financialsData.forEach(function(f){
       var nombre=(f.client_name||'').trim();
-      // Revenue mensual (guardado por sincClientes)
+      // Revenue mensual
       if(f.monthly_revenue>0){
         revenuePorCliente[nombre]=(revenuePorCliente[nombre]||0)+(f.monthly_revenue||0);
       }
-      // Costos transversales (guardados por sincCostosMes)
+      // Costos transversales — indexar por nombre real Y por nombre Natalia usando el mapa inverso
       if(f.tools_cost>0||f.providers_cost>0){
-        costosPorCliente[nombre]=(costosPorCliente[nombre]||0)+(f.tools_cost||0)+(f.providers_cost||0);
+        var costo=(f.tools_cost||0)+(f.providers_cost||0);
+        costosPorCliente[nombre]=(costosPorCliente[nombre]||0)+costo;
+        // También indexar por nombre principal si este nombre es un alias
+        Object.keys(CLIENTE_COSTOS_MAP).forEach(function(nombreNatalia){
+          var aliases=CLIENTE_COSTOS_MAP[nombreNatalia]||[];
+          if(aliases.indexOf(nombre)>=0){
+            costosPorCliente[nombreNatalia]=(costosPorCliente[nombreNatalia]||0)+costo;
+          }
+        });
       }
     });
 
