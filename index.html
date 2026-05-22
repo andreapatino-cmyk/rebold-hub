@@ -521,6 +521,17 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     </div>
     <div id="ausenciasResumen"><div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Cargando...</div></div>
   </div>
+  <!-- REPORTE MENSUAL (visible solo con filtro mes) -->
+  <div id="reporteMensual" style="display:none">
+    <div class="card" style="margin-bottom:16px">
+      <div class="sec">Dedicación del mes por persona</div>
+      <div id="reporteMensualBarras"></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="sec">Horas por persona × cliente</div>
+      <div id="reporteMensualTabla"></div>
+    </div>
+  </div>
   <!-- HISTÓRICO TABLA -->
   <div class="card"><div class="sec">Histórico de check-ins</div><div id="dedicacionTable"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Cargando...</div></div></div>
 </div>
@@ -995,6 +1006,88 @@ function renderDedicacion(checkins){
   });
   html2+='</tbody></table>';
   tbl.innerHTML=html2;
+
+  // ── REPORTE MENSUAL (solo cuando filtro = mes) ──────────────────
+  var rango=(document.getElementById('filterRango')||{}).value||'semana';
+  var reporteEl=document.getElementById('reporteMensual');
+  if(!reporteEl)return;
+  if(rango!=='mes'){reporteEl.style.display='none';return;}
+  reporteEl.style.display='block';
+
+  // Agrupar horas por persona y por cliente para el mes
+  var resumenPersona={};
+  checkins.forEach(function(c){
+    var nombre=c.member_name||'';
+    var horas=parseFloat(c.hours)||0;
+    var unit=c.member_unit||'';
+    var accounts=c.accounts?(Array.isArray(c.accounts)?c.accounts:JSON.parse(c.accounts||'[]')):[];
+    if(!resumenPersona[nombre])resumenPersona[nombre]={unit:unit,totalHoras:0,clientes:{},dias:new Set()};
+    resumenPersona[nombre].totalHoras+=horas;
+    resumenPersona[nombre].dias.add(c.checkin_date);
+    var n=accounts.length||1;
+    accounts.forEach(function(a){
+      var cli=a.client||a||'';
+      if(!resumenPersona[nombre].clientes[cli])resumenPersona[nombre].clientes[cli]=0;
+      resumenPersona[nombre].clientes[cli]+=horas/n;
+    });
+  });
+
+  var personas=Object.keys(resumenPersona).sort(function(a,b){
+    return resumenPersona[b].totalHoras-resumenPersona[a].totalHoras;
+  });
+  var maxH=Math.max.apply(null,personas.map(function(p){return resumenPersona[p].totalHoras;}));
+
+  // Barras por persona
+  var htmlBarras='<div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px">';
+  personas.forEach(function(nombre){
+    var d=resumenPersona[nombre];
+    var pct=maxH>0?(d.totalHoras/maxH*100):0;
+    var uc=d.unit==='Intelligence'?'var(--red)':d.unit==='Creatividad'?'var(--blue)':'var(--amber)';
+    var ini=nombre.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+    // Top 3 clientes
+    var topCli=Object.keys(d.clientes).sort(function(a,b){return d.clientes[b]-d.clientes[a];}).slice(0,3);
+    var cliStr=topCli.map(function(c){return c+' ('+d.clientes[c].toFixed(0)+'h)';}).join(' · ');
+    htmlBarras+=
+      '<div style="display:flex;align-items:center;gap:12px">'+
+        '<div style="width:34px;height:34px;border-radius:50%;background:'+uc+';display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:800;font-size:10px;color:#fff;flex-shrink:0">'+ini+'</div>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+            '<span style="font-size:12px;font-weight:600">'+nombre+'</span>'+
+            '<span style="font-family:DM Mono,monospace;font-size:11px;color:var(--muted)">'+d.totalHoras.toFixed(0)+'h · '+d.dias.size+' días</span>'+
+          '</div>'+
+          '<div style="height:16px;background:var(--surface3);border-radius:4px;overflow:hidden;margin-bottom:4px">'+
+            '<div style="height:100%;width:'+pct+'%;background:'+uc+';border-radius:4px;transition:width .6s;opacity:.85"></div>'+
+          '</div>'+
+          '<div style="font-size:10px;color:var(--muted)">'+cliStr+'</div>'+
+        '</div>'+
+      '</div>';
+  });
+  htmlBarras+='</div>';
+
+  // Tabla horas por persona × cliente
+  var todosClientes=[];
+  personas.forEach(function(p){Object.keys(resumenPersona[p].clientes).forEach(function(c){if(!todosClientes.includes(c))todosClientes.push(c);});});
+  todosClientes.sort();
+
+  var htmlTabla='<div style="overflow-x:auto"><table class="tbl" style="min-width:600px"><thead><tr><th>Persona</th>';
+  todosClientes.forEach(function(c){htmlTabla+='<th style="font-size:9px;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+c+'">'+c.split(' ')[0]+'</th>';});
+  htmlTabla+='<th>Total</th></tr></thead><tbody>';
+
+  personas.forEach(function(nombre){
+    var d=resumenPersona[nombre];
+    var uc=d.unit==='Intelligence'?'var(--red)':d.unit==='Creatividad'?'var(--blue)':'var(--amber)';
+    htmlTabla+='<tr><td><strong style="color:'+uc+'">'+nombre.split(' ')[0]+'</strong></td>';
+    todosClientes.forEach(function(c){
+      var h=d.clientes[c]||0;
+      var bg=h>20?'rgba(0,201,122,0.08)':h>0?'rgba(61,142,255,0.05)':'';
+      htmlTabla+='<td style="font-family:DM Mono,monospace;font-size:11px;text-align:center;background:'+bg+'">'+(h>0?h.toFixed(0)+'h':'—')+'</td>';
+    });
+    htmlTabla+='<td style="font-family:DM Mono,monospace;font-size:12px;font-weight:700">'+d.totalHoras.toFixed(0)+'h</td></tr>';
+  });
+  htmlTabla+='</tbody></table></div>';
+
+  document.getElementById('reporteMensualBarras').innerHTML=htmlBarras;
+  document.getElementById('reporteMensualTabla').innerHTML=htmlTabla;
 }
 function getWeekNumber(d){var date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())),dayNum=date.getUTCDay()||7;date.setUTCDate(date.getUTCDate()+4-dayNum);var ys=new Date(Date.UTC(date.getUTCFullYear(),0,1));return Math.ceil((((date-ys)/86400000)+1)/7);}
 function onPageOpen(pageId){
