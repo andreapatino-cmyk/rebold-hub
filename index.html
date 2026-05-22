@@ -1201,8 +1201,10 @@ async function loadFinanciero(){
     });
 
     // Distribuir CE proporcional a horas por cliente
+    // Excluir director — su CE es overhead de dirección, no se distribuye por cuenta
     var costoLaboralPorCliente={};
     Object.keys(CE_EQUIPO).forEach(function(persona){
+      if(persona==='Natalia Patiño')return;
       var ce=CE_EQUIPO[persona];
       var totalH=horasTotalesPorPersona[persona]||0;
       if(totalH<=0||!horasPorPersonaCliente[persona])return;
