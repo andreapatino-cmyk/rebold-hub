@@ -806,7 +806,7 @@ async function submitCheckin(){var ac=document.querySelectorAll('#clientChips [d
     alert('✅ Check-in registrado. ¡Gracias '+currentUser.name.split(' ')[0]+'!');document.querySelectorAll('#clientChips .badge,#taskChips .badge,#hourBtns .badge').forEach(function(el){el.classList.remove('b-red');el.classList.add('b-gray');el.setAttribute('data-selected','false');});document.getElementById('checkinNota').value='';}catch(e){alert('Error guardando el check-in.');}}
 window.addEventListener('load',function(){var params=new URLSearchParams(window.location.search),email=params.get('email');if(email&&USERS[email.toLowerCase()]){document.getElementById('loginEmail').value=email;checkEmail();}});
 const SB_URL='https://sfdwmldxrjsefoxoqmvv.supabase.co';
-const SB_KEY='sb_publishable_XGDo7N3bGUvm0ZqE3Q04Bw_FwvjA7PL';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmZHdtbGR4cmpzZWZveG9xbXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTczMzYsImV4cCI6MjA5MzEzMzMzNn0.1Eu0IyTQ2oyxpdpVjWk4f73R6lUx_xGFaiXwhkoWkz8';
 const SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
 let currentFilter='inbox',allTickets=[],allTasks=[];
 async function sbGet(t,q){var r=await fetch(SB_URL+'/rest/v1/'+t+'?'+(q||''),{headers:SB_HDR});return r.ok?r.json():[];}
