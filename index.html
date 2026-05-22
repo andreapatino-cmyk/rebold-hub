@@ -1100,6 +1100,7 @@ async function loadFinanciero(){
       'Punto de pago':'CRE','Granite':'CRE','Stormberg Foods':'CRE',
     };
 
+  try{
     // CE mensual por persona (Costo Empleador)
     var CE_EQUIPO={
       'Natalia Patiño':16900000,
@@ -1116,8 +1117,6 @@ async function loadFinanciero(){
       'Daniel Urbina':5830000,
       'Juan Camilo Espinosa':7350000,
     };
-
-  try{
     // 1. Leer financials del mes — contiene revenue Y costos
     var financialsData=await sbGet('financials','month=eq.'+mesNum+'&year=eq.'+anio+'&limit=200');
 
