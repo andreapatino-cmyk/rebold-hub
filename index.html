@@ -521,6 +521,15 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     </div>
     <div id="ausenciasResumen"><div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Cargando...</div></div>
   </div>
+  <!-- PIEZAS POR CLIENTE (designer y cm) -->
+  <div class="card" style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="sec" style="margin-bottom:0">Piezas entregadas · Designer &amp; CM</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadPiezas()">↻</button>
+    </div>
+    <div id="piezasResumen"><div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Cargando...</div></div>
+  </div>
+
   <!-- REPORTE MENSUAL (visible solo con filtro mes) -->
   <div id="reporteMensual" style="display:none">
     <div class="card" style="margin-bottom:16px">
@@ -890,7 +899,7 @@ async function loadDedicacion(){
   else{fechaDesde=new Date(hoy.getFullYear(),hoy.getMonth(),1).toISOString().split('T')[0];}
   var query='order=checkin_date.desc&limit=500&checkin_date=gte.'+fechaDesde;
   if(unidad)query+='&member_unit=eq.'+encodeURIComponent(unidad);
-  try{var checkins=await sbGet('checkins',query);renderDedicacion(checkins);}catch(e){console.error(e);}
+  try{var checkins=await sbGet('checkins',query);renderDedicacion(checkins);loadPiezas();}catch(e){console.error(e);}
 }
 
 function renderDedicacion(checkins){
@@ -1093,7 +1102,7 @@ function getWeekNumber(d){var date=new Date(Date.UTC(d.getFullYear(),d.getMonth(
 function onPageOpen(pageId){
   if(pageId==='page-tickets')setTimeout(loadTickets,200);
   if(pageId==='page-tareas')setTimeout(loadTasks,200);
-  if(pageId==='page-dedicacion'){setTimeout(loadDedicacion,200);setTimeout(loadAusenciasPanel,200);}
+  if(pageId==='page-dedicacion'){setTimeout(loadDedicacion,200);setTimeout(loadAusenciasPanel,200);setTimeout(loadPiezas,200);}
   if(pageId==='page-mis-tareas')setTimeout(loadMisTareas,200);
   if(pageId==='page-mis-solicitudes')setTimeout(loadMisSolicitudes,200);
   if(pageId==='page-financiero')setTimeout(loadFinanciero,200);
@@ -1423,6 +1432,84 @@ async function loadFinanciero(){
   }
 }
 
+
+async function loadPiezas(){
+  var el=document.getElementById('piezasResumen');
+  if(!el)return;
+  var rango=(document.getElementById('filterRango')||{}).value||'semana';
+  var hoy=new Date();
+  var desde,hasta=hoy.toISOString().split('T')[0];
+  if(rango==='hoy'){desde=hasta;}
+  else if(rango==='semana'){var ws=new Date(hoy);ws.setDate(hoy.getDate()-hoy.getDay()+1);desde=ws.toISOString().split('T')[0];}
+  else{desde=new Date(hoy.getFullYear(),hoy.getMonth(),1).toISOString().split('T')[0];hasta=new Date(hoy.getFullYear(),hoy.getMonth()+1,0).toISOString().split('T')[0];}
+
+  try{
+    var checkins=await sbGet('checkins','checkin_date=gte.'+desde+'&checkin_date=lte.'+hasta+'&limit=500');
+    // Filtrar solo designer y cm
+    var DESIGNERS=['Daniel Urbina','Juan Camilo Espinosa','María Camila Castro','Estefanía Prieto'];
+    var checkinsDis=checkins.filter(function(c){return DESIGNERS.indexOf(c.member_name)>=0;});
+
+    // Acumular piezas por persona y por cliente
+    var porPersona={};
+    checkinsDis.forEach(function(c){
+      var persona=c.member_name;
+      var piezas=[];
+      try{piezas=Array.isArray(c.piezas)?c.piezas:(c.piezas?JSON.parse(c.piezas):[]);}catch(e){}
+      if(!piezas.length)return;
+      if(!porPersona[persona])porPersona[persona]={clientes:{}};
+      piezas.forEach(function(p){
+        var cli=p.cliente||'Sin cliente';
+        var cant=parseInt(p.cantidad)||0;
+        var tipos=(p.tipos||[]).join(', ')||'Sin tipo';
+        var spec=p.especificacion||'';
+        if(!porPersona[persona].clientes[cli])porPersona[persona].clientes[cli]={total:0,items:[]};
+        porPersona[persona].clientes[cli].total+=cant;
+        if(cant>0)porPersona[persona].clientes[cli].items.push(cant+'x '+tipos+(spec?' ('+spec+')':''));
+      });
+    });
+
+    var personas=Object.keys(porPersona);
+    if(!personas.length){
+      el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Sin piezas registradas en este periodo</div>';
+      return;
+    }
+
+    var html='<div style="display:flex;flex-direction:column;gap:16px">';
+    personas.forEach(function(persona){
+      var d=porPersona[persona];
+      var totalPiezas=Object.values(d.clientes).reduce(function(s,c){return s+c.total;},0);
+      var uc=(['Daniel Urbina','Juan Camilo Espinosa'].indexOf(persona)>=0)?'var(--blue)':'var(--purple)';
+      var ini=persona.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+      html+=
+        '<div style="background:var(--surface2);border-radius:12px;padding:14px">'+
+          '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'+
+            '<div style="width:32px;height:32px;border-radius:50%;background:'+uc+';display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:800;font-size:10px;color:#fff;flex-shrink:0">'+ini+'</div>'+
+            '<div>'+
+              '<div style="font-size:13px;font-weight:600">'+persona+'</div>'+
+              '<div style="font-size:11px;color:var(--muted)">'+totalPiezas+' piezas totales</div>'+
+            '</div>'+
+          '</div>'+
+          '<div style="display:flex;flex-direction:column;gap:8px">';
+      Object.keys(d.clientes).forEach(function(cli){
+        var c=d.clientes[cli];
+        html+=
+          '<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:8px 12px;background:var(--surface3);border-radius:8px">'+
+            '<div style="flex:1;min-width:0">'+
+              '<div style="font-size:12px;font-weight:600;margin-bottom:3px">'+cli+'</div>'+
+              '<div style="font-size:10px;color:var(--muted)">'+c.items.join(' · ')+'</div>'+
+            '</div>'+
+            '<span class="badge b-blue" style="font-family:DM Mono,monospace;font-size:11px;flex-shrink:0;margin-left:8px">'+c.total+' pzas</span>'+
+          '</div>';
+      });
+      html+='</div></div>';
+    });
+    html+='</div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Error cargando piezas</div>';
+    console.error(e);
+  }
+}
 
 async function loadAusenciasPanel(){
   try{
