@@ -1881,8 +1881,8 @@ async function loadTrafico(){
     var traficoQuery='order=dia_entrega.asc&limit=500';
     var items=await sbGet('trafico',traficoQuery);
 
-    // Filtrar según rol
-    if(currentUser&&currentUser.role!=='director'){
+    // Filtrar según rol — viewer ve todo (vista pública)
+    if(currentUser&&currentUser.role!=='director'&&currentUser.role!=='viewer'){
       var CLIENTES_CM={
         'Estefanía Prieto':   ['Granite','Stormberg','Ayoba','Beg and Baker','Stormberg Foods'],
         'María Camila Castro':['Corferias'],
