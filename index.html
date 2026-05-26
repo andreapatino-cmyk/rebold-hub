@@ -448,6 +448,11 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
       </div>
       <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:4px" onclick="agregarFilaPieza()">+ Agregar otro cliente</button>
     </div>
+    <!-- TAREAS DE TRÁFICO DEL DÍA -->
+    <div id="checkinTrafico" style="display:none;margin-bottom:16px">
+      <div class="sec">Tus tareas de tráfico de hoy</div>
+      <div id="checkinTraficoLista"></div>
+    </div>
     <div class="form-group"><label class="form-label">Nota del día (opcional)</label>
       <textarea class="form-input" id="checkinNota" style="height:80px;resize:none;line-height:1.6" placeholder="¿Algún bloqueo, entrega o novedad?"></textarea>
     </div>
@@ -480,6 +485,87 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
 
   </div>
 </div>
+<div id="page-trafico" class="page">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Tráfico <span>Creatividad</span></div>
+      <div class="page-sub" id="traficoSub">Calendario semanal · Equipo creativo</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-ghost btn-sm" onclick="navSemana(-1)">← Semana anterior</button>
+      <span id="traficoSemanaLabel" style="font-size:13px;font-weight:600;color:var(--text);min-width:180px;text-align:center"></span>
+      <button class="btn btn-ghost btn-sm" onclick="navSemana(1)">Semana siguiente →</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadTrafico()">↻</button>
+      <button class="btn btn-red btn-sm" onclick="showNuevaTareaTrafico()">+ Nueva tarea</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="g4" style="margin-bottom:20px">
+    <div class="stat s-amber"><div class="stat-label">Pendientes</div><div class="stat-val" style="color:var(--amber);font-size:22px" id="traficoStatPend">—</div><div class="stat-sub">Sin iniciar</div></div>
+    <div class="stat s-blue"><div class="stat-label">En curso</div><div class="stat-val" style="color:var(--blue);font-size:22px" id="traficoStatCurso">—</div><div class="stat-sub">Trabajando</div></div>
+    <div class="stat s-purple"><div class="stat-label">En aprobación</div><div class="stat-val" style="color:var(--purple);font-size:22px" id="traficoStatAprob">—</div><div class="stat-sub">Esperando OK</div></div>
+    <div class="stat s-green"><div class="stat-label">Finalizados</div><div class="stat-val" style="color:var(--green);font-size:22px" id="traficoStatFin">—</div><div class="stat-sub">Completados</div></div>
+  </div>
+
+  <!-- Form nueva tarea -->
+  <div id="formNuevaTareaTrafico" style="display:none;max-width:600px;margin-bottom:20px">
+    <div class="new-ticket-form">
+      <div style="font-family:Syne,sans-serif;font-weight:800;font-size:16px;margin-bottom:18px">Nueva tarea de tráfico</div>
+      <div class="g2">
+        <div class="form-group"><label class="form-label">Asignado a</label>
+          <select class="form-select" id="ntTrafAsignado">
+            <option value="">Selecciona...</option>
+            <option>Daniel Urbina</option><option>Juan Camilo Espinosa</option>
+            <option>María Camila Castro</option><option>Estefanía Prieto</option>
+            <option>Laura Morales</option><option>Andrés Sánchez</option>
+            <option>Sebastián Barrera</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Cliente</label>
+          <select class="form-select" id="ntTrafCliente">
+            <option>Corferias</option><option>Henkel Regional</option><option>Granite</option>
+            <option>Stormberg Foods</option><option>Parador Rojo</option><option>Punto de Pago</option>
+            <option>Supercerdo</option><option>Casa Mayor</option><option>Ayoba</option>
+            <option>Beg and Baker</option><option>Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Nombre de la pieza / tarea</label>
+        <input class="form-input" id="ntTrafNombre" placeholder="ej: Carrusel día de la madre, Crear parrilla junio...">
+      </div>
+      <div class="g3">
+        <div class="form-group"><label class="form-label">Tipo</label>
+          <select class="form-select" id="ntTrafTipo">
+            <option>Carrusel</option><option>Story</option><option>Post</option>
+            <option>Video</option><option>Banner</option><option>Parrilla</option>
+            <option>Mailing</option><option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Fecha de entrega</label>
+          <input class="form-input" id="ntTrafFecha" type="date">
+        </div>
+        <div class="form-group"><label class="form-label">Feria / Campaña</label>
+          <input class="form-input" id="ntTrafFeria" placeholder="ej: Agroexpo, Día Madre...">
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Notas (opcional)</label>
+        <input class="form-input" id="ntTrafNotas" placeholder="Instrucciones, referencias, links...">
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" style="flex:1" onclick="hideNuevaTareaTrafico()">Cancelar</button>
+        <button class="btn btn-red" style="flex:2" onclick="guardarTareaTrafico()">Crear tarea ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendario semanal -->
+  <div id="traficoCalendario"><div style="text-align:center;padding:40px;color:var(--muted)">⏳ Cargando...</div></div>
+
+  <!-- Lista por persona (debajo del calendario) -->
+  <div style="margin-top:20px" id="traficoLista"></div>
+</div>
+
 <div id="page-dedicacion" class="page">
   <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
     <div class="page-header" style="margin-bottom:0"><div class="page-title">Dedicación <span>del equipo</span></div><div class="page-sub">Horas por persona distribuidas en proyectos</div></div>
@@ -646,14 +732,14 @@ const USERS={
 };
 const ROLE_LABELS={director:'Directora de Unidades',account:'Ejecutivo de Cuentas',analyst:'Analista',designer:'Diseñador',cm:'Community Manager',proveedor:'Proveedor Externo'};
 const NAV_CONFIG={
-  director:[{id:'overview',label:'Resumen',icon:'grid'},{id:'equipo',label:'Equipo',icon:'users'},{id:'tareas',label:'Tareas',icon:'check'},{id:'tickets',label:'Tickets',icon:'ticket'},{id:'financiero',label:'Financiero',icon:'dollar'},{id:'dedicacion',label:'Dedicación',icon:'dollar'},{id:'ausencias',label:'Ausencias',icon:'cal'},{id:'checkin',label:'Check-in',icon:'msg'}],
+  director:[{id:'overview',label:'Resumen',icon:'grid'},{id:'equipo',label:'Equipo',icon:'users'},{id:'tareas',label:'Tareas',icon:'check'},{id:'tickets',label:'Tickets',icon:'ticket'},{id:'financiero',label:'Financiero',icon:'dollar'},{id:'dedicacion',label:'Dedicación',icon:'dollar'},{id:'trafico',label:'Tráfico',icon:'truck'},{id:'ausencias',label:'Ausencias',icon:'cal'},{id:'checkin',label:'Check-in',icon:'msg'}],
   account:[{id:'mis-solicitudes',label:'Mis solicitudes',icon:'ticket'},{id:'nuevo-ticket',label:'Nueva solicitud',icon:'plus'},{id:'ausencias',label:'Mis ausencias',icon:'cal'},{id:'checkin',label:'Check-in',icon:'msg'}],
   analyst:[{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'ausencias',label:'Mis ausencias',icon:'cal'},{id:'checkin',label:'Check-in',icon:'msg'}],
   designer:[{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'ausencias',label:'Mis ausencias',icon:'cal'},{id:'checkin',label:'Check-in',icon:'msg'}],
   cm:[{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'ausencias',label:'Mis ausencias',icon:'cal'},{id:'checkin',label:'Check-in',icon:'msg'}],
   proveedor:[{id:'mis-tareas',label:'Mis tareas',icon:'check'},{id:'checkin',label:'Check-in',icon:'msg'}],
 };
-const ICONS={grid:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',users:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',check:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',ticket:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 20h.01M7 20v-4"/><path d="M12 20V10"/><path d="M17 20V4"/></svg>',dollar:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',msg:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',plus:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',cal:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'};
+const ICONS={grid:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',users:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',check:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',ticket:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 20h.01M7 20v-4"/><path d="M12 20V10"/><path d="M17 20V4"/></svg>',dollar:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',msg:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',plus:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',truck:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',cal:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'};
 let currentUser=null,prevPage=null;
 function tick(){var n=new Date(),days=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],months=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];var el=document.getElementById('todayDate2');if(el)el.textContent=days[n.getDay()]+' '+n.getDate()+' de '+months[n.getMonth()]+' · '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
 tick();setInterval(tick,1000);
@@ -795,6 +881,41 @@ function recolectarPiezas(){
   });
   return piezas;
 }
+async function cargarTraficoDia(){
+  var hoy=new Date().toISOString().split('T')[0];
+  var nombre=currentUser?currentUser.name:'';
+  if(!nombre)return;
+  try{
+    var tareas=await sbGet('trafico','dia_entrega=eq.'+hoy+'&estado=neq.finalizado&asignado=ilike.*'+encodeURIComponent(nombre.split(' ')[0])+'*');
+    var sec=document.getElementById('checkinTrafico');
+    var lista=document.getElementById('checkinTraficoLista');
+    if(!sec||!lista)return;
+    if(!tareas.length){sec.style.display='none';return;}
+    sec.style.display='block';
+    lista.innerHTML=tareas.map(function(t){
+      var est=ESTADO_TRAFICO[t.estado]||ESTADO_TRAFICO.pendiente;
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:6px;gap:10px">'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-size:12px;font-weight:600">'+t.nombre_pieza.slice(0,50)+'</div>'+
+          '<div style="font-size:11px;color:var(--muted)">'+(t.cliente||'—')+(t.feria?' · '+t.feria:'')+'</div>'+
+        '</div>'+
+        '<select onchange="actualizarEstadoTrafico('+t.id+',this.value)" style="background:var(--surface3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:11px;padding:4px 8px;cursor:pointer">'+
+          '<option value="pendiente"'+(t.estado==='pendiente'?' selected':'')+'>⏳ Pendiente</option>'+
+          '<option value="en_curso"'+(t.estado==='en_curso'?' selected':'')+'>▶ En curso</option>'+
+          '<option value="aprobacion"'+(t.estado==='aprobacion'?' selected':'')+'>👁 Aprobación</option>'+
+          '<option value="finalizado"'+(t.estado==='finalizado'?' selected':'')+'>✓ Finalizado</option>'+
+        '</select>'+
+      '</div>';
+    }).join('');
+  }catch(e){console.error('Error cargando tráfico:',e);}
+}
+
+async function actualizarEstadoTrafico(id,estado){
+  try{
+    await fetch(SB_URL+'/rest/v1/trafico?id=eq.'+id,{method:'PATCH',headers:SB_HDR,body:JSON.stringify({estado:estado,updated_at:new Date().toISOString()})});
+  }catch(e){console.error(e);}
+}
+
 function setModoCheckin(modo){
   var btnT=document.getElementById('btnModoTrabajo'),btnA=document.getElementById('btnModoAusencia');
   var formT=document.getElementById('checkinFormTrabajo'),formA=document.getElementById('checkinFormAusencia');
@@ -1106,6 +1227,8 @@ function onPageOpen(pageId){
   if(pageId==='page-mis-tareas')setTimeout(loadMisTareas,200);
   if(pageId==='page-mis-solicitudes')setTimeout(loadMisSolicitudes,200);
   if(pageId==='page-financiero')setTimeout(loadFinanciero,200);
+  if(pageId==='page-trafico')setTimeout(loadTrafico,200);
+  if(pageId==='page-checkin')setTimeout(cargarTraficoDia,300);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1511,6 +1634,219 @@ async function loadPiezas(){
   }
 }
 
+// ══════════════════════════════════════════════════════════════════
+// TRÁFICO CREATIVIDAD — Calendario semanal
+// ══════════════════════════════════════════════════════════════════
+const ESTADO_TRAFICO={
+  pendiente:  {label:'Pendiente',  badge:'b-amber',  icon:'⏳'},
+  en_curso:   {label:'En curso',   badge:'b-blue',   icon:'▶'},
+  aprobacion: {label:'Aprobación', badge:'b-purple', icon:'👁'},
+  finalizado: {label:'Finalizado', badge:'b-green',  icon:'✓'},
+};
+
+const PERSONAS_CREATIVAS=[
+  {nombre:'Daniel Urbina',       tipo:'interno', color:'var(--blue)'},
+  {nombre:'Juan Camilo Espinosa',tipo:'interno', color:'var(--blue)'},
+  {nombre:'María Camila Castro', tipo:'interno', color:'var(--purple)'},
+  {nombre:'Estefanía Prieto',    tipo:'interno', color:'var(--purple)'},
+  {nombre:'Laura Morales',       tipo:'proveedor',color:'var(--amber)'},
+  {nombre:'Andrés Sánchez',      tipo:'proveedor',color:'var(--amber)'},
+  {nombre:'Sebastián Barrera',   tipo:'proveedor',color:'var(--amber)'},
+];
+
+var traficoSemanaOffset=0;
+
+function getInicioSemana(offset){
+  var hoy=new Date();
+  var dia=hoy.getDay()||7;
+  var lunes=new Date(hoy);
+  lunes.setDate(hoy.getDate()-dia+1+(offset*7));
+  lunes.setHours(0,0,0,0);
+  return lunes;
+}
+
+function navSemana(dir){traficoSemanaOffset+=dir;loadTrafico();}
+
+function showNuevaTareaTrafico(){
+  var hoy=new Date().toISOString().split('T')[0];
+  var f=document.getElementById('ntTrafFecha');if(f)f.value=hoy;
+  document.getElementById('formNuevaTareaTrafico').style.display='block';
+  document.getElementById('formNuevaTareaTrafico').scrollIntoView({behavior:'smooth'});
+}
+function hideNuevaTareaTrafico(){document.getElementById('formNuevaTareaTrafico').style.display='none';}
+
+async function guardarTareaTrafico(){
+  var asignado=document.getElementById('ntTrafAsignado').value;
+  var cliente=document.getElementById('ntTrafCliente').value;
+  var nombre=document.getElementById('ntTrafNombre').value.trim();
+  var tipo=document.getElementById('ntTrafTipo').value;
+  var fecha=document.getElementById('ntTrafFecha').value;
+  var notas=document.getElementById('ntTrafNotas').value.trim();
+  var feria=(document.getElementById('ntTrafFeria')||{}).value||'';
+  if(!asignado||!nombre){alert('Completa asignado y nombre');return;}
+  try{
+    await sbPost('trafico',{sheet_name:'hub_manual',numero:'',accion:'',nombre_pieza:nombre,
+      dia_entrega:fecha||null,semana_publicacion:'',feria:feria,link_pieza:'',
+      comentarios_cliente:'',comentarios_rebold:notas,ok_rebold:'',
+      estado:'pendiente',cliente:cliente,asignado:asignado,tipo:tipo});
+    hideNuevaTareaTrafico();
+    ['ntTrafNombre','ntTrafNotas','ntTrafFeria'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+    loadTrafico();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function loadTrafico(){
+  var cal=document.getElementById('traficoCalendario');
+  var lista=document.getElementById('traficoLista');
+  var sub=document.getElementById('traficoSub');
+  if(!cal)return;
+
+  // Calcular semana
+  var lunes=getInicioSemana(traficoSemanaOffset);
+  var viernes=new Date(lunes);viernes.setDate(lunes.getDate()+4);
+  var desde=lunes.toISOString().split('T')[0];
+  var hasta=viernes.toISOString().split('T')[0];
+
+  // Label semana
+  var label=document.getElementById('traficoSemanaLabel');
+  if(label){
+    var dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    var meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    label.textContent=lunes.getDate()+' '+meses[lunes.getMonth()]+' – '+viernes.getDate()+' '+meses[viernes.getMonth()];
+  }
+
+  cal.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted)">⏳ Cargando...</div>';
+
+  try{
+    // Cargar tareas de la semana + sin fecha
+    var items=await sbGet('trafico','order=dia_entrega.asc&limit=500');
+
+    // Stats globales
+    var pend=items.filter(function(t){return t.estado==='pendiente';}).length;
+    var curso=items.filter(function(t){return t.estado==='en_curso';}).length;
+    var aprob=items.filter(function(t){return t.estado==='aprobacion';}).length;
+    var fin=items.filter(function(t){return t.estado==='finalizado';}).length;
+    var eP=document.getElementById('traficoStatPend'),eC=document.getElementById('traficoStatCurso');
+    var eA=document.getElementById('traficoStatAprob'),eF=document.getElementById('traficoStatFin');
+    if(eP)eP.textContent=pend;if(eC)eC.textContent=curso;if(eA)eA.textContent=aprob;if(eF)eF.textContent=fin;
+    if(sub)sub.textContent='Semana del '+desde+' al '+hasta+' · '+pend+' pendientes';
+
+    // Filtrar items de la semana
+    var itemsSemana=items.filter(function(t){
+      if(!t.dia_entrega)return false;
+      var d=t.dia_entrega.split('T')[0];
+      return d>=desde&&d<=hasta;
+    });
+
+    // Construir calendario 5 días × personas
+    var diasLabels=['Lunes','Martes','Miércoles','Jueves','Viernes'];
+    var diasFechas=[];
+    for(var d=0;d<5;d++){var f=new Date(lunes);f.setDate(lunes.getDate()+d);diasFechas.push(f.toISOString().split('T')[0]);}
+
+    var hoyStr=new Date().toISOString().split('T')[0];
+
+    // HTML calendario — filas = personas, columnas = días
+    var html='<div style="overflow-x:auto"><table style="width:100%;border-collapse:separate;border-spacing:4px">';
+
+    // Header días
+    html+='<thead><tr><th style="width:140px;padding:8px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px">Persona</th>';
+    diasLabels.forEach(function(dia,i){
+      var esHoy=diasFechas[i]===hoyStr;
+      html+='<th style="padding:8px;text-align:center;font-size:11px;font-weight:700;color:'+(esHoy?'var(--red)':'var(--muted)')+';text-transform:uppercase;letter-spacing:1px;min-width:160px">'+dia+'<br><span style="font-size:10px;font-weight:400">'+diasFechas[i].slice(5).replace('-','/')+'</span></th>';
+    });
+    html+='</tr></thead><tbody>';
+
+    // Filas por persona
+    PERSONAS_CREATIVAS.forEach(function(persona){
+      html+='<tr>';
+      // Columna nombre
+      html+='<td style="padding:8px 12px;vertical-align:top;border-radius:8px;background:var(--surface)">'+
+        '<div style="font-size:11px;font-weight:700;color:'+persona.color+'">'+persona.nombre.split(' ')[0]+'</div>'+
+        '<div style="font-size:10px;color:var(--muted)">'+persona.nombre.split(' ').slice(1).join(' ')+'</div>'+
+        '<span class="badge" style="background:rgba(0,0,0,.2);color:'+persona.color+';font-size:8px;margin-top:4px">'+(persona.tipo==='interno'?'Equipo':'Proveedor')+'</span>'+
+      '</td>';
+
+      // Columnas días
+      diasFechas.forEach(function(fecha){
+        var esHoy=fecha===hoyStr;
+        var tareasDelDia=itemsSemana.filter(function(t){
+          return (t.dia_entrega||'').split('T')[0]===fecha&&(t.asignado||'').includes(persona.nombre.split(' ')[0]);
+        });
+        html+='<td style="padding:4px;vertical-align:top;background:'+(esHoy?'rgba(220,12,75,0.04)':'var(--surface2)')+';border-radius:8px;border:'+(esHoy?'1px solid rgba(220,12,75,0.2)':'1px solid var(--border)')+'">'+
+          '<div style="min-height:60px;display:flex;flex-direction:column;gap:4px">';
+
+        tareasDelDia.forEach(function(t){
+          var est=ESTADO_TRAFICO[t.estado]||ESTADO_TRAFICO.pendiente;
+          html+='<div style="background:var(--surface);border-radius:6px;padding:6px 8px;border-left:3px solid '+(t.estado==='finalizado'?'var(--green)':t.estado==='aprobacion'?'var(--purple)':t.estado==='en_curso'?'var(--blue)':'var(--amber)')+'">'+
+            '<div style="font-size:10px;font-weight:600;line-height:1.3;margin-bottom:3px">'+t.nombre_pieza.slice(0,35)+(t.nombre_pieza.length>35?'…':'')+'</div>'+
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:4px">'+
+              '<span style="font-size:9px;color:var(--muted)">'+( t.cliente||'')+'</span>'+
+              '<span class="badge '+est.badge+'" style="font-size:8px;cursor:pointer;padding:1px 5px" onclick="cambiarEstadoTrafico('+t.id+',''+t.estado+'')">'+est.icon+'</span>'+
+            '</div>'+
+          '</div>';
+        });
+
+        // Botón agregar en cada celda
+        html+='<div style="margin-top:auto;padding-top:4px">'+
+          '<button onclick="quickAddTrafico(''+persona.nombre+'',''+fecha+'')" style="width:100%;background:none;border:1px dashed var(--border2);border-radius:6px;color:var(--muted2);font-size:10px;cursor:pointer;padding:4px;transition:all .15s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted2)'">+</button>'+
+        '</div>';
+
+        html+='</div></td>';
+      });
+      html+='</tr>';
+    });
+
+    html+='</tbody></table></div>';
+    cal.innerHTML=html;
+
+    // Lista de sin fecha o fuera de la semana
+    var sinFecha=items.filter(function(t){return !t.dia_entrega&&t.estado!=='finalizado';});
+    var futuraSemana=items.filter(function(t){return t.dia_entrega&&t.dia_entrega.split('T')[0]>hasta&&t.estado!=='finalizado';});
+
+    if(lista){
+      var htmlLista='';
+      if(sinFecha.length){
+        htmlLista+='<div class="card" style="margin-top:16px"><div class="sec">Sin fecha asignada ('+sinFecha.length+')</div>';
+        sinFecha.forEach(function(t){
+          var est=ESTADO_TRAFICO[t.estado]||ESTADO_TRAFICO.pendiente;
+          htmlLista+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'+
+            '<div style="flex:1"><div style="font-size:12px;font-weight:600">'+t.nombre_pieza+'</div>'+
+            '<div style="font-size:11px;color:var(--muted)">'+( t.asignado||'—')+' · '+(t.cliente||'—')+'</div></div>'+
+            '<span class="badge '+est.badge+'" style="cursor:pointer" onclick="cambiarEstadoTrafico('+t.id+',''+t.estado+'')">'+est.icon+' '+est.label+'</span>'+
+          '</div>';
+        });
+        htmlLista+='</div>';
+      }
+      lista.innerHTML=htmlLista;
+    }
+
+  }catch(e){
+    cal.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">Error cargando tráfico: '+e.message+'</div>';
+    console.error(e);
+  }
+}
+
+function quickAddTrafico(persona,fecha){
+  // Pre-llenar el form con la persona y fecha
+  var asig=document.getElementById('ntTrafAsignado');
+  var fec=document.getElementById('ntTrafFecha');
+  if(asig){
+    var opts=Array.from(asig.options);
+    var match=opts.find(function(o){return o.value.includes(persona.split(' ')[0]);});
+    if(match)asig.value=match.value;
+  }
+  if(fec)fec.value=fecha;
+  showNuevaTareaTrafico();
+}
+
+async function cambiarEstadoTrafico(id,estadoActual){
+  var estados=['pendiente','en_curso','aprobacion','finalizado'];
+  var siguiente=estados[(estados.indexOf(estadoActual)+1)%estados.length];
+  try{
+    await fetch(SB_URL+'/rest/v1/trafico?id=eq.'+id,{method:'PATCH',headers:SB_HDR,body:JSON.stringify({estado:siguiente,updated_at:new Date().toISOString()})});
+    loadTrafico();
+  }catch(e){console.error(e);}
+}
 async function loadAusenciasPanel(){
   try{
     var hoy=new Date().toISOString().split('T')[0];
