@@ -2035,10 +2035,8 @@ async function loadTrafico(){
       '</tr>';
     });
     htmlResumen+='</tbody></table></div></div>';
-    if(lista)lista.innerHTML=htmlResumen;
-
     if(lista){
-      var htmlLista=lista.innerHTML||'';
+      var htmlLista=htmlResumen;
       if(sinFecha.length){
         htmlLista+='<div class="card" style="margin-top:16px"><div class="sec">Sin fecha asignada ('+sinFecha.length+')</div>';
         sinFecha.forEach(function(t){
