@@ -1809,9 +1809,14 @@ async function loadTrafico(){
           var est=ESTADO_TRAFICO[t.estado]||ESTADO_TRAFICO.pendiente;
           html+='<div style="background:var(--surface);border-radius:6px;padding:6px 8px;border-left:3px solid '+(t.estado==='finalizado'?'var(--green)':t.estado==='aprobacion'?'var(--purple)':t.estado==='en_curso'?'var(--blue)':'var(--amber)')+'">'+
             '<div style="font-size:10px;font-weight:600;line-height:1.3;margin-bottom:3px">'+t.nombre_pieza.slice(0,35)+(t.nombre_pieza.length>35?'…':'')+'</div>'+
-            '<div style="display:flex;align-items:center;justify-content:space-between;gap:4px">'+
+            '<div style="display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:4px">'+
               '<span style="font-size:9px;color:var(--muted)">'+( t.cliente||'')+'</span>'+
-              '<span class="badge '+est.badge+'" style="font-size:8px;cursor:pointer;padding:1px 5px" onclick="cambiarEstadoTrafico('+t.id+',\''+t.estado+'\')">'+est.icon+'</span>'+
+              '<select onchange="cambiarEstadoTraficoSelect('+t.id+',this.value)" style="font-size:9px;padding:2px 4px;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;color:var(--text);cursor:pointer" onclick="event.stopPropagation()">'+
+                '<option value="pendiente"'+(t.estado==="pendiente"?" selected":"")+'>⏳ Pend.</option>'+
+                '<option value="en_curso"'+(t.estado==="en_curso"?" selected":"")+'>▶ Curso</option>'+
+                '<option value="aprobacion"'+(t.estado==="aprobacion"?" selected":"")+'>👁 Aprob.</option>'+
+                '<option value="finalizado"'+(t.estado==="finalizado"?" selected":"")+'>✓ Listo</option>'+
+              '</select>'+
             '</div>'+
           '</div>';
         });
@@ -1842,7 +1847,12 @@ async function loadTrafico(){
           htmlLista+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'+
             '<div style="flex:1"><div style="font-size:12px;font-weight:600">'+t.nombre_pieza+'</div>'+
             '<div style="font-size:11px;color:var(--muted)">'+( t.asignado||'—')+' · '+(t.cliente||'—')+'</div></div>'+
-            '<span class="badge '+est.badge+'" style="cursor:pointer" onclick="cambiarEstadoTrafico('+t.id+',\''+t.estado+'\')">'+est.icon+' '+est.label+'</span>'+
+            '<select onchange="cambiarEstadoTraficoSelect('+t.id+',this.value)" style="font-size:11px;padding:4px 8px;background:var(--surface3);border:1px solid var(--border2);border-radius:6px;color:var(--text);cursor:pointer">'+
+            '<option value="pendiente"'+(t.estado==="pendiente"?" selected":"")+'>⏳ Pendiente</option>'+
+            '<option value="en_curso"'+(t.estado==="en_curso"?" selected":"")+'>▶ En curso</option>'+
+            '<option value="aprobacion"'+(t.estado==="aprobacion"?" selected":"")+'>👁 Aprobación</option>'+
+            '<option value="finalizado"'+(t.estado==="finalizado"?" selected":"")+'>✓ Finalizado</option>'+
+          '</select>'+
           '</div>';
         });
         htmlLista+='</div>';
@@ -1870,6 +1880,12 @@ function quickAddTrafico(btn){
   showNuevaTareaTrafico();
 }
 
+async function cambiarEstadoTraficoSelect(id,nuevoEstado){
+  try{
+    await fetch(SB_URL+'/rest/v1/trafico?id=eq.'+id,{method:'PATCH',headers:SB_HDR,body:JSON.stringify({estado:nuevoEstado,updated_at:new Date().toISOString()})});
+    loadTrafico();
+  }catch(e){console.error(e);}
+}
 async function cambiarEstadoTrafico(id,estadoActual){
   var estados=['pendiente','en_curso','aprobacion','finalizado'];
   var siguiente=estados[(estados.indexOf(estadoActual)+1)%estados.length];
