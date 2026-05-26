@@ -2020,7 +2020,7 @@ async function loadTrafico(){
       else if(t.estado==='finalizado')d.fin+=pzs;
     });
 
-    var htmlResumen='<div class="card" style="margin-top:16px"><div class="sec">Resumen de piezas por persona · semana</div>';
+    var htmlResumen='<div class="card" style="margin-top:16px"><div class="sec">Resumen semana · '+desde+' al '+hasta+'</div>';
     htmlResumen+='<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Persona</th><th style="color:var(--amber)">⏳ Pendiente</th><th style="color:var(--blue)">▶ En curso</th><th style="color:var(--purple)">👁 Aprobación</th><th style="color:var(--green)">✓ Finalizado</th><th>Total</th></tr></thead><tbody>';
     PERSONAS_CREATIVAS.forEach(function(p){
       var d=resumenPersonas[p.nombre];
@@ -2035,8 +2035,48 @@ async function loadTrafico(){
       '</tr>';
     });
     htmlResumen+='</tbody></table></div></div>';
+    // Resumen mes completo (todos los estados, no filtra por semana)
+    var mesNum2=new Date().getMonth()+1;
+    var anio2=new Date().getFullYear();
+    var primerDiaMes=anio2+'-'+String(mesNum2).padStart(2,'0')+'-01';
+    var ultimoDiaMes=anio2+'-'+String(mesNum2).padStart(2,'0')+'-'+new Date(anio2,mesNum2,0).getDate();
+    var itemsMesQ='order=dia_entrega.asc&limit=500&dia_entrega=gte.'+primerDiaMes+'&dia_entrega=lte.'+ultimoDiaMes;
+    if(currentUser&&currentUser.role!=='director'&&currentUser.role!=='viewer'){
+      itemsMesQ+='&asignado=ilike.*'+encodeURIComponent(currentUser.name.split(' ')[0])+'*';
+    }
+    var itemsMes=await sbGet('trafico',itemsMesQ);
+    var resumenMes={};
+    PERSONAS_CREATIVAS.forEach(function(p){resumenMes[p.nombre]={color:p.color,pend:0,curso:0,aprob:0,fin:0,total:0};});
+    itemsMes.forEach(function(t){
+      var asig=t.asignado||'';
+      var persona=PERSONAS_CREATIVAS.find(function(p){return asig.includes(p.nombre.split(' ')[0]);});
+      if(!persona)return;
+      var pzs=t.total_piezas>0?t.total_piezas:1;
+      var d=resumenMes[persona.nombre];
+      d.total+=pzs;
+      if(t.estado==='pendiente')d.pend+=pzs;
+      else if(t.estado==='en_curso')d.curso+=pzs;
+      else if(t.estado==='aprobacion')d.aprob+=pzs;
+      else if(t.estado==='finalizado')d.fin+=pzs;
+    });
+    var htmlMes='<div class="card" style="margin-top:16px"><div class="sec">Resumen mes · '+['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][mesNum2-1]+' '+anio2+'</div>';
+    htmlMes+='<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Persona</th><th style="color:var(--amber)">⏳ Pend.</th><th style="color:var(--blue)">▶ Curso</th><th style="color:var(--purple)">👁 Aprob.</th><th style="color:var(--green)">✓ Fin.</th><th>Total</th></tr></thead><tbody>';
+    PERSONAS_CREATIVAS.forEach(function(p){
+      var d=resumenMes[p.nombre];
+      if(d.total===0)return;
+      htmlMes+='<tr>'+
+        '<td><strong style="color:'+p.color+'">'+p.nombre+'</strong></td>'+
+        '<td style="font-family:DM Mono,monospace;text-align:center;color:var(--amber)">'+( d.pend>0?d.pend:'—')+'</td>'+
+        '<td style="font-family:DM Mono,monospace;text-align:center;color:var(--blue)">'+( d.curso>0?d.curso:'—')+'</td>'+
+        '<td style="font-family:DM Mono,monospace;text-align:center;color:var(--purple)">'+( d.aprob>0?d.aprob:'—')+'</td>'+
+        '<td style="font-family:DM Mono,monospace;text-align:center;color:var(--green)">'+( d.fin>0?d.fin:'—')+'</td>'+
+        '<td style="font-family:DM Mono,monospace;text-align:center;font-weight:700">'+d.total+'</td>'+
+      '</tr>';
+    });
+    htmlMes+='</tbody></table></div></div>';
+
     if(lista){
-      var htmlLista=htmlResumen;
+      var htmlLista=htmlResumen+htmlMes;
       if(sinFecha.length){
         htmlLista+='<div class="card" style="margin-top:16px"><div class="sec">Sin fecha asignada ('+sinFecha.length+')</div>';
         sinFecha.forEach(function(t){
