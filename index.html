@@ -2004,8 +2004,41 @@ async function loadTrafico(){
       calcularCostoProveedores(items);
     }
 
+    // Resumen de totales por persona
+    var resumenPersonas={};
+    PERSONAS_CREATIVAS.forEach(function(p){resumenPersonas[p.nombre]={color:p.color,pend:0,curso:0,aprob:0,fin:0,total:0};});
+    items.forEach(function(t){
+      var asig=t.asignado||'';
+      var persona=PERSONAS_CREATIVAS.find(function(p){return asig.includes(p.nombre.split(' ')[0]);});
+      if(!persona)return;
+      var pzs=t.total_piezas>0?t.total_piezas:1;
+      var d=resumenPersonas[persona.nombre];
+      d.total+=pzs;
+      if(t.estado==='pendiente')d.pend+=pzs;
+      else if(t.estado==='en_curso')d.curso+=pzs;
+      else if(t.estado==='aprobacion')d.aprob+=pzs;
+      else if(t.estado==='finalizado')d.fin+=pzs;
+    });
+
+    var htmlResumen='<div class="card" style="margin-top:16px"><div class="sec">Resumen de piezas por persona · semana</div>';
+    htmlResumen+='<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Persona</th><th style="color:var(--amber)">⏳ Pendiente</th><th style="color:var(--blue)">▶ En curso</th><th style="color:var(--purple)">👁 Aprobación</th><th style="color:var(--green)">✓ Finalizado</th><th>Total</th></tr></thead><tbody>';
+    PERSONAS_CREATIVAS.forEach(function(p){
+      var d=resumenPersonas[p.nombre];
+      if(d.total===0)return;
+      htmlResumen+='<tr>'+
+        '<td><strong style="color:'+p.color+'">'+p.nombre+'</strong></td>'+
+        '<td style="font-family:DM Mono,monospace;text-align:center;color:var(--amber)">'+( d.pend>0?d.pend:'—')+'</td>'+
+        '<td style="font-family:DM Mono,monospace;text-align:center;color:var(--blue)">'+( d.curso>0?d.curso:'—')+'</td>'+
+        '<td style="font-family:DM Mono,monospace;text-align:center;color:var(--purple)">'+( d.aprob>0?d.aprob:'—')+'</td>'+
+        '<td style="font-family:DM Mono,monospace;text-align:center;color:var(--green)">'+( d.fin>0?d.fin:'—')+'</td>'+
+        '<td style="font-family:DM Mono,monospace;text-align:center;font-weight:700">'+d.total+'</td>'+
+      '</tr>';
+    });
+    htmlResumen+='</tbody></table></div></div>';
+    if(lista)lista.innerHTML=htmlResumen;
+
     if(lista){
-      var htmlLista='';
+      var htmlLista=lista.innerHTML||'';
       if(sinFecha.length){
         htmlLista+='<div class="card" style="margin-top:16px"><div class="sec">Sin fecha asignada ('+sinFecha.length+')</div>';
         sinFecha.forEach(function(t){
@@ -2023,7 +2056,7 @@ async function loadTrafico(){
         });
         htmlLista+='</div>';
       }
-      lista.innerHTML=htmlLista;
+      lista.innerHTML=(lista.innerHTML||'')+htmlLista;
     }
 
   }catch(e){
