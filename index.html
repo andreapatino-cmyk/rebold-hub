@@ -291,9 +291,24 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     <div class="g3">
       <div class="form-group"><label class="form-label">Tipo</label>
         <select class="form-select" id="editTrafTipo">
-          <option>Carrusel</option><option>Story</option><option>Post</option>
-          <option>Video</option><option>Banner</option><option>Parrilla</option>
-          <option>Mailing</option><option>Otro</option>
+          <optgroup label="🎨 Diseño">
+            <option>Post</option><option>Story</option><option>Carrusel</option>
+            <option>Video</option><option>Banner</option><option>Mailing</option>
+            <option>Pieza en alta</option><option>Adaptación</option>
+          </optgroup>
+          <optgroup label="📱 Community">
+            <option>Parrilla de contenidos</option>
+            <option>Cronopost</option>
+            <option>Flow de email</option>
+            <option>Informe de resultados</option>
+            <option>Gestión de comentarios</option>
+            <option>Brief de contenido</option>
+            <option>Propuesta creativa</option>
+            <option>Copywriting</option>
+          </optgroup>
+          <optgroup label="📋 General">
+            <option>Otro</option>
+          </optgroup>
         </select>
       </div>
       <div class="form-group"><label class="form-label">Fecha entrega</label>
@@ -601,9 +616,24 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
       <div class="g3">
         <div class="form-group"><label class="form-label">Tipo</label>
           <select class="form-select" id="ntTrafTipo" onchange="actualizarTotalPiezas()">
-            <option>Carrusel</option><option>Story</option><option>Post</option>
-            <option>Video</option><option>Banner</option><option>Parrilla</option>
-            <option>Mailing</option><option>Otro</option>
+            <optgroup label="🎨 Diseño">
+            <option>Post</option><option>Story</option><option>Carrusel</option>
+            <option>Video</option><option>Banner</option><option>Mailing</option>
+            <option>Pieza en alta</option><option>Adaptación</option>
+          </optgroup>
+          <optgroup label="📱 Community">
+            <option>Parrilla de contenidos</option>
+            <option>Cronopost</option>
+            <option>Flow de email</option>
+            <option>Informe de resultados</option>
+            <option>Gestión de comentarios</option>
+            <option>Brief de contenido</option>
+            <option>Propuesta creativa</option>
+            <option>Copywriting</option>
+          </optgroup>
+          <optgroup label="📋 General">
+            <option>Otro</option>
+          </optgroup>
           </select>
         </div>
         <div class="form-group"><label class="form-label">Fecha de entrega</label>
@@ -1065,7 +1095,32 @@ async function submitCheckin(){var ac=document.querySelectorAll('#clientChips [d
       await sbPost('absences',{member_name:currentUser.name,type:permisoParcial.type,date_start:hoy2,date_end:hoy2,days:0,hours_partial:permisoParcial.hours,note:permisoParcial.note||'',registered_by:currentUser.name});
     }
     alert('✅ Check-in registrado. ¡Gracias '+currentUser.name.split(' ')[0]+'!');document.querySelectorAll('#clientChips .badge,#taskChips .badge,#hourBtns .badge').forEach(function(el){el.classList.remove('b-red');el.classList.add('b-gray');el.setAttribute('data-selected','false');});document.getElementById('checkinNota').value='';}catch(e){console.error('Error check-in:',e);alert('Error guardando el check-in: '+e.message);}}
-window.addEventListener('load',function(){var params=new URLSearchParams(window.location.search),email=params.get('email');if(email&&USERS[email.toLowerCase()]){document.getElementById('loginEmail').value=email;checkEmail();}});
+window.addEventListener('load',function(){
+  var params=new URLSearchParams(window.location.search);
+  var email=params.get('email');
+  var view=params.get('view');
+
+  // Vista pública sin login
+  if(view==='trafico'){
+    document.getElementById('screenLogin').style.display='none';
+    document.getElementById('appShell').style.display='block';
+    // Usuario público de solo lectura
+    currentUser={name:'Visitante',role:'viewer',unit:'',code:'👁',color:'var(--muted)',email:''};
+    document.getElementById('userAv').textContent='👁';
+    document.getElementById('userName').textContent='Vista pública';
+    document.getElementById('userRoleLabel').textContent='Solo lectura';
+    // Nav mínimo
+    document.getElementById('sidebarNav').innerHTML='<div class="nav-sec">Tráfico Creatividad</div>';
+    // Ocultar sidebar footer logout
+    var sf=document.querySelector('.sidebar-footer');if(sf)sf.style.display='none';
+    // Mostrar tráfico
+    showPage('page-trafico');
+    setTimeout(loadTrafico,200);
+    return;
+  }
+
+  if(email&&USERS[email.toLowerCase()]){document.getElementById('loginEmail').value=email;checkEmail();}
+});
 const SB_URL='https://sfdwmldxrjsefoxoqmvv.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmZHdtbGR4cmpzZWZveG9xbXZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTczMzYsImV4cCI6MjA5MzEzMzMzNn0.1Eu0IyTQ2oyxpdpVjWk4f73R6lUx_xGFaiXwhkoWkz8';
 const SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
@@ -1765,6 +1820,7 @@ function actualizarTotalPiezas(){
   if(el)el.textContent=total;
 }
 function showNuevaTareaTrafico(){
+  if(currentUser&&currentUser.role==='viewer')return;
   var hoy=new Date().toISOString().split('T')[0];
   var f=document.getElementById('ntTrafFecha');if(f)f.value=hoy;
   document.getElementById('formNuevaTareaTrafico').style.display='block';
@@ -1846,14 +1902,19 @@ async function loadTrafico(){
     }
 
     // Stats globales
-    var pend=items.filter(function(t){return t.estado==='pendiente';}).length;
-    var curso=items.filter(function(t){return t.estado==='en_curso';}).length;
-    var aprob=items.filter(function(t){return t.estado==='aprobacion';}).length;
-    var fin=items.filter(function(t){return t.estado==='finalizado';}).length;
+    // Sumar piezas por estado (total_piezas || 1 si no tiene piezas definidas)
+    var pend=0,curso=0,aprob=0,fin=0;
+    items.forEach(function(t){
+      var pzs=t.total_piezas>0?t.total_piezas:1;
+      if(t.estado==='pendiente')pend+=pzs;
+      else if(t.estado==='en_curso')curso+=pzs;
+      else if(t.estado==='aprobacion')aprob+=pzs;
+      else if(t.estado==='finalizado')fin+=pzs;
+    });
     var eP=document.getElementById('traficoStatPend'),eC=document.getElementById('traficoStatCurso');
     var eA=document.getElementById('traficoStatAprob'),eF=document.getElementById('traficoStatFin');
     if(eP)eP.textContent=pend;if(eC)eC.textContent=curso;if(eA)eA.textContent=aprob;if(eF)eF.textContent=fin;
-    if(sub)sub.textContent='Semana del '+desde+' al '+hasta+' · '+pend+' pendientes';
+    if(sub)sub.textContent='Semana del '+desde+' al '+hasta+' · '+pend+' piezas pendientes';
 
     // Filtrar items de la semana
     var itemsSemana=items.filter(function(t){
@@ -1908,12 +1969,13 @@ async function loadTrafico(){
           '</div>'+
             '<div style="display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:4px">'+
               '<span style="font-size:9px;color:var(--muted)">'+( t.cliente||'')+'</span>'+
+              (currentUser&&currentUser.role==='viewer'?'<span class="badge '+est.badge+'" style="font-size:9px">'+est.icon+'</span>':
               '<select onchange="cambiarEstadoTraficoSelect('+t.id+',this.value)" style="font-size:9px;padding:2px 4px;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;color:var(--text);cursor:pointer" onclick="event.stopPropagation()">'+
                 '<option value="pendiente"'+(t.estado==="pendiente"?" selected":"")+'>⏳ Pend.</option>'+
                 '<option value="en_curso"'+(t.estado==="en_curso"?" selected":"")+'>▶ Curso</option>'+
                 '<option value="aprobacion"'+(t.estado==="aprobacion"?" selected":"")+'>👁 Aprob.</option>'+
                 '<option value="finalizado"'+(t.estado==="finalizado"?" selected":"")+'>✓ Listo</option>'+
-              '</select>'+
+              '</select>')+ 
             '</div>'+
           '</div>';
         });
@@ -2058,6 +2120,8 @@ function calcularCostoProveedores(items){
 }
 
 function abrirEditTrafico(t, event){
+  // Vista pública no puede editar
+  if(currentUser&&currentUser.role==='viewer')return;
   if(event)event.stopPropagation();
   document.getElementById('editTrafId').value=t.id;
   document.getElementById('editTrafNombre').value=t.nombre_pieza||'';
