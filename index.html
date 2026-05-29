@@ -194,27 +194,27 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
   <div class="page-header"><div class="page-title">Equipo <span>Rebold</span></div><div class="page-sub">Estructura completa</div></div>
   <div class="card">
     <div class="sec">Dirección</div>
-    <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Unidad</th><th>Salario</th><th>CE</th></tr></thead><tbody><tr><td><strong>Natalia Patiño</strong></td><td>Directora de Unidades</td><td><span class="badge b-red">Dirección</span></td><td>$12.07M</td><td style="color:var(--red)">$16.9M</td></tr></tbody></table>
+    <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Unidad</th><th>Salario</th><th>CE</th></tr></thead><tbody><tr><td><strong>Natalia Patiño</strong></td><td>Directora de Unidades</td><td><span class="badge b-red">Dirección</span></td><td>$9.33M</td><td style="color:var(--red)">$13.06M</td></tr></tbody></table>
     <div class="div"></div><div class="sec">Intelligence</div>
     <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Salario</th><th>CE</th></tr></thead><tbody>
-      <tr><td>Sebastián Castro</td><td>Analista SR Insights</td><td>$6.04M</td><td>$8.45M</td></tr>
-      <tr><td>Laura Correa</td><td>Analista Monitoreo</td><td>$3.47M</td><td>$4.85M</td></tr>
-      <tr><td>Paula Bermúdez</td><td>Analista Monitoreo</td><td>$2.37M</td><td>$3.31M</td></tr>
-      <tr><td>Juliana Jaramillo</td><td>Analista PQRS Homecenter</td><td>$3.59M</td><td>$5.03M</td></tr>
-      <tr><td>Marcela Rondón</td><td>Analista PQRS Homecenter</td><td>$3.88M</td><td>$5.43M</td></tr>
+      <tr><td>Sebastián Castro</td><td>Analista SR Insights</td><td>$4.76M</td><td>$6.66M</td></tr>
+      <tr><td>Laura Correa</td><td>Analista Monitoreo</td><td>$2.47M</td><td>$3.46M</td></tr>
+      <tr><td>Paula Bermúdez</td><td>Analista Monitoreo</td><td>$1.69M</td><td>$2.36M</td></tr>
+      <tr><td>Juliana Jaramillo</td><td>Analista PQRS Homecenter</td><td>$2.56M</td><td>$3.59M</td></tr>
+      <tr><td>Marcela Rondón</td><td>Analista PQRS Homecenter</td><td>$2.77M</td><td>$3.88M</td></tr>
     </tbody></table>
     <div class="div"></div><div class="sec">Creatividad</div>
     <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Salario</th><th>CE</th></tr></thead><tbody>
-      <tr><td>María Camila Castro</td><td>CM Corferias</td><td>$4.44M</td><td>$6.22M</td></tr>
-      <tr><td>Estefanía Prieto</td><td>CM Granite/Stomberg</td><td>$3.06M</td><td>$4.28M</td></tr>
-      <tr><td>Daniel Urbina</td><td>Diseñador Gráfico</td><td>$4.17M</td><td>$5.83M</td></tr>
-      <tr><td>Juan Camilo Espinosa</td><td>Diseñador Gráfico Henkel</td><td>$5.25M</td><td>$7.35M</td></tr>
+      <tr><td>María Camila Castro</td><td>CM Corferias</td><td>$3.17M</td><td>$4.44M</td></tr>
+      <tr><td>Estefanía Prieto</td><td>CM Granite/Stomberg</td><td>$2.19M</td><td>$3.06M</td></tr>
+      <tr><td>Daniel Urbina</td><td>Diseñador Gráfico</td><td>$2.97M</td><td>$4.16M</td></tr>
+      <tr><td>Juan Camilo Espinosa</td><td>Diseñador Gráfico Henkel</td><td>$3.75M</td><td>$5.25M</td></tr>
     </tbody></table>
     <div class="div"></div><div class="sec">Integrales</div>
     <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Salario</th><th>Dist.</th></tr></thead><tbody>
-      <tr><td>Adriana Figueredo</td><td>Analista Insights</td><td>$4.90M</td><td>50/50</td></tr>
-      <tr><td>Alejandro Sierra</td><td>Coord. Operaciones</td><td>$5.20M</td><td>50/50</td></tr>
-      <tr><td>Gina Benavides</td><td>Practicante SENA</td><td>$1.62M</td><td>50/50</td></tr>
+      <tr><td>Adriana Figueredo</td><td>Analista Insights</td><td>$3.50M</td><td>$4.90M</td></tr>
+      <tr><td>Alejandro Sierra</td><td>Coord. Operaciones</td><td>$4.07M</td><td>$5.69M</td></tr>
+      <tr><td>Gina Benavides</td><td>Practicante SENA</td><td>$1.16M</td><td>$1.62M</td></tr>
     </tbody></table>
   </div>
 </div>
@@ -1472,19 +1472,19 @@ async function loadFinanciero(){
   try{
     // CE mensual por persona (Costo Empleador)
     var CE_EQUIPO={
-      'Natalia Patiño':16900000,
-      'Sebastián Castro':8450000,
-      'Laura Correa':4850000,
-      'Paula Bermúdez':3310000,
-      'Juliana Jaramillo':5030000,
-      'Marcela Rondón':5430000,
-      'Adriana Figueredo':6860000,
-      'Alejandro Sierra':7280000,
-      'Gina Benavides':2270000,
-      'María Camila Castro':6220000,
-      'Estefanía Prieto':4280000,
-      'Daniel Urbina':5830000,
-      'Juan Camilo Espinosa':7350000,
+      'Natalia Patiño':13064948,
+      'Sebastián Castro':6659893,
+      'Laura Correa':3460000,
+      'Paula Bermúdez':2360000,
+      'Juliana Jaramillo':3590000,
+      'Marcela Rondón':3880000,
+      'Adriana Figueredo':4900000,
+      'Alejandro Sierra':5691842,
+      'Gina Benavides':1620000,
+      'María Camila Castro':4440000,
+      'Estefanía Prieto':3060000,
+      'Daniel Urbina':4160000,
+      'Juan Camilo Espinosa':5250000,
     };
     // 1. Leer financials del mes — contiene revenue Y costos
     var financialsData=await sbGet('financials','month=eq.'+mesNum+'&year=eq.'+anio+'&limit=200');
@@ -1505,7 +1505,10 @@ async function loadFinanciero(){
       }
       // Costos transversales — indexar por nombre real Y por nombre Natalia usando el mapa inverso
       if(f.tools_cost>0||f.providers_cost>0){
-        var costo=(f.tools_cost||0)+(f.providers_cost||0);
+        // tools_cost viene en millones desde el GAS → convertir a pesos
+        var tc=(f.tools_cost||0);var pc=(f.providers_cost||0);
+        // Si el valor es < 1000, está en millones; si es > 1000, ya está en pesos
+        var costo=(tc<1000&&tc>0?tc*1000000:tc)+(pc<1000&&pc>0?pc*1000000:pc);
         costosPorCliente[nombre]=(costosPorCliente[nombre]||0)+costo;
         // También indexar por nombre principal si este nombre es un alias
         Object.keys(CLIENTE_COSTOS_MAP).forEach(function(nombreNatalia){
