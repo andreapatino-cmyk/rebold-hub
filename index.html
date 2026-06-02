@@ -1884,132 +1884,125 @@ function interpretarTareas(){
   btn.textContent = '⏳ Analizando...';
   btn.disabled = true;
 
-  // Calcular fechas de la semana actual
+  // Fechas de la semana actual
   var lunes = getInicioSemana(traficoSemanaOffset);
-  var diasNombre = ['lunes','martes','miércoles','jueves','viernes','miercoles'];
-  var diasFecha = {};
-  ['lunes','martes','miércoles','jueves','viernes'].forEach(function(d,i){
-    var f=new Date(lunes);f.setDate(lunes.getDate()+i);
-    diasFecha[d]=f.toISOString().split('T')[0];
-    if(d==='miércoles')diasFecha['miercoles']=diasFecha[d];
+  var DIAS_FECHA = {};
+  var DIAS_NOMBRES = ['lunes','martes','miércoles','miercoles','jueves','viernes'];
+  var DIAS_IDX = {lunes:0,martes:1,'miércoles':2,miercoles:2,jueves:3,viernes:4};
+  DIAS_NOMBRES.forEach(function(d){
+    var idx=DIAS_IDX[d];
+    var f=new Date(lunes);f.setDate(lunes.getDate()+idx);
+    DIAS_FECHA[d]=f.toISOString().split('T')[0];
   });
-  diasFecha['esta semana']=diasFecha['viernes'];
-  diasFecha['semana']=diasFecha['viernes'];
 
   // Mapas de detección
   var PERSONAS={
-    'daniel':    'Daniel Urbina',
-    'juan camilo':'Juan Camilo Espinosa',
-    'juan':      'Juan Camilo Espinosa',
-    'maria camila':'María Camila Castro',
-    'maría camila':'María Camila Castro',
-    'estefania': 'Estefanía Prieto',
-    'estefanía': 'Estefanía Prieto',
-    'laura':     'Laura Morales',
-    'andres':    'Andrés Sánchez',
-    'andrés':    'Andrés Sánchez',
-    'sebastian barrera':'Sebastián Barrera',
-    'sebastián barrera':'Sebastián Barrera',
-    'sebastian castro':'Sebastián Castro',
-    'sebastián castro':'Sebastián Castro',
-    'marcela':   'Marcela Rondón',
-    'paula':     'Paula Bermúdez',
-    'adriana':   'Adriana Figueredo',
-    'alejandro': 'Alejandro Sierra',
-    'gina':      'Gina Benavides',
-    'juliana':   'Juliana Jaramillo',
+    'juan camilo':'Juan Camilo Espinosa','juanca':'Juan Camilo Espinosa','juan':'Juan Camilo Espinosa',
+    'daniel':'Daniel Urbina',
+    'maria camila':'María Camila Castro','maría camila':'María Camila Castro',
+    'estefania':'Estefanía Prieto','estefanía':'Estefanía Prieto',
+    'laura':'Laura Morales',
+    'andres':'Andrés Sánchez','andrés':'Andrés Sánchez',
+    'sebastian barrera':'Sebastián Barrera','sebastián barrera':'Sebastián Barrera',
+    'sebastian castro':'Sebastián Castro','sebastián castro':'Sebastián Castro',
+    'marcela':'Marcela Rondón','paula':'Paula Bermúdez',
+    'adriana':'Adriana Figueredo','alejandro':'Alejandro Sierra',
+    'gina':'Gina Benavides','juliana':'Juliana Jaramillo',
   };
   var CLIENTES={
-    'corferias':'Corferias','henkel':'Henkel Regional','granite':'Granite',
+    'granite':'Granite','corferias':'Corferias','henkel':'Henkel Regional',
     'stormberg':'Stormberg Foods','parador':'Parador Rojo','punto de pago':'Punto de Pago',
     'supercerdo':'Supercerdo','casa mayor':'Casa Mayor','ayoba':'Ayoba',
-    'beg':'Beg and Baker','baker':'Beg and Baker','sodimac':'Sodimac',
-    'paramo':'Páramo','páramo':'Páramo','global wine':'Global Wine',
-    'banco falabella':'Banco Falabella','falabella':'Banco Falabella',
+    'beg':'Beg and Baker','baker':'Beg and Baker','broolklyn':'Brooklyn','brooklyn':'Brooklyn',
+    'sodimac':'Sodimac','paramo':'Páramo','páramo':'Páramo',
+    'global wine':'Global Wine','falabella':'Banco Falabella',
   };
   var TIPOS={
-    'carrusel':'Carrusel','carousel':'Carrusel','post':'Post','story':'Story',
-    'stories':'Story','video':'Video','vídeo':'Video','banner':'Banner',
-    'mailing':'Mailing','parrilla':'Parrilla de contenidos','cronopost':'Cronopost',
-    'flow de email':'Flow de email','informe':'Informe de resultados',
-    'pieza':'Pieza en alta','adaptacion':'Adaptación','adaptación':'Adaptación',
-    'brief':'Brief de contenido','propuesta':'Propuesta creativa','copy':'Copywriting',
+    'cortinilla':'Video','video':'Video','vídeo':'Video',
+    'carrusel':'Carrusel','carousel':'Carrusel',
+    'banner':'Banner','banners':'Banner',
+    'post':'Post','story':'Story','stories':'Story',
+    'mailing':'Mailing','mail':'Mailing',
+    'parrilla':'Parrilla de contenidos','informe':'Informe de resultados',
+    'brief':'Brief de contenido','propuesta':'Propuesta creativa',
+    'iconográfica':'Pieza en alta','iconografica':'Pieza en alta',
+    'estructura':'Pieza en alta','pieza':'Pieza en alta',
+    'adaptacion':'Adaptación','adaptación':'Adaptación',
   };
 
-  var textoLow = texto.toLowerCase();
+  function detectar(mapa, texto){
+    var keys=Object.keys(mapa).sort(function(a,b){return b.length-a.length;});
+    for(var k=0;k<keys.length;k++){
+      if(texto.toLowerCase().includes(keys[k])) return mapa[keys[k]];
+    }
+    return null;
+  }
 
-  // Dividir por frases separadas por punto, coma, "y también", "además"
-  var frases = texto.split(/[.;]|\ny\n|tambien|ademas/i).filter(function(f){return f.trim().length>5;});
-
+  // Procesar línea por línea
+  var lineas = texto.replace(/\r/g,"").split(String.fromCharCode(10));
+  var diaActual = null;
   _tareasIA = [];
 
-  frases.forEach(function(frase){
-    var fLow = frase.toLowerCase();
+  lineas.forEach(function(linea){
+    var l = linea.trim();
+    if(!l) return;
 
-    // Detectar persona
-    var persona = null;
-    var personaMatch = null;
-    // Ordenar por longitud descendente para preferir coincidencias más largas
-    var personaKeys = Object.keys(PERSONAS).sort(function(a,b){return b.length-a.length;});
-    for(var k=0;k<personaKeys.length;k++){
-      if(fLow.includes(personaKeys[k])){
-        persona=PERSONAS[personaKeys[k]];
-        break;
-      }
+    // Detectar encabezado de día (ej: "Martes:", "JUEVES:")
+    var lLow = l.toLowerCase().replace(':','').trim();
+    if(DIAS_FECHA[lLow] !== undefined){
+      diaActual = DIAS_FECHA[lLow];
+      return;
     }
-    if(!persona) return; // Sin persona identificada, saltar
 
-    // Detectar cliente
+    // Detectar persona en la línea
+    var persona = detectar(PERSONAS, l);
+    if(!persona) return; // Sin persona, saltar
+
+    // Detectar cliente — primero en paréntesis, luego en texto libre
     var cliente = 'Sin cliente';
-    var clienteKeys = Object.keys(CLIENTES).sort(function(a,b){return b.length-a.length;});
-    for(var k=0;k<clienteKeys.length;k++){
-      if(fLow.includes(clienteKeys[k])){
-        cliente=CLIENTES[clienteKeys[k]];
-        break;
-      }
+    var parenMatch = l.match(/\(([^)]+)\)/g);
+    if(parenMatch){
+      parenMatch.forEach(function(p){
+        var inner = p.replace(/[()]/g,'').trim();
+        // Si no es un número (slides) y no es una persona
+        if(!/^\d+$/.test(inner) && !detectar(PERSONAS, inner)){
+          var c = detectar(CLIENTES, inner);
+          if(c) cliente = c;
+          else if(inner.length > 1) cliente = inner; // usar literal
+        }
+      });
     }
+    if(cliente==='Sin cliente') cliente = detectar(CLIENTES, l) || 'Sin cliente';
 
     // Detectar tipo
-    var tipo = 'Otro';
-    var tipoKeys = Object.keys(TIPOS).sort(function(a,b){return b.length-a.length;});
-    for(var k=0;k<tipoKeys.length;k++){
-      if(fLow.includes(tipoKeys[k])){
-        tipo=TIPOS[tipoKeys[k]];
-        break;
-      }
-    }
+    var tipo = detectar(TIPOS, l) || 'Otro';
 
-    // Detectar fecha
-    var fecha = null;
-    var diaKeys = Object.keys(diasFecha);
-    for(var k=0;k<diaKeys.length;k++){
-      if(fLow.includes(diaKeys[k])){
-        fecha=diasFecha[diaKeys[k]];
-        break;
-      }
-    }
+    // Detectar cantidad
+    var numMatch = l.match(/^(\d+)\s/);
+    var cantidad = numMatch ? parseInt(numMatch[1]) : 1;
 
-    // Detectar número de piezas
-    var numMatch = frase.match(/(\d+)\s*(post|video|carrusel|pieza|banner|story)/i);
-    var numPiezas = numMatch ? parseInt(numMatch[1]) : 1;
+    // Detectar slides en paréntesis ej: (5 slides)
+    var slidesMatch = l.match(/\((\d+)\s*slides?\)/i);
+    var slides = slidesMatch ? parseInt(slidesMatch[1]) : 0;
 
-    // Construir nombre de la tarea limpiando la frase
-    var nombreTarea = frase.trim()
-      .replace(/(hace|tiene|debe|va a|necesita|entrega|para el|el|la|los|las|del|de)/gi,' ')
+    // Nombre de la tarea = limpiar la línea
+    var nombre = l
+      .replace(/\([^)]*slides?[^)]*\)/gi,'')
+      .replace(/(daniel|juan camilo|juanca|laura|estefan[ií]a|maria camila|andrés?|sebastian\s+\w+)/gi,'')
       .replace(/\s+/g,' ').trim();
-    if(nombreTarea.length > 80) nombreTarea = nombreTarea.slice(0,80) + '...';
+    if(nombre.length > 100) nombre = nombre.slice(0,100)+'...';
 
     _tareasIA.push({
       asignado: persona,
-      nombre_pieza: nombreTarea,
+      nombre_pieza: nombre,
       cliente: cliente,
       tipo: tipo,
-      dia_entrega: fecha,
-      num_posts: tipo==='Post'?numPiezas:0,
-      num_carruseles: tipo==='Carrusel'?numPiezas:0,
-      num_videos: tipo==='Video'?numPiezas:0,
-      total_piezas: numPiezas,
-      comentarios_rebold: '',
+      dia_entrega: diaActual,
+      num_posts: tipo==='Post'?cantidad:0,
+      num_carruseles: tipo==='Carrusel'?cantidad:0,
+      num_videos: (tipo==='Video')?cantidad:0,
+      total_piezas: slides>0?slides:cantidad,
+      comentarios_rebold: slides>0?slides+' slides':'',
     });
   });
 
@@ -2017,13 +2010,12 @@ function interpretarTareas(){
   btn.disabled = false;
 
   if(!_tareasIA.length){
-    alert('No encontré tareas. Menciona el nombre de la persona y el tipo de tarea. Ej: "Daniel hace carrusel de Granite para el jueves"');
+    alert('No encontre tareas. Escribe el nombre en cada linea. Ej: 3 banners mail (Granite) Daniel');
     return;
   }
 
   mostrarSugerencias(_tareasIA);
 }
-
 function mostrarSugerencias(tareas){
   var lista = document.getElementById('listaSugerencias');
   var DIAS = {lunes:'Lu',martes:'Ma','miércoles':'Mi',jueves:'Ju',viernes:'Vi'};
