@@ -1879,141 +1879,161 @@ var _tareasIA = [];
 function interpretarTareas(){
   var texto = document.getElementById('blocNotasTexto').value.trim();
   if(!texto){ alert('Escribe algo primero'); return; }
-
   var btn = document.getElementById('btnInterpretar');
-  btn.textContent = '⏳ Analizando...';
-  btn.disabled = true;
+  btn.textContent = '⏳ Analizando...'; btn.disabled = true;
 
-  // Fechas de la semana actual
+  // Fechas semana actual
   var lunes = getInicioSemana(traficoSemanaOffset);
-  var DIAS_FECHA = {};
-  var DIAS_NOMBRES = ['lunes','martes','miércoles','miercoles','jueves','viernes'];
-  var DIAS_IDX = {lunes:0,martes:1,'miércoles':2,miercoles:2,jueves:3,viernes:4};
-  DIAS_NOMBRES.forEach(function(d){
-    var idx=DIAS_IDX[d];
-    var f=new Date(lunes);f.setDate(lunes.getDate()+idx);
-    DIAS_FECHA[d]=f.toISOString().split('T')[0];
-  });
+  var DIAS_IDX = {lunes:0,martes:1,miercoles:2,miércoles:2,jueves:3,viernes:4};
+  function getFecha(dia){ var f=new Date(lunes);f.setDate(lunes.getDate()+(DIAS_IDX[dia]||0));return f.toISOString().split('T')[0]; }
 
-  // Mapas de detección
   var PERSONAS={
-    'juan camilo':'Juan Camilo Espinosa','juanca':'Juan Camilo Espinosa','juan':'Juan Camilo Espinosa',
+    'estefanía':'Estefanía Prieto','estefania':'Estefanía Prieto',
+    'camila':'María Camila Castro','maria camila':'María Camila Castro',
     'daniel':'Daniel Urbina',
-    'maria camila':'María Camila Castro','maría camila':'María Camila Castro',
-    'estefania':'Estefanía Prieto','estefanía':'Estefanía Prieto',
+    'juan camilo':'Juan Camilo Espinosa','juanca':'Juan Camilo Espinosa','juan':'Juan Camilo Espinosa',
     'laura':'Laura Morales',
     'andres':'Andrés Sánchez','andrés':'Andrés Sánchez',
     'sebastian barrera':'Sebastián Barrera','sebastián barrera':'Sebastián Barrera',
-    'sebastian castro':'Sebastián Castro','sebastián castro':'Sebastián Castro',
-    'marcela':'Marcela Rondón','paula':'Paula Bermúdez',
-    'adriana':'Adriana Figueredo','alejandro':'Alejandro Sierra',
-    'gina':'Gina Benavides','juliana':'Juliana Jaramillo',
+    'sebastian castro':'Sebastián Castro','marcela':'Marcela Rondón',
+    'paula':'Paula Bermúdez','adriana':'Adriana Figueredo',
+    'alejandro':'Alejandro Sierra','gina':'Gina Benavides','juliana':'Juliana Jaramillo',
   };
+  var PERSONAS_KEYS = Object.keys(PERSONAS).sort(function(a,b){return b.length-a.length;});
+
   var CLIENTES={
     'granite':'Granite','corferias':'Corferias','henkel':'Henkel Regional',
     'stormberg':'Stormberg Foods','parador':'Parador Rojo','punto de pago':'Punto de Pago',
     'supercerdo':'Supercerdo','casa mayor':'Casa Mayor','ayoba':'Ayoba',
-    'beg':'Beg and Baker','baker':'Beg and Baker','broolklyn':'Brooklyn','brooklyn':'Brooklyn',
+    'beg':'Beg and Baker','baker':'Beg and Baker','b&b':'Beg and Baker',
+    'brooklyn':'Brooklyn','broolklyn':'Brooklyn',
     'sodimac':'Sodimac','paramo':'Páramo','páramo':'Páramo',
     'global wine':'Global Wine','falabella':'Banco Falabella',
+    'expopet':'Corferias','agroexpo':'Corferias','agro':'Corferias',
+    'hogar':'Corferias','belleza':'Corferias',
   };
-  var TIPOS={
-    'cortinilla':'Video','video':'Video','vídeo':'Video',
-    'carrusel':'Carrusel','carousel':'Carrusel',
-    'banner':'Banner','banners':'Banner',
-    'post':'Post','story':'Story','stories':'Story',
-    'mailing':'Mailing','mail':'Mailing',
-    'parrilla':'Parrilla de contenidos','informe':'Informe de resultados',
-    'brief':'Brief de contenido','propuesta':'Propuesta creativa',
-    'iconográfica':'Pieza en alta','iconografica':'Pieza en alta',
-    'estructura':'Pieza en alta','pieza':'Pieza en alta',
-    'adaptacion':'Adaptación','adaptación':'Adaptación',
-  };
+  var CLIENTES_KEYS = Object.keys(CLIENTES).sort(function(a,b){return b.length-a.length;});
 
-  function detectar(mapa, texto){
-    var keys=Object.keys(mapa).sort(function(a,b){return b.length-a.length;});
-    for(var k=0;k<keys.length;k++){
-      if(texto.toLowerCase().includes(keys[k])) return mapa[keys[k]];
-    }
+  var TIPOS={
+    'cortinilla':'Video','video':'Video','carrusel':'Carrusel','carousel':'Carrusel',
+    'banner':'Banner','banners':'Banner','post':'Post','story':'Story','stories':'Story',
+    'mailing':'Mailing','mail':'Mailing','email':'Mailing',
+    'parrilla':'Parrilla de contenidos','crono post':'Cronopost','cronopost':'Cronopost',
+    'crno post':'Cronopost','flow':'Flow de email','flujo':'Flow de email',
+    'informe':'Informe de resultados','brief':'Brief de contenido',
+    'propuesta':'Propuesta creativa','copy':'Copywriting','redaccion':'Copywriting',
+    'redacción':'Copywriting','texto':'Copywriting','numeros':'Informe de resultados',
+    'ugc':'Brief de contenido','estructura':'Pieza en alta','pieza':'Pieza en alta',
+    'adaptacion':'Adaptación','adaptación':'Adaptación','ajustar':'Otro','recomendar':'Brief de contenido',
+  };
+  var TIPOS_KEYS = Object.keys(TIPOS).sort(function(a,b){return b.length-a.length;});
+
+  function detectar(keys, mapa, txt){
+    var tl=txt.toLowerCase();
+    for(var k=0;k<keys.length;k++) if(tl.includes(keys[k])) return mapa[keys[k]];
     return null;
   }
 
-  // Procesar línea por línea
-  var lineas = texto.replace(/\r/g,"").split(String.fromCharCode(10));
-  var diaActual = null;
+  // PRE-PROCESO: insertar saltos de línea antes de nombres de persona en mayúsculas y días
+  // PRE-PROCESO: normalizar texto insertando saltos de linea
+  var NOMBRES_REGEX = ['ESTEFAN[IÍ]A','CAMILA','DANIEL','JUAN CAMILO','JUANCA','LAURA',
+    'ANDR[ÉE]S','SEBASTI[ÁA]N','MARCELA','PAULA','ADRIANA','ALEJANDRO','GINA','JULIANA'];
+  var textoProc = texto;
+  // Insertar saltos antes de nombres en mayusculas
+  NOMBRES_REGEX.forEach(function(nr){
+    textoProc = textoProc.replace(new RegExp('(' + nr + ')', 'gi'), String.fromCharCode(10)+'$1'+String.fromCharCode(10));
+  });
+  // Insertar saltos antes de dias
+  ['Lunes','Martes','Miercoles','Miercoles','Jueves','Viernes'].forEach(function(d){
+    textoProc = textoProc.replace(new RegExp('(' + d + ':)', 'gi'), String.fromCharCode(10)+'$1'+String.fromCharCode(10));
+  });
+  // Separar por comas
+  textoProc = textoProc.replace(/,\s*/g, String.fromCharCode(10));
+
+  var lineas = textoProc.split(String.fromCharCode(10)).map(function(l){return l.trim();}).filter(function(l){return l.length>1;});
+
   _tareasIA = [];
+  var personaActual = null;
+  var diaActual = null;
 
   lineas.forEach(function(linea){
     var l = linea.trim();
-    if(!l) return;
+    var lLow = l.toLowerCase();
 
-    // Detectar encabezado de día (ej: "Martes:", "JUEVES:")
-    var lLow = l.toLowerCase().replace(':','').trim();
-    if(DIAS_FECHA[lLow] !== undefined){
-      diaActual = DIAS_FECHA[lLow];
+    // ¿Es un nombre de persona?
+    var p = detectar(PERSONAS_KEYS, PERSONAS, l);
+    // Solo actualizar persona si la línea ES casi solo el nombre
+    if(p && l.length < 30){
+      personaActual = p;
       return;
     }
 
-    // Detectar persona en la línea
-    var persona = detectar(PERSONAS, l);
-    if(!persona) return; // Sin persona, saltar
+    // ¿Es un día?
+    var diaMatch = lLow.match(/^(lunes|martes|mi[eé]rcoles|jueves|viernes)/);
+    if(diaMatch){
+      diaActual = getFecha(diaMatch[1].replace('é','e').replace('é','e'));
+      return;
+    }
 
-    // Detectar cliente — primero en paréntesis, luego en texto libre
-    var cliente = 'Sin cliente';
+    // ¿Tiene contenido de tarea?
+    if(!personaActual) return;
+    if(l.length < 3) return;
+
+    // Detectar cliente — primero en paréntesis
+    var cliente = null;
     var parenMatch = l.match(/\(([^)]+)\)/g);
     if(parenMatch){
-      parenMatch.forEach(function(p){
-        var inner = p.replace(/[()]/g,'').trim();
-        // Si no es un número (slides) y no es una persona
-        if(!/^\d+$/.test(inner) && !detectar(PERSONAS, inner)){
-          var c = detectar(CLIENTES, inner);
-          if(c) cliente = c;
-          else if(inner.length > 1) cliente = inner; // usar literal
+      parenMatch.forEach(function(pm){
+        var inner = pm.replace(/[()]/g,'').trim();
+        if(!/^\d+$/.test(inner)){
+          var c = detectar(CLIENTES_KEYS, CLIENTES, inner);
+          if(c && !cliente) cliente = c;
+          else if(!cliente && inner.length > 1 && !detectar(PERSONAS_KEYS, PERSONAS, inner)) cliente = inner;
         }
       });
     }
-    if(cliente==='Sin cliente') cliente = detectar(CLIENTES, l) || 'Sin cliente';
+    if(!cliente) cliente = detectar(CLIENTES_KEYS, CLIENTES, l) || 'Sin cliente';
 
     // Detectar tipo
-    var tipo = detectar(TIPOS, l) || 'Otro';
+    var tipo = detectar(TIPOS_KEYS, TIPOS, l) || 'Otro';
 
     // Detectar cantidad
     var numMatch = l.match(/^(\d+)\s/);
     var cantidad = numMatch ? parseInt(numMatch[1]) : 1;
-
-    // Detectar slides en paréntesis ej: (5 slides)
     var slidesMatch = l.match(/\((\d+)\s*slides?\)/i);
     var slides = slidesMatch ? parseInt(slidesMatch[1]) : 0;
 
-    // Nombre de la tarea = limpiar la línea
+    // Nombre limpio
     var nombre = l
       .replace(/\([^)]*slides?[^)]*\)/gi,'')
-      .replace(/(daniel|juan camilo|juanca|laura|estefan[ií]a|maria camila|andrés?|sebastian\s+\w+)/gi,'')
+      .replace(/\([^)]*\)/g, function(m){
+        var inner=m.replace(/[()]/g,'').trim();
+        return detectar(CLIENTES_KEYS,CLIENTES,inner)||detectar(PERSONAS_KEYS,PERSONAS,inner)?'':m;
+      })
+      .replace(/(daniel|juan camilo|juanca|laura|estefan[ií]a|camila|maria camila|andrés?|sebastian\s+\w+)/gi,'')
       .replace(/\s+/g,' ').trim();
     if(nombre.length > 100) nombre = nombre.slice(0,100)+'...';
 
     _tareasIA.push({
-      asignado: persona,
-      nombre_pieza: nombre,
+      asignado: personaActual,
+      nombre_pieza: nombre||l.slice(0,80),
       cliente: cliente,
       tipo: tipo,
       dia_entrega: diaActual,
       num_posts: tipo==='Post'?cantidad:0,
       num_carruseles: tipo==='Carrusel'?cantidad:0,
-      num_videos: (tipo==='Video')?cantidad:0,
+      num_videos: tipo==='Video'?cantidad:0,
       total_piezas: slides>0?slides:cantidad,
       comentarios_rebold: slides>0?slides+' slides':'',
     });
   });
 
-  btn.textContent = '✨ Interpretar tareas';
-  btn.disabled = false;
+  btn.textContent = '✨ Interpretar tareas'; btn.disabled = false;
 
   if(!_tareasIA.length){
-    alert('No encontre tareas. Escribe el nombre en cada linea. Ej: 3 banners mail (Granite) Daniel');
+    alert('No encontre tareas. Menciona el nombre de la persona y el tipo de tarea.');
     return;
   }
-
   mostrarSugerencias(_tareasIA);
 }
 function mostrarSugerencias(tareas){
