@@ -1884,139 +1884,141 @@ function interpretarTareas(){
 
   // Fechas semana actual
   var lunes = getInicioSemana(traficoSemanaOffset);
-  var DIAS_IDX = {lunes:0,martes:1,miercoles:2,miércoles:2,jueves:3,viernes:4};
-  function getFecha(dia){ var f=new Date(lunes);f.setDate(lunes.getDate()+(DIAS_IDX[dia]||0));return f.toISOString().split('T')[0]; }
+  var DIAS_IDX = {lunes:0,martes:1,miercoles:2,jueves:3,viernes:4};
+  function getFecha(dia){
+    var d=dia.toLowerCase().replace('é','e').replace('è','e');
+    var f=new Date(lunes);f.setDate(lunes.getDate()+(DIAS_IDX[d]||0));
+    return f.toISOString().split('T')[0];
+  }
 
-  var PERSONAS={
-    'estefanía':'Estefanía Prieto','estefania':'Estefanía Prieto',
+  var PERSONAS_MAP={
+    'estefania':'Estefanía Prieto','estefanía':'Estefanía Prieto',
     'camila':'María Camila Castro','maria camila':'María Camila Castro',
     'daniel':'Daniel Urbina',
-    'juan camilo':'Juan Camilo Espinosa','juanca':'Juan Camilo Espinosa','juan':'Juan Camilo Espinosa',
+    'juan camilo':'Juan Camilo Espinosa','juanca':'Juan Camilo Espinosa',
     'laura':'Laura Morales',
     'andres':'Andrés Sánchez','andrés':'Andrés Sánchez',
-    'sebastian barrera':'Sebastián Barrera','sebastián barrera':'Sebastián Barrera',
-    'sebastian castro':'Sebastián Castro','marcela':'Marcela Rondón',
-    'paula':'Paula Bermúdez','adriana':'Adriana Figueredo',
-    'alejandro':'Alejandro Sierra','gina':'Gina Benavides','juliana':'Juliana Jaramillo',
+    'sebastian barrera':'Sebastián Barrera',
+    'sebastian castro':'Sebastián Castro','sebastián castro':'Sebastián Castro',
+    'marcela':'Marcela Rondón','paula':'Paula Bermúdez',
+    'adriana':'Adriana Figueredo','alejandro':'Alejandro Sierra',
+    'gina':'Gina Benavides','juliana':'Juliana Jaramillo',
   };
-  var PERSONAS_KEYS = Object.keys(PERSONAS).sort(function(a,b){return b.length-a.length;});
 
-  var CLIENTES={
+  var CLIENTES_MAP={
     'granite':'Granite','corferias':'Corferias','henkel':'Henkel Regional',
-    'stormberg':'Stormberg Foods','parador':'Parador Rojo','punto de pago':'Punto de Pago',
-    'supercerdo':'Supercerdo','casa mayor':'Casa Mayor','ayoba':'Ayoba',
-    'beg':'Beg and Baker','baker':'Beg and Baker','b&b':'Beg and Baker',
+    'stormberg':'Stormberg Foods','parador':'Parador Rojo',
+    'punto de pago':'Punto de Pago','supercerdo':'Supercerdo',
+    'casa mayor':'Casa Mayor','ayoba':'Ayoba',
+    'beg and baker':'Beg and Baker','beg':'Beg and Baker','b&b':'Beg and Baker',
     'brooklyn':'Brooklyn','broolklyn':'Brooklyn',
     'sodimac':'Sodimac','paramo':'Páramo','páramo':'Páramo',
     'global wine':'Global Wine','falabella':'Banco Falabella',
-    'expopet':'Corferias','agroexpo':'Corferias','agro':'Corferias',
-    'hogar':'Corferias','belleza':'Corferias',
+    'expopet':'Corferias · Expopet','agroexpo':'Corferias · Agroexpo',
+    'hogar':'Corferias · Feria del Hogar','belleza':'Corferias · Belleza y Salud',
   };
-  var CLIENTES_KEYS = Object.keys(CLIENTES).sort(function(a,b){return b.length-a.length;});
 
-  var TIPOS={
-    'cortinilla':'Video','video':'Video','carrusel':'Carrusel','carousel':'Carrusel',
-    'banner':'Banner','banners':'Banner','post':'Post','story':'Story','stories':'Story',
-    'mailing':'Mailing','mail':'Mailing','email':'Mailing',
-    'parrilla':'Parrilla de contenidos','crono post':'Cronopost','cronopost':'Cronopost',
-    'crno post':'Cronopost','flow':'Flow de email','flujo':'Flow de email',
-    'informe':'Informe de resultados','brief':'Brief de contenido',
-    'propuesta':'Propuesta creativa','copy':'Copywriting','redaccion':'Copywriting',
-    'redacción':'Copywriting','texto':'Copywriting','numeros':'Informe de resultados',
-    'ugc':'Brief de contenido','estructura':'Pieza en alta','pieza':'Pieza en alta',
-    'adaptacion':'Adaptación','adaptación':'Adaptación','ajustar':'Otro','recomendar':'Brief de contenido',
+  var TIPOS_MAP={
+    'video':'Video','cortinilla':'Video',
+    'carrusel':'Carrusel','carousel':'Carrusel',
+    'banner':'Banner','banners':'Banner',
+    'post':'Post','story':'Story','stories':'Story',
+    'mailing':'Mailing','e-mail':'Mailing','email':'Mailing',
+    'parrilla':'Parrilla de contenidos',
+    'cronopost':'Cronopost','crono post':'Cronopost','crno post':'Cronopost',
+    'flow':'Flow de email','flujo':'Flow de email',
+    'informe':'Informe de resultados',
+    'brief':'Brief de contenido','ugc':'Brief de contenido',
+    'propuesta':'Propuesta creativa',
+    'redaccion':'Copywriting','redacción':'Copywriting','texto':'Copywriting',
+    'estructura':'Pieza en alta','pieza':'Pieza en alta',
+    'adaptacion':'Adaptación','adaptación':'Adaptación',
   };
-  var TIPOS_KEYS = Object.keys(TIPOS).sort(function(a,b){return b.length-a.length;});
 
-  function detectar(keys, mapa, txt){
+  function detectarEnMapa(mapa, txt){
     var tl=txt.toLowerCase();
+    var keys=Object.keys(mapa).sort(function(a,b){return b.length-a.length;});
     for(var k=0;k<keys.length;k++) if(tl.includes(keys[k])) return mapa[keys[k]];
     return null;
   }
 
-  // PRE-PROCESO: insertar saltos de línea antes de nombres de persona en mayúsculas y días
-  // PRE-PROCESO: normalizar texto insertando saltos de linea
-  var NOMBRES_REGEX = ['ESTEFAN[IÍ]A','CAMILA','DANIEL','JUAN CAMILO','JUANCA','LAURA',
-    'ANDR[ÉE]S','SEBASTI[ÁA]N','MARCELA','PAULA','ADRIANA','ALEJANDRO','GINA','JULIANA'];
-  var textoProc = texto;
-  // Insertar saltos antes de nombres en mayusculas
-  NOMBRES_REGEX.forEach(function(nr){
-    textoProc = textoProc.replace(new RegExp('(' + nr + ')', 'gi'), String.fromCharCode(10)+'$1'+String.fromCharCode(10));
-  });
-  // Insertar saltos antes de dias
-  ['Lunes','Martes','Miercoles','Miercoles','Jueves','Viernes'].forEach(function(d){
-    textoProc = textoProc.replace(new RegExp('(' + d + ':)', 'gi'), String.fromCharCode(10)+'$1'+String.fromCharCode(10));
-  });
-  // Separar por comas
-  textoProc = textoProc.replace(/,\s*/g, String.fromCharCode(10));
+  // NORMALIZAR: insertar | como separador antes de nombres de persona y días
+  // Funciona tanto con saltos de línea como sin ellos
+  var PERSONA_NOMBRES = Object.keys(PERSONAS_MAP).sort(function(a,b){return b.length-a.length;});
+  var DIAS_NOMBRES = ['lunes','martes','miercoles','miércoles','jueves','viernes'];
 
-  var lineas = textoProc.split(String.fromCharCode(10)).map(function(l){return l.trim();}).filter(function(l){return l.length>1;});
+  var proc = texto;
+
+  // Insertar separador antes de cada nombre de persona (en mayúsculas o no)
+  PERSONA_NOMBRES.forEach(function(n){
+    var re = new RegExp('(\\b' + n + '\\b)', 'gi');
+    proc = proc.replace(re, '|||$1|||');
+  });
+
+  // Insertar separador antes de cada día
+  DIAS_NOMBRES.forEach(function(d){
+    var re = new RegExp('(\\b' + d + '\\s*:)', 'gi');
+    proc = proc.replace(re, '|||$1');
+  });
+
+  // También separar por saltos de línea y comas
+  proc = proc.replace(/[\n\r]+/g, '|||');
+  proc = proc.replace(/,\s*/g, '|||');
+
+  var tokens = proc.split('|||').map(function(t){return t.trim();}).filter(function(t){return t.length>1;});
 
   _tareasIA = [];
   var personaActual = null;
   var diaActual = null;
 
-  lineas.forEach(function(linea){
-    var l = linea.trim();
-    var lLow = l.toLowerCase();
+  tokens.forEach(function(token){
+    var tLow = token.toLowerCase().trim();
 
-    // ¿Es un nombre de persona?
-    var p = detectar(PERSONAS_KEYS, PERSONAS, l);
-    // Solo actualizar persona si la línea ES casi solo el nombre
-    if(p && l.length < 30){
-      personaActual = p;
+    // Es nombre de persona?
+    var persona = detectarEnMapa(PERSONAS_MAP, token);
+    if(persona && token.length < 30){
+      personaActual = persona;
       return;
     }
 
-    // ¿Es un día?
-    var diaMatch = lLow.match(/^(lunes|martes|mi[eé]rcoles|jueves|viernes)/);
+    // Es un día?
+    var diaMatch = tLow.match(/^(lunes|martes|mi[eé]rcoles|jueves|viernes)\s*:/);
     if(diaMatch){
-      diaActual = getFecha(diaMatch[1].replace('é','e').replace('é','e'));
-      return;
+      diaActual = getFecha(diaMatch[1]);
+      // Si hay contenido después del día en el mismo token
+      var resto = token.replace(/^[^:]+:\s*/,'').trim();
+      if(resto.length > 2) token = resto;
+      else return;
     }
 
-    // ¿Tiene contenido de tarea?
     if(!personaActual) return;
-    if(l.length < 3) return;
+    if(token.length < 3) return;
+    // Evitar guardar solo el nombre del día
+    if(DIAS_NOMBRES.some(function(d){return tLow.replace(':','').trim()===d;})) return;
 
-    // Detectar cliente — primero en paréntesis
-    var cliente = null;
-    var parenMatch = l.match(/\(([^)]+)\)/g);
-    if(parenMatch){
-      parenMatch.forEach(function(pm){
-        var inner = pm.replace(/[()]/g,'').trim();
-        if(!/^\d+$/.test(inner)){
-          var c = detectar(CLIENTES_KEYS, CLIENTES, inner);
-          if(c && !cliente) cliente = c;
-          else if(!cliente && inner.length > 1 && !detectar(PERSONAS_KEYS, PERSONAS, inner)) cliente = inner;
-        }
-      });
-    }
-    if(!cliente) cliente = detectar(CLIENTES_KEYS, CLIENTES, l) || 'Sin cliente';
+    // Detectar cliente
+    var cliente = detectarEnMapa(CLIENTES_MAP, token) || 'Sin cliente';
 
     // Detectar tipo
-    var tipo = detectar(TIPOS_KEYS, TIPOS, l) || 'Otro';
+    var tipo = detectarEnMapa(TIPOS_MAP, token) || 'Otro';
 
-    // Detectar cantidad
-    var numMatch = l.match(/^(\d+)\s/);
+    // Cantidad
+    var numMatch = token.match(/^(\d+)\s/);
     var cantidad = numMatch ? parseInt(numMatch[1]) : 1;
-    var slidesMatch = l.match(/\((\d+)\s*slides?\)/i);
+    var slidesMatch = token.match(/(\d+)\s*slides/i);
     var slides = slidesMatch ? parseInt(slidesMatch[1]) : 0;
 
     // Nombre limpio
-    var nombre = l
-      .replace(/\([^)]*slides?[^)]*\)/gi,'')
-      .replace(/\([^)]*\)/g, function(m){
-        var inner=m.replace(/[()]/g,'').trim();
-        return detectar(CLIENTES_KEYS,CLIENTES,inner)||detectar(PERSONAS_KEYS,PERSONAS,inner)?'':m;
-      })
-      .replace(/(daniel|juan camilo|juanca|laura|estefan[ií]a|camila|maria camila|andrés?|sebastian\s+\w+)/gi,'')
+    var nombre = token
+      .replace(/(\d+\s*slides?)/gi,'')
+      .replace(/\([^)]*\)/g,'')
       .replace(/\s+/g,' ').trim();
+    if(!nombre || nombre.length < 2) nombre = token.trim();
     if(nombre.length > 100) nombre = nombre.slice(0,100)+'...';
 
     _tareasIA.push({
       asignado: personaActual,
-      nombre_pieza: nombre||l.slice(0,80),
+      nombre_pieza: nombre,
       cliente: cliente,
       tipo: tipo,
       dia_entrega: diaActual,
@@ -2031,7 +2033,7 @@ function interpretarTareas(){
   btn.textContent = '✨ Interpretar tareas'; btn.disabled = false;
 
   if(!_tareasIA.length){
-    alert('No encontre tareas. Menciona el nombre de la persona y el tipo de tarea.');
+    alert('No encontre tareas. Incluye el nombre de la persona y el tipo de tarea.');
     return;
   }
   mostrarSugerencias(_tareasIA);
