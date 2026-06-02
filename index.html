@@ -1939,8 +1939,7 @@ function interpretarTareas(){
   var textoLow = texto.toLowerCase();
 
   // Dividir por frases separadas por punto, coma, "y también", "además"
-  var frases = texto.split(/[.;]|y|también|además|
-/i).filter(function(f){return f.trim().length>5;});
+  var frases = texto.split(/[.;]|\ny\n|tambien|ademas/i).filter(function(f){return f.trim().length>5;});
 
   _tareasIA = [];
 
