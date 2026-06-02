@@ -1876,99 +1876,153 @@ function navSemana(dir){traficoSemanaOffset+=dir;loadTrafico();}
 // ══════════════════════════════════════════════════════════════════
 var _tareasIA = [];
 
-async function interpretarTareas(){
+function interpretarTareas(){
   var texto = document.getElementById('blocNotasTexto').value.trim();
   if(!texto){ alert('Escribe algo primero'); return; }
 
   var btn = document.getElementById('btnInterpretar');
-  btn.textContent = '⏳ Interpretando...';
+  btn.textContent = '⏳ Analizando...';
   btn.disabled = true;
 
-  // Calcular fechas de la semana actual para dar contexto a la IA
+  // Calcular fechas de la semana actual
   var lunes = getInicioSemana(traficoSemanaOffset);
-  var diasSemana = [];
-  var diasNombre = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
-  for(var i=0;i<5;i++){
+  var diasNombre = ['lunes','martes','miércoles','jueves','viernes','miercoles'];
+  var diasFecha = {};
+  ['lunes','martes','miércoles','jueves','viernes'].forEach(function(d,i){
     var f=new Date(lunes);f.setDate(lunes.getDate()+i);
-    diasSemana.push({nombre:diasNombre[i], fecha:f.toISOString().split('T')[0]});
-  }
+    diasFecha[d]=f.toISOString().split('T')[0];
+    if(d==='miércoles')diasFecha['miercoles']=diasFecha[d];
+  });
+  diasFecha['esta semana']=diasFecha['viernes'];
+  diasFecha['semana']=diasFecha['viernes'];
 
-  var prompt = `Eres un asistente de tráfico creativo para la agencia Rebold. 
-Analiza este texto y extrae las tareas de diseño/community mencionadas.
+  // Mapas de detección
+  var PERSONAS={
+    'daniel':    'Daniel Urbina',
+    'juan camilo':'Juan Camilo Espinosa',
+    'juan':      'Juan Camilo Espinosa',
+    'maria camila':'María Camila Castro',
+    'maría camila':'María Camila Castro',
+    'estefania': 'Estefanía Prieto',
+    'estefanía': 'Estefanía Prieto',
+    'laura':     'Laura Morales',
+    'andres':    'Andrés Sánchez',
+    'andrés':    'Andrés Sánchez',
+    'sebastian barrera':'Sebastián Barrera',
+    'sebastián barrera':'Sebastián Barrera',
+    'sebastian castro':'Sebastián Castro',
+    'sebastián castro':'Sebastián Castro',
+    'marcela':   'Marcela Rondón',
+    'paula':     'Paula Bermúdez',
+    'adriana':   'Adriana Figueredo',
+    'alejandro': 'Alejandro Sierra',
+    'gina':      'Gina Benavides',
+    'juliana':   'Juliana Jaramillo',
+  };
+  var CLIENTES={
+    'corferias':'Corferias','henkel':'Henkel Regional','granite':'Granite',
+    'stormberg':'Stormberg Foods','parador':'Parador Rojo','punto de pago':'Punto de Pago',
+    'supercerdo':'Supercerdo','casa mayor':'Casa Mayor','ayoba':'Ayoba',
+    'beg':'Beg and Baker','baker':'Beg and Baker','sodimac':'Sodimac',
+    'paramo':'Páramo','páramo':'Páramo','global wine':'Global Wine',
+    'banco falabella':'Banco Falabella','falabella':'Banco Falabella',
+  };
+  var TIPOS={
+    'carrusel':'Carrusel','carousel':'Carrusel','post':'Post','story':'Story',
+    'stories':'Story','video':'Video','vídeo':'Video','banner':'Banner',
+    'mailing':'Mailing','parrilla':'Parrilla de contenidos','cronopost':'Cronopost',
+    'flow de email':'Flow de email','informe':'Informe de resultados',
+    'pieza':'Pieza en alta','adaptacion':'Adaptación','adaptación':'Adaptación',
+    'brief':'Brief de contenido','propuesta':'Propuesta creativa','copy':'Copywriting',
+  };
 
-SEMANA ACTUAL:
-${diasSemana.map(d=>d.nombre+': '+d.fecha).join(', ')}
+  var textoLow = texto.toLowerCase();
 
-PERSONAS DEL EQUIPO:
-- Daniel Urbina (diseñador)
-- Juan Camilo Espinosa (diseñador, también hace Henkel)
-- María Camila Castro (community manager, Corferias)
-- Estefanía Prieto (community manager, Granite/Stormberg/Ayoba/Beg and Baker)
-- Laura Morales (proveedora diseño)
-- Andrés Sánchez (proveedor diseño)
-- Sebastián Barrera (proveedor diseño, también hace Henkel/Parador/Punto de Pago)
+  // Dividir por frases separadas por punto, coma, "y también", "además"
+  var frases = texto.split(/[.;]|y|también|además|
+/i).filter(function(f){return f.trim().length>5;});
 
-CLIENTES: Corferias, Henkel Regional, Granite, Stormberg Foods, Parador Rojo, Punto de Pago, Supercerdo, Casa Mayor, Ayoba, Beg and Baker, Sodimac, Páramo, Global Wine, Banco Falabella
+  _tareasIA = [];
 
-TIPOS de tarea — Diseño: Post, Story, Carrusel, Video, Banner, Mailing, Pieza en alta, Adaptación
-Tipos Community: Parrilla de contenidos, Cronopost, Flow de email, Informe de resultados, Gestión de comentarios, Brief de contenido, Propuesta creativa, Copywriting
+  frases.forEach(function(frase){
+    var fLow = frase.toLowerCase();
 
-TEXTO A INTERPRETAR:
-"${texto}"
-
-Responde SOLO con un JSON válido, sin texto adicional, sin markdown:
-{
-  "tareas": [
-    {
-      "asignado": "nombre completo de la persona",
-      "nombre_pieza": "descripción clara de la tarea",
-      "cliente": "nombre del cliente",
-      "tipo": "tipo de tarea",
-      "dia_entrega": "YYYY-MM-DD o null si no se menciona",
-      "num_posts": 0,
-      "num_carruseles": 0,
-      "num_videos": 0,
-      "total_piezas": 0,
-      "comentarios_rebold": "notas adicionales si las hay"
+    // Detectar persona
+    var persona = null;
+    var personaMatch = null;
+    // Ordenar por longitud descendente para preferir coincidencias más largas
+    var personaKeys = Object.keys(PERSONAS).sort(function(a,b){return b.length-a.length;});
+    for(var k=0;k<personaKeys.length;k++){
+      if(fLow.includes(personaKeys[k])){
+        persona=PERSONAS[personaKeys[k]];
+        break;
+      }
     }
-  ]
-}`;
+    if(!persona) return; // Sin persona identificada, saltar
 
-  try{
-    var resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{role:'user', content: prompt}]
-      })
+    // Detectar cliente
+    var cliente = 'Sin cliente';
+    var clienteKeys = Object.keys(CLIENTES).sort(function(a,b){return b.length-a.length;});
+    for(var k=0;k<clienteKeys.length;k++){
+      if(fLow.includes(clienteKeys[k])){
+        cliente=CLIENTES[clienteKeys[k]];
+        break;
+      }
+    }
+
+    // Detectar tipo
+    var tipo = 'Otro';
+    var tipoKeys = Object.keys(TIPOS).sort(function(a,b){return b.length-a.length;});
+    for(var k=0;k<tipoKeys.length;k++){
+      if(fLow.includes(tipoKeys[k])){
+        tipo=TIPOS[tipoKeys[k]];
+        break;
+      }
+    }
+
+    // Detectar fecha
+    var fecha = null;
+    var diaKeys = Object.keys(diasFecha);
+    for(var k=0;k<diaKeys.length;k++){
+      if(fLow.includes(diaKeys[k])){
+        fecha=diasFecha[diaKeys[k]];
+        break;
+      }
+    }
+
+    // Detectar número de piezas
+    var numMatch = frase.match(/(\d+)\s*(post|video|carrusel|pieza|banner|story)/i);
+    var numPiezas = numMatch ? parseInt(numMatch[1]) : 1;
+
+    // Construir nombre de la tarea limpiando la frase
+    var nombreTarea = frase.trim()
+      .replace(/(hace|tiene|debe|va a|necesita|entrega|para el|el|la|los|las|del|de)/gi,' ')
+      .replace(/\s+/g,' ').trim();
+    if(nombreTarea.length > 80) nombreTarea = nombreTarea.slice(0,80) + '...';
+
+    _tareasIA.push({
+      asignado: persona,
+      nombre_pieza: nombreTarea,
+      cliente: cliente,
+      tipo: tipo,
+      dia_entrega: fecha,
+      num_posts: tipo==='Post'?numPiezas:0,
+      num_carruseles: tipo==='Carrusel'?numPiezas:0,
+      num_videos: tipo==='Video'?numPiezas:0,
+      total_piezas: numPiezas,
+      comentarios_rebold: '',
     });
-    var data = await resp.json();
-    var textoResp = data.content[0].text;
-
-    // Limpiar y parsear JSON
-    textoResp = textoResp.replace(/```json|```/g,'').trim();
-    var resultado = JSON.parse(textoResp);
-    _tareasIA = resultado.tareas || [];
-
-    if(!_tareasIA.length){
-      alert('No encontré tareas en el texto. Intenta ser más específico.');
-      btn.textContent = '✨ Interpretar tareas';
-      btn.disabled = false;
-      return;
-    }
-
-    // Mostrar sugerencias
-    mostrarSugerencias(_tareasIA);
-
-  }catch(e){
-    console.error(e);
-    alert('Error al interpretar: '+e.message);
-  }
+  });
 
   btn.textContent = '✨ Interpretar tareas';
   btn.disabled = false;
+
+  if(!_tareasIA.length){
+    alert('No encontré tareas. Menciona el nombre de la persona y el tipo de tarea. Ej: "Daniel hace carrusel de Granite para el jueves"');
+    return;
+  }
+
+  mostrarSugerencias(_tareasIA);
 }
 
 function mostrarSugerencias(tareas){
