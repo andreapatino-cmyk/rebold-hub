@@ -2303,7 +2303,7 @@ async function loadTrafico(){
       html+='<td style="padding:8px 12px;vertical-align:top;border-radius:8px;background:var(--surface)">'+
         '<div style="font-size:11px;font-weight:700;color:'+persona.color+'">'+persona.nombre.split(' ')[0]+'</div>'+
         '<div style="font-size:10px;color:var(--muted)">'+persona.nombre.split(' ').slice(1).join(' ')+'</div>'+
-        '<span class="badge" style="background:rgba(0,0,0,.2);color:'+persona.color+';font-size:8px;margin-top:4px">'+(persona.tipo==='interno'?'Equipo':'Proveedor')+'</span>'+
+        '<span class="badge" style="background:rgba(0,0,0,.2);color:'+persona.color+';font-size:8px;margin-top:4px">'+(persona.(persona.tipo==='director'?'Directora':persona.tipo==='diseno'?'Diseño':persona.tipo==='community'?'Community':persona.tipo==='intel'?'Intelligence':persona.tipo==='proveedor'?'Proveedor':'Equipo'))+'</span>'+
       '</td>';
 
       // Columnas días
