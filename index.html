@@ -1051,19 +1051,37 @@ function recolectarPiezas(){
 }
 async function cargarTraficoDia(){
   var hoy=new Date().toISOString().split('T')[0];
+  // Calcular inicio y fin de semana actual
+  var ahora=new Date();
+  var diaSemana=ahora.getDay()||7;
+  var lunes=new Date(ahora);lunes.setDate(ahora.getDate()-diaSemana+1);
+  var viernes=new Date(lunes);viernes.setDate(lunes.getDate()+4);
+  var desdeStr=lunes.toISOString().split('T')[0];
+  var hastaStr=viernes.toISOString().split('T')[0];
+
   var nombre=currentUser?currentUser.name:'';
   if(!nombre)return;
   try{
-    var tareas=await sbGet('trafico','dia_entrega=eq.'+hoy+'&estado=neq.finalizado&asignado=ilike.*'+encodeURIComponent(nombre.split(' ')[0])+'*');
+    // Traer tareas de toda la semana (pendiente + en_curso + aprobacion)
+    var tareas=await sbGet('trafico',
+      'dia_entrega=gte.'+desdeStr+'&dia_entrega=lte.'+hastaStr+
+      '&estado=neq.finalizado&asignado=ilike.*'+encodeURIComponent(nombre)+'*&order=dia_entrega.asc');
     var sec=document.getElementById('checkinTrafico');
     var lista=document.getElementById('checkinTraficoLista');
     if(!sec||!lista)return;
     if(!tareas.length){sec.style.display='none';return;}
     sec.style.display='block';
+
+    var DIAS_LABEL={lunes:'Lun',martes:'Mar',miercoles:'Mié',jueves:'Jue',viernes:'Vie'};
+    var diasNombres=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
     lista.innerHTML=tareas.map(function(t){
-      var est=ESTADO_TRAFICO[t.estado]||ESTADO_TRAFICO.pendiente;
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:6px;gap:10px">'+
+      var fecha=t.dia_entrega?new Date(t.dia_entrega+'T12:00:00'):null;
+      var diaLabel=fecha?diasNombres[fecha.getDay()]+' '+fecha.getDate():'Sin fecha';
+      var esHoy=t.dia_entrega===hoy;
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:'+(esHoy?'rgba(220,12,75,0.06)':'var(--surface2)')+';border-radius:8px;margin-bottom:6px;gap:10px;border-left:3px solid '+(esHoy?'var(--red)':'var(--border2)')+'">'+
         '<div style="flex:1;min-width:0">'+
+          '<div style="font-size:11px;color:var(--muted);margin-bottom:2px">'+diaLabel+(esHoy?' · <strong style="color:var(--red)">Hoy</strong>':'')+'</div>'+
           '<div style="font-size:12px;font-weight:600">'+t.nombre_pieza.slice(0,50)+'</div>'+
           '<div style="font-size:11px;color:var(--muted)">'+(t.cliente||'—')+(t.feria?' · '+t.feria:'')+'</div>'+
         '</div>'+
@@ -1075,12 +1093,28 @@ async function cargarTraficoDia(){
         '</select>'+
       '</div>';
     }).join('');
+
+    // Agregar campo para tareas extra
+    lista.innerHTML += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">'+
+      '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:8px">¿Hiciste algo adicional hoy?</div>'+
+      '<textarea id="tareasExtraHoy" class="form-input" style="height:60px;resize:none;font-size:12px;line-height:1.5" placeholder="ej: Reunión con cliente, ajustes urgentes, entrega adicional..."></textarea>'+
+    '</div>';
+
   }catch(e){console.error('Error cargando tráfico:',e);}
 }
 
 async function actualizarEstadoTrafico(id,estado){
   try{
     await fetch(SB_URL+'/rest/v1/trafico?id=eq.'+id,{method:'PATCH',headers:SB_HDR,body:JSON.stringify({estado:estado,updated_at:new Date().toISOString()})});
+    // Si marcó como finalizado y no es director, notificar a Natalia
+    if(estado==='finalizado'&&currentUser&&currentUser.role!=='director'){
+      agregarNotificacionTrafico(id);
+    }
+    // Si el calendario de tráfico está visible, recargarlo
+    var pageTraf=document.getElementById('page-trafico');
+    if(pageTraf&&pageTraf.classList.contains('active')){
+      loadTrafico();
+    }
   }catch(e){console.error(e);}
 }
 
@@ -1146,7 +1180,10 @@ async function submitCheckin(){var ac=document.querySelectorAll('#clientChips [d
   }
   var summaryExtra=permisoParcial?' + '+permisoParcial.hours+'h de '+(permisoParcial.type||'permiso'):'';
   var piezas=(currentUser.role==='designer'||currentUser.role==='cm')?recolectarPiezas():[];
-  var checkin={member_name:currentUser.name,member_unit:currentUser.unit,checkin_date:new Date().toISOString().split('T')[0],accounts:accounts,tasks:tasks,hours:parseFloat(hours)||0,piezas:piezas,note:nota+(permisoParcial?' | Permiso '+permisoParcial.hours+'h: '+(permisoParcial.note||permisoParcial.type):''),ai_summary:currentUser.name.split(' ')[0]+' trabajó en '+accounts.map(function(a){return a.client;}).join(', ')+'. Realizó: '+tasks.slice(0,2).join(', ')+'. Horas: '+hours+'h'+summaryExtra+'.'};try{await sbPost('checkins',checkin);
+  var checkin={member_name:currentUser.name,member_unit:currentUser.unit,checkin_date:new Date().toISOString().split('T')[0],accounts:accounts,tasks:tasks,hours:parseFloat(hours)||0,piezas:piezas,note:nota+(permisoParcial?' | Permiso '+permisoParcial.hours+'h: '+(permisoParcial.note||permisoParcial.type):''),ai_summary:(function(){
+      var extra=(document.getElementById('tareasExtraHoy')||{}).value||'';
+      return currentUser.name.split(' ')[0]+' trabajó en '+accounts.map(function(a){return a.client;}).join(', ')+'. Realizó: '+tasks.slice(0,2).join(', ')+'. Horas: '+hours+'h'+summaryExtra+'.'+(extra?' Extra: '+extra:'');
+    })()};try{await sbPost('checkins',checkin);
     // Si hay permiso parcial, también lo guardamos en absences
     if(permisoParcial&&permisoParcial.hours>0){
       var hoy2=new Date().toISOString().split('T')[0];
