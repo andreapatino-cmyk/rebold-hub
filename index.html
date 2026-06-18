@@ -378,9 +378,9 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="filterFinMes" class="form-select" style="width:auto;padding:8px 12px;font-size:12px" onchange="loadFinanciero()">
+        <option value="jun">Junio 2026</option>
         <option value="may">Mayo 2026</option>
         <option value="abr">Abril 2026</option>
-        <option value="jun">Junio 2026</option>
         <option value="jul">Julio 2026</option>
       </select>
       <button class="btn btn-ghost btn-sm" onclick="loadFinanciero()">↻ Actualizar</button>
@@ -1529,7 +1529,7 @@ function fmt(n){
 }
 
 async function loadFinanciero(){
-  var mes=(document.getElementById('filterFinMes')||{}).value||'may';
+  var mes=(document.getElementById('filterFinMes')||{}).value||'jun';
   var sub=document.getElementById('financiero-sub');
   var tabla=document.getElementById('finTabla');
   var barras=document.getElementById('finBarras');
