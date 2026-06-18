@@ -1600,17 +1600,10 @@ async function loadFinanciero(){
       if(f.monthly_revenue>0){
         revenuePorCliente[nombre]=(revenuePorCliente[nombre]||0)+(f.monthly_revenue||0);
       }
-      // Costos transversales — indexar por nombre real Y por nombre Natalia usando el mapa inverso
+      // Costos transversales — solo indexar por el nombre exacto en Supabase
       if(f.tools_cost>0||f.providers_cost>0){
         var costo=(f.tools_cost||0)+(f.providers_cost||0);
         costosPorCliente[nombre]=(costosPorCliente[nombre]||0)+costo;
-        // También indexar por nombre principal si este nombre es un alias
-        Object.keys(CLIENTE_COSTOS_MAP).forEach(function(nombreNatalia){
-          var aliases=CLIENTE_COSTOS_MAP[nombreNatalia]||[];
-          if(aliases.indexOf(nombre)>=0){
-            costosPorCliente[nombreNatalia]=(costosPorCliente[nombreNatalia]||0)+costo;
-          }
-        });
       }
     });
 
@@ -1696,13 +1689,16 @@ async function loadFinanciero(){
         nombresAlt.forEach(function(n){if(revenuePorCliente[n])rev+=revenuePorCliente[n];});
       }
 
-      // Costos usando el mapa de nombres
-      var nombresEnCostos=CLIENTE_COSTOS_MAP[nombre]||[nombre];
-      var costo=nombresEnCostos.reduce(function(s,n){
-        return s+(costosPorCliente[n]||costosPorCliente[n.toLowerCase()]||0);
-      },0);
-      // También intentar directo por nombre del cliente
-      if(!costo) costo=costosPorCliente[nombre]||0;
+      // Costos: buscar por aliases del mapa, o por nombre directo si no hay alias
+      var nombresEnCostos=CLIENTE_COSTOS_MAP[nombre]||[];
+      var costo=0;
+      if(nombresEnCostos.length>0){
+        costo=nombresEnCostos.reduce(function(s,n){
+          return s+(costosPorCliente[n]||0);
+        },0);
+      } else {
+        costo=costosPorCliente[nombre]||0;
+      }
 
       // Costo laboral — buscar por nombre exacto y variantes
       var costoLaboral=costoLaboralPorCliente[nombre]||0;
