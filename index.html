@@ -386,10 +386,22 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="filterFinMes" class="form-select" style="width:auto;padding:8px 12px;font-size:12px" onchange="loadFinanciero()">
-        <option value="jun">Junio 2026</option>
-        <option value="may">Mayo 2026</option>
-        <option value="abr">Abril 2026</option>
-        <option value="jul">Julio 2026</option>
+        <optgroup label="Mensual">
+          <option value="jun">Junio 2026</option>
+          <option value="may">Mayo 2026</option>
+          <option value="abr">Abril 2026</option>
+          <option value="mar">Marzo 2026</option>
+          <option value="feb">Febrero 2026</option>
+          <option value="ene">Enero 2026</option>
+          <option value="jul">Julio 2026</option>
+        </optgroup>
+        <optgroup label="Trimestral">
+          <option value="q1">Q1 2026 (Ene-Mar)</option>
+          <option value="q2">Q2 2026 (Abr-Jun)</option>
+        </optgroup>
+        <optgroup label="Anual">
+          <option value="2026">Año 2026</option>
+        </optgroup>
       </select>
       <button class="btn btn-ghost btn-sm" onclick="loadFinanciero()">↻ Actualizar</button>
     </div>
@@ -758,6 +770,8 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
         <option value="hoy">Hoy</option>
         <option value="semana" selected>Esta semana</option>
         <option value="mes">Este mes</option>
+        <option value="trimestre">Este trimestre</option>
+        <option value="año">Este año</option>
       </select>
       <select id="filterUnidad" class="form-select" style="width:auto;padding:8px 12px;font-size:12px" onchange="loadDedicacion()">
         <option value="">Todas las unidades</option>
@@ -1263,6 +1277,8 @@ async function loadDedicacion(){
   var hoy=new Date(),fechaDesde;
   if(rango==='hoy'){fechaDesde=hoy.toISOString().split('T')[0];}
   else if(rango==='semana'){var ws=new Date(hoy);ws.setDate(hoy.getDate()-hoy.getDay()+1);fechaDesde=ws.toISOString().split('T')[0];}
+  else if(rango==='trimestre'){var q=Math.floor(hoy.getMonth()/3);fechaDesde=new Date(hoy.getFullYear(),q*3,1).toISOString().split('T')[0];}
+  else if(rango==='año'||rango==='anio'){fechaDesde=new Date(hoy.getFullYear(),0,1).toISOString().split('T')[0];}
   else{fechaDesde=new Date(hoy.getFullYear(),hoy.getMonth(),1).toISOString().split('T')[0];}
   var query='order=checkin_date.desc&limit=500&checkin_date=gte.'+fechaDesde;
   if(unidad)query+='&member_unit=eq.'+encodeURIComponent(unidad);
@@ -1554,8 +1570,17 @@ async function loadFinanciero(){
 
   var MESES_NUM={'ene':1,'feb':2,'mar':3,'abr':4,'may':5,'jun':6,'jul':7,'ago':8,'sep':9,'oct':10,'nov':11,'dic':12};
   var MESES_LABELS={'ene':'Enero','feb':'Febrero','mar':'Marzo','abr':'Abril','may':'Mayo','jun':'Junio','jul':'Julio','ago':'Agosto','sep':'Septiembre','oct':'Octubre','nov':'Noviembre','dic':'Diciembre'};
-  var mesNum=MESES_NUM[mes]||5;
   var anio=new Date().getFullYear();
+  // Manejar períodos multi-mes
+  var mesesPeriodo=[];
+  if(mes==='q1')mesesPeriodo=[1,2,3];
+  else if(mes==='q2')mesesPeriodo=[4,5,6];
+  else if(mes==='q3')mesesPeriodo=[7,8,9];
+  else if(mes==='q4')mesesPeriodo=[10,11,12];
+  else if(mes==='2026'||mes==='anio')mesesPeriodo=[1,2,3,4,5,6,7,8,9,10,11,12];
+  else mesesPeriodo=[MESES_NUM[mes]||6];
+  var mesNum=mesesPeriodo[0];
+  var mesNumFin=mesesPeriodo[mesesPeriodo.length-1];
 
   // Mapa cliente Supabase → nombre en financials (costos)
   var CLIENTE_COSTOS_MAP={
@@ -1600,12 +1625,12 @@ async function loadFinanciero(){
       'Juan Camilo Espinosa':5250000,
     };
     // 1. Leer financials del mes — contiene revenue Y costos
-    var financialsData=await sbGet('financials','month=eq.'+mesNum+'&year=eq.'+anio+'&limit=200');
+    var financialsData=await sbGet('financials','month=gte.'+mesNum+'&month=lte.'+mesNumFin+'&year=eq.'+anio+'&limit=500');
 
-    // 1b. Leer check-ins del mes para calcular costo laboral proporcional
+    // 1b. Leer check-ins del período para calcular costo laboral proporcional
     var primerDia=anio+'-'+String(mesNum).padStart(2,'0')+'-01';
-    var ultimoDia=anio+'-'+String(mesNum).padStart(2,'0')+'-'+new Date(anio,mesNum,0).getDate();
-    var checkinsData=await sbGet('checkins','checkin_date=gte.'+primerDia+'&checkin_date=lte.'+ultimoDia+'&limit=500');
+    var ultimoDia=anio+'-'+String(mesNumFin).padStart(2,'0')+'-'+new Date(anio,mesNumFin,0).getDate();
+    var checkinsData=await sbGet('checkins','checkin_date=gte.'+primerDia+'&checkin_date=lte.'+ultimoDia+'&limit=1000');
 
     // Construir mapa de revenue y costos por nombre de cliente
     var revenuePorCliente={};
@@ -1775,7 +1800,8 @@ async function loadFinanciero(){
     var totalGM=totalRev-totalCosto;
     var totalPct=totalRev>0?(totalGM/totalRev*100):0;
 
-    if(sub)sub.textContent='Intelligence + Creatividad · '+(MESES_LABELS[mes]||mes)+' '+anio+' · Fuente: Supabase (sync diario 11PM)';
+    var periodoLabel=mes==='q1'?'Q1 2026':mes==='q2'?'Q2 2026':mes==='q3'?'Q3 2026':mes==='q4'?'Q4 2026':mes==='2026'?'Año 2026':(MESES_LABELS[mes]||mes)+' '+anio;
+    if(sub)sub.textContent='Intelligence + Creatividad · '+periodoLabel+' · Fuente: Supabase (sync diario 11PM)';
 
     // Actualizar stats
     var totalTransvFinal=filas.reduce(function(s,f){return s+f.costo;},0);
@@ -2402,7 +2428,9 @@ async function loadTrafico(){
       diasFechas.forEach(function(fecha){
         var esHoy=fecha===hoyStr;
         var tareasDelDia=itemsSemana.filter(function(t){
-          return (t.dia_entrega||'').split('T')[0]===fecha&&(t.asignado||'').includes(persona.nombre.split(' ')[0]);
+          var nombreCompleto=persona.nombre;
+          var asig=t.asignado||'';
+          return (t.dia_entrega||'').split('T')[0]===fecha&&(asig===nombreCompleto||asig.includes(nombreCompleto));
         });
         html+='<td style="padding:4px;vertical-align:top;background:'+(esHoy?'rgba(220,12,75,0.04)':'var(--surface2)')+';border-radius:8px;border:'+(esHoy?'1px solid rgba(220,12,75,0.2)':'1px solid var(--border)')+'">'+
           '<div style="min-height:60px;display:flex;flex-direction:column;gap:4px">';
@@ -2456,7 +2484,7 @@ async function loadTrafico(){
     PERSONAS_CREATIVAS.forEach(function(p){resumenPersonas[p.nombre]={color:p.color,pend:0,curso:0,aprob:0,fin:0,total:0};});
     items.forEach(function(t){
       var asig=t.asignado||'';
-      var persona=PERSONAS_CREATIVAS.find(function(p){return asig.includes(p.nombre.split(' ')[0]);});
+      var persona=PERSONAS_CREATIVAS.find(function(p){return asig===p.nombre||asig.includes(p.nombre);});
       if(!persona)return;
       var pzs=t.total_piezas>0?t.total_piezas:1;
       var d=resumenPersonas[persona.nombre];
@@ -2496,7 +2524,7 @@ async function loadTrafico(){
     PERSONAS_CREATIVAS.forEach(function(p){resumenMes[p.nombre]={color:p.color,pend:0,curso:0,aprob:0,fin:0,total:0};});
     itemsMes.forEach(function(t){
       var asig=t.asignado||'';
-      var persona=PERSONAS_CREATIVAS.find(function(p){return asig.includes(p.nombre.split(' ')[0]);});
+      var persona=PERSONAS_CREATIVAS.find(function(p){return asig===p.nombre||asig.includes(p.nombre);});
       if(!persona)return;
       var pzs=t.total_piezas>0?t.total_piezas:1;
       var d=resumenMes[persona.nombre];
@@ -2557,7 +2585,7 @@ function quickAddTrafico(btn){
   var fec=document.getElementById('ntTrafFecha');
   if(asig){
     var opts=Array.from(asig.options);
-    var match=opts.find(function(o){return o.value.includes(persona.split(' ')[0]);});
+    var match=opts.find(function(o){return o.value===persona||o.value.includes(persona);});
     if(match)asig.value=match.value;
   }
   if(fec)fec.value=fecha;
@@ -2593,9 +2621,9 @@ function calcularCostoProveedores(items){
   items.forEach(function(t){
     var asig=t.asignado||'';
     var proveedor=null;
-    if(asig.includes('Laura'))proveedor='Laura Morales';
-    else if(asig.includes('Andrés')||asig.includes('Andres'))proveedor='Andrés Sánchez';
-    else if(asig.includes('Sebastián')||asig.includes('Sebastian'))proveedor='Sebastián Barrera';
+    if(asig==='Laura Morales')proveedor='Laura Morales';
+    else if(asig==='Andrés Sánchez'||asig==='Andres Sanchez')proveedor='Andrés Sánchez';
+    else if(asig==='Sebastián Barrera'||asig==='Sebastian Barrera')proveedor='Sebastián Barrera';
     if(!proveedor)return;
     if(!piezasProv[proveedor])piezasProv[proveedor]={total:0,finalizado:0,pendiente:0,en_curso:0};
     piezasProv[proveedor].total++;
