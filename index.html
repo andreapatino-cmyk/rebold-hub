@@ -207,6 +207,7 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     <table class="tbl"><thead><tr><th>Nombre</th><th>Cargo</th><th>Salario</th><th>CE</th></tr></thead><tbody>
       <tr><td>Alexandra Salas</td><td>CM Corferias</td><td>$2.19M</td><td>$3.06M</td></tr>
       <tr><td>Estefanía Prieto</td><td>CM Granite/Stomberg</td><td>$3.17M</td><td>$4.44M</td></tr>
+      <tr><td>Laura Camila Ríos</td><td>CM EATON</td><td>$2.50M</td><td>$3.50M</td></tr>
       <tr><td>Daniel Urbina</td><td>Diseñador Gráfico</td><td>$2.97M</td><td>$4.16M</td></tr>
       <tr><td>Juan Camilo Espinosa</td><td>Diseñador Gráfico Henkel</td><td>$3.75M</td><td>$5.25M</td></tr>
     </tbody></table>
@@ -294,7 +295,7 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
           <option>Corferias</option><option>Henkel</option><option>Granite</option>
           <option>Stormberg Foods</option><option>Parador Rojo</option><option>Punto de Pago</option>
           <option>Supercerdo</option><option>Casa Mayor</option><option>Ayoba</option>
-          <option>Beg and Baker</option><option>Interno Rebold</option><option>Otro</option>
+          <option>Beg and Baker</option><option>EATON</option><option>Interno Rebold</option><option>Otro</option>
         </select>
       </div>
     </div>
@@ -387,13 +388,13 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="filterFinMes" class="form-select" style="width:auto;padding:8px 12px;font-size:12px" onchange="loadFinanciero()">
         <optgroup label="Mensual">
+          <option value="jul">Julio 2026</option>
           <option value="jun">Junio 2026</option>
           <option value="may">Mayo 2026</option>
           <option value="abr">Abril 2026</option>
           <option value="mar">Marzo 2026</option>
           <option value="feb">Febrero 2026</option>
           <option value="ene">Enero 2026</option>
-          <option value="jul">Julio 2026</option>
         </optgroup>
         <optgroup label="Trimestral">
           <option value="q1">Q1 2026 (Ene-Mar)</option>
@@ -633,6 +634,7 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
               <option>Juan Camilo Espinosa</option>
               <option>Alexandra Salas</option>
               <option>Estefanía Prieto</option>
+              <option>Laura Camila Ríos</option>
             </optgroup>
             <optgroup label="📊 Intelligence">
               <option>Sebastián Castro</option>
@@ -658,7 +660,7 @@ nav{flex:1;padding:18px 12px;display:flex;flex-direction:column;gap:2px;overflow
             <option>Corferias</option><option>Henkel</option><option>Granite</option>
             <option>Stormberg Foods</option><option>Parador Rojo</option><option>Punto de Pago</option>
             <option>Supercerdo</option><option>Casa Mayor</option><option>Ayoba</option>
-            <option>Beg and Baker</option><option>Interno Rebold</option><option>Otro</option>
+            <option>Beg and Baker</option><option>EATON</option><option>Interno Rebold</option><option>Otro</option>
           </select>
         </div>
       </div>
@@ -927,6 +929,7 @@ const USERS={
   'marcela.rondon@letsrebold.com':{name:'Marcela Rondón',role:'analyst',unit:'Intelligence',code:'MR',color:'var(--red)'},
   'daniel.urbina@ispd.com':{name:'Daniel Urbina',role:'designer',unit:'Creatividad',code:'DU',color:'var(--blue)'},
   'juan.espinosa@ispd.com':{name:'Juan Camilo Espinosa',role:'designer',unit:'Creatividad',code:'JE',color:'var(--blue)'},
+  'laura.rios@ispd.com':{name:'Laura Camila Ríos',role:'cm',unit:'Creatividad',code:'LR',color:'var(--blue)'},
 };
 const ROLE_LABELS={director:'Directora de Unidades',account:'Ejecutivo de Cuentas',analyst:'Analista',designer:'Diseñador',cm:'Community Manager',proveedor:'Proveedor Externo'};
 const NAV_CONFIG={
@@ -1217,7 +1220,20 @@ async function submitCheckin(){var ac=document.querySelectorAll('#clientChips [d
     // Si hay permiso parcial, también lo guardamos en absences
     if(permisoParcial&&permisoParcial.hours>0){
       var hoy2=new Date().toISOString().split('T')[0];
-      await sbPost('absences',{member_name:currentUser.name,type:permisoParcial.type,date_start:hoy2,date_end:hoy2,days:0,hours_partial:permisoParcial.hours,note:permisoParcial.note||'',registered_by:currentUser.name});
+      try{
+        await sbPost('absences',{
+          member_name:currentUser.name,
+          type:permisoParcial.type,
+          date_start:hoy2,
+          date_end:hoy2,
+          days:0,
+          hours_partial:permisoParcial.hours,
+          note:(permisoParcial.note||permisoParcial.type)+' · '+permisoParcial.hours+'h',
+          registered_by:currentUser.name
+        });
+      }catch(eP){
+        console.warn('Permiso parcial guardado solo en nota del check-in:', eP.message);
+      }
     }
     alert('✅ Check-in registrado. ¡Gracias '+currentUser.name.split(' ')[0]+'!');document.querySelectorAll('#clientChips .badge,#taskChips .badge,#hourBtns .badge').forEach(function(el){el.classList.remove('b-red');el.classList.add('b-gray');el.setAttribute('data-selected','false');});document.getElementById('checkinNota').value='';}catch(e){console.error('Error check-in:',e);alert('Error guardando el check-in: '+e.message);}}
 window.addEventListener('load',function(){
@@ -1561,7 +1577,7 @@ function fmt(n){
 }
 
 async function loadFinanciero(){
-  var mes=(document.getElementById('filterFinMes')||{}).value||'jun';
+  var mes=(document.getElementById('filterFinMes')||{}).value||'jul';
   var sub=document.getElementById('financiero-sub');
   var tabla=document.getElementById('finTabla');
   var barras=document.getElementById('finBarras');
@@ -1621,6 +1637,7 @@ async function loadFinanciero(){
       'Gina Benavides':1620000,
       'Alexandra Salas':3060000,
       'Estefanía Prieto':4440000,
+      'Laura Camila Ríos':3500000,
       'Daniel Urbina':4160000,
       'Juan Camilo Espinosa':5250000,
     };
@@ -1968,6 +1985,7 @@ const PERSONAS_CREATIVAS=[
   {nombre:'Daniel Urbina',        tipo:'diseno',    color:'var(--blue)'},
   {nombre:'Juan Camilo Espinosa', tipo:'diseno',    color:'var(--blue)'},
   {nombre:'Alexandra Salas',      tipo:'community', color:'var(--purple)'  },
+  {nombre:'Laura Camila Ríos',    tipo:'community', color:'var(--purple)'  },
   {nombre:'Estefanía Prieto',     tipo:'community', color:'var(--purple)'},
   {nombre:'Sebastián Castro',     tipo:'intel',     color:'var(--red)'},
   {nombre:'Laura Correa',         tipo:'intel',     color:'var(--red)'},
@@ -2027,6 +2045,7 @@ function interpretarTareas(){
     'marcela':'Marcela Rondón','paula':'Paula Bermúdez',
     'adriana':'Adriana Figueredo','alejandro':'Alejandro Sierra',
     'gina':'Gina Benavides','juliana':'Juliana Jaramillo',
+    'laura camila':'Laura Camila Ríos','laura rios':'Laura Camila Ríos',
   };
 
   var CLIENTES_MAP={
@@ -2194,6 +2213,7 @@ function notificarNuevaTareaTrafico(asignado, tarea, cliente, fecha){
     'Daniel Urbina':        'daniel.urbina@ispd.com',
     'Juan Camilo Espinosa': 'juan.espinosa@ispd.com',
     'Alexandra Salas':      'alexandra.salas@ispd.com',
+    'Laura Camila Ríos':    'laura.rios@ispd.com',
     'Estefanía Prieto':     'alicia.prieto@letsrebold.com',
     'Sebastián Castro':     'sebastian.castro@letsrebold.com',
     'Laura Correa':         'laura.correa@letsrebold.com',
@@ -2356,6 +2376,7 @@ async function loadTrafico(){
       var CLIENTES_CM={
         'Estefanía Prieto':   ['Granite','Stormberg','Ayoba','Beg and Baker','Stormberg Foods'],
         'Alexandra Salas':['Corferias'],
+        'Laura Camila Ríos':['EATON'],
       };
       var clientesCM=CLIENTES_CM[currentUser.name]||null;
       items=items.filter(function(t){
