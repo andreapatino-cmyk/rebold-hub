@@ -2464,7 +2464,7 @@ async function loadTrafico(){
             '<button onclick="abrirEditTrafico('+JSON.stringify(t).replace(/"/g,'&quot;')+',event)" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:0;flex-shrink:0;line-height:1" title="Editar">✏️</button>'+
           '</div>'+
             '<div style="display:flex;align-items:center;justify-content:space-between;gap:4px;margin-top:4px">'+
-              '<span style="font-size:9px;color:var(--muted)">'+( t.cliente||'')+'</span>'+
+              '<span style="font-size:9px;color:var(--muted)">'+( t.cliente||'')+(t.feria?' · <strong style="color:var(--purple);font-size:8px">'+t.feria+'</strong>':'')+' </span>'+
               (currentUser&&currentUser.role==='viewer'?'<span class="badge '+est.badge+'" style="font-size:9px">'+est.icon+'</span>':
               '<select onchange="cambiarEstadoTraficoSelect('+t.id+',this.value)" style="font-size:9px;padding:2px 4px;background:var(--surface3);border:1px solid var(--border2);border-radius:4px;color:var(--text);cursor:pointer" onclick="event.stopPropagation()">'+
                 '<option value="pendiente"'+(t.estado==="pendiente"?" selected":"")+'>⏳ Pend.</option>'+
