@@ -2233,7 +2233,8 @@ function notificarNuevaTareaTrafico(asignado, tarea, cliente, fecha){
   // Enviar via GAS endpoint
   fetch('https://script.google.com/macros/s/AKfycbyIKpUXys8j4l-XqRnURAHzoxAgeD1X1Rq3ffEVekYegZtzwksDVOM6nAozmj3-FYfL/exec',{
     method:'POST',
-    headers:{'Content-Type':'application/json'},
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({
       action:'notificarTarea',
       email:email,
@@ -2368,8 +2369,10 @@ async function loadTrafico(){
   try{
     // Cargar tareas de la semana + sin fecha
     // Filtrar tráfico según rol y clientes asignados
-    var traficoQuery='order=dia_entrega.asc&limit=500';
-    var items=await sbGet('trafico',traficoQuery);
+    // Traer solo tareas de la semana + sin fecha (evita el límite de 500)
+    var traficoQuery='order=dia_entrega.asc&limit=500&dia_entrega=gte.'+desde+'&dia_entrega=lte.'+hasta;
+    var itemsSinFecha=await sbGet('trafico','dia_entrega=is.null&estado=neq.finalizado&limit=100');
+    var items=(await sbGet('trafico',traficoQuery)).concat(itemsSinFecha);
 
     // Filtrar según rol — viewer ve todo (vista pública)
     if(currentUser&&currentUser.role!=='director'&&currentUser.role!=='viewer'){
@@ -2410,12 +2413,8 @@ async function loadTrafico(){
     if(eP)eP.textContent=pend;if(eC)eC.textContent=curso;if(eA)eA.textContent=aprob;if(eF)eF.textContent=fin;
     if(sub)sub.textContent='Semana del '+desde+' al '+hasta+' · '+pend+' piezas pendientes';
 
-    // Filtrar items de la semana
-    var itemsSemana=items.filter(function(t){
-      if(!t.dia_entrega)return false;
-      var d=t.dia_entrega.split('T')[0];
-      return d>=desde&&d<=hasta;
-    });
+    // Items ya filtrados por fecha desde Supabase
+    var itemsSemana=items.filter(function(t){ return t.dia_entrega; });
 
     // Construir calendario 5 días × personas
     var diasLabels=['Lunes','Martes','Miércoles','Jueves','Viernes'];
