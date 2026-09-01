@@ -2231,7 +2231,7 @@ function notificarNuevaTareaTrafico(asignado, tarea, cliente, fecha){
   if(!email)return;
   var fechaStr=fecha?new Date(fecha+'T12:00:00').toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'}):'Sin fecha definida';
   // Enviar via GAS endpoint
-  fetch('https://script.google.com/macros/s/AKfycbxNOTIF_TRAFICO/exec',{
+  fetch('https://script.google.com/macros/s/AKfycbyIKpUXys8j4l-XqRnURAHzoxAgeD1X1Rq3ffEVekYegZtzwksDVOM6nAozmj3-FYfL/exec',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
@@ -2337,9 +2337,9 @@ async function guardarTareaTrafico(){
       num_posts:posts,num_carruseles:carr,num_videos:vids,total_piezas:totalPiezas});
     hideNuevaTareaTrafico();
     ['ntTrafNombre','ntTrafNotas','ntTrafFeria','ntTrafPosts','ntTrafCarruseles','ntTrafVideos'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});actualizarTotalPiezas();
-    // Notificar por correo al asignado
-    notificarNuevaTareaTrafico(asignado, nombre, cliente, fecha);
     loadTrafico();
+    // Notificar por correo (no bloquea el flujo)
+    setTimeout(function(){ notificarNuevaTareaTrafico(asignado, nombre, cliente, fecha); }, 100);
   }catch(e){alert('Error: '+e.message);}
 }
 
