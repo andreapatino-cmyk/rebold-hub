@@ -8,7 +8,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
-:root{--bg:#08080A;--panel:#111114;--panel2:#18181C;--line:#26262B;--text:#EEEEF2;--muted:#8E8E98;--red:#DC0C4B;--red-d:#A80838;--ok:#00C97A;--warn:#F5A623}
+:root{--blue:#3D8EFF;--purple:#9B6FFF;--bg:#08080A;--panel:#111114;--panel2:#18181C;--line:#26262B;--text:#EEEEF2;--muted:#8E8E98;--red:#DC0C4B;--red-d:#A80838;--ok:#00C97A;--warn:#F5A623}
 body{background:var(--bg);color:var(--text);font:14px/1.5 'Figtree',system-ui,sans-serif;min-height:100vh}
 h1{font:800 26px/1.15 'Syne',sans-serif;letter-spacing:-.02em}
 h2{font:700 18px/1.2 'Syne',sans-serif;margin-bottom:14px}
@@ -87,6 +87,53 @@ main{max-width:1120px;margin:0 auto;padding:28px 24px 60px}
 .tbl td{padding:11px 12px;border-bottom:1px solid var(--line)}
 .tbl tr.off td{color:var(--muted)}
 
+.cal{border-collapse:separate;border-spacing:4px;width:100%;min-width:820px}
+.cal th{padding:8px;font-size:12px;font-weight:600;color:var(--muted);text-align:center}
+.cal th span{display:block;font:500 15px 'DM Mono',monospace;color:var(--text)}
+.cal th.today,.cal td.today{background:rgba(220,12,75,.08)}
+.cal td{vertical-align:top;background:var(--panel2);border-radius:8px;padding:5px;min-width:150px}
+.cal td.pn{background:var(--panel);min-width:150px;font-weight:600;position:sticky;left:0;z-index:1}
+.tc{background:var(--panel);border-radius:6px;padding:6px 8px;margin-bottom:5px;border-left:3px solid var(--warn)}
+.tc.e-en_curso{border-left-color:var(--blue)}
+.tc.e-aprobacion{border-left-color:var(--purple)}
+.tc.e-finalizado{border-left-color:var(--ok)}
+.tc.e-finalizado .tcn{text-decoration:line-through;color:var(--muted)}
+.tcn{font-size:12px;font-weight:600;line-height:1.3}
+.pz{color:var(--warn);font-weight:500}
+.tcm{font-size:11px;color:var(--muted);margin:2px 0 5px}
+.tcc{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.trst{width:auto;font-size:11px;padding:3px 6px;border-radius:6px}
+.est{font-size:11px;color:var(--muted)}
+.cal .add{width:100%;background:none;border:1px dashed var(--line);border-radius:6px;color:var(--muted);padding:3px;font-size:12px}
+.cal .add:hover{border-color:var(--red);color:var(--text)}
+.trstats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.trstats .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.trstats .stat small{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.trstats .stat b{display:block;font:500 28px/1.2 'DM Mono',monospace;margin:4px 0 2px}
+.trstats .stat span{font-size:12px;color:var(--muted)}
+.trstats .a b{color:var(--warn)}.trstats .b b{color:var(--blue)}.trstats .c b{color:var(--purple)}.trstats .d b{color:var(--ok)}
+.rol{display:inline-block;font-size:10px;font-weight:700;padding:1px 8px;border-radius:10px;background:rgba(255,255,255,.07);margin-top:4px}
+.c-r{color:var(--red)}.c-b{color:var(--blue)}.c-p{color:var(--purple)}.c-a{color:var(--warn)}.c-g{color:var(--ok)}
+.nb{background:var(--red);color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700;margin-left:4px}
+.costos td:last-child,.costos th:last-child{text-align:right}
+.mt h2{margin-bottom:10px}
+@media(max-width:700px){.trstats{grid-template-columns:repeat(2,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.panel textarea{width:100%;min-height:96px;margin-top:6px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:10px 12px;font:14px/1.5 'Figtree',system-ui,sans-serif;resize:vertical}
+.panel>*+*{margin-top:12px}
+.sug{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--panel2);border-radius:8px;margin-bottom:6px}
+.sug input{width:auto;margin-top:4px}
+.sug small{display:block;color:var(--muted);margin-top:2px}
+dialog.wide{width:min(600px,94vw)}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fgrid .full{grid-column:1/-1}
+.mt{margin-top:24px}
+.mytr h2{margin-bottom:6px}
+.mytr .it{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.mytr .it div{flex:1;min-width:0}
+.mytr .it small{color:var(--muted);display:block}
+.mytr .trst{font-size:12px}
+details summary{cursor:pointer;color:var(--muted);padding:6px 0}
 .absform{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end;margin-bottom:6px}
 .abs-wrap .tbl{margin-top:0}
 
@@ -153,6 +200,7 @@ dialog form>*+*{margin-top:14px}
     <div class="brand">re<b>bold</b></div>
     <nav id="tabs" aria-label="Secciones">
       <button data-p="horas" class="on">Mis horas</button>
+      <button data-p="trafico">Tráfico <span class="nb" id="trBadge" hidden></span></button>
       <button data-p="ausencias">Ausencias</button>
       <button data-p="proyectos">Proyectos</button>
       <button data-p="reportes">Reportes</button>
@@ -177,6 +225,41 @@ dialog form>*+*{margin-top:14px}
         <label class="chk"><input type="checkbox" id="chkWk"> Mostrar fin de semana</label>
         <button class="status" id="saveStatus" type="button" role="status" aria-live="polite"></button>
       </div>
+      <div class="mytr mt" id="misTareas" hidden></div>
+    </section>
+
+    <section id="p-trafico" hidden>
+      <div class="head">
+        <div><h1>Tráfico Creatividad</h1><p class="muted">Calendario semanal · Equipo creativo · <span id="trLabel"></span></p></div>
+        <div class="tools">
+          <button class="btn" id="trPrev" aria-label="Semana anterior">‹</button>
+          <button class="btn" id="trToday">Esta semana</button>
+          <button class="btn" id="trNext" aria-label="Semana siguiente">›</button>
+          <button class="btn" id="trPerBtn" hidden>Personas y equipos</button>
+          <button class="btn" id="trAsistBtn" hidden>Crear desde un texto</button>
+          <button class="btn red" id="trNew" hidden>Nueva tarea</button>
+        </div>
+      </div>
+      <div class="trstats" id="trStats"></div>
+      <div class="panel" id="trPer" hidden>
+        <div class="head" style="margin-bottom:0"><div><h2 style="margin:0">Personas y equipos</h2><p class="muted">Cada persona ve las tareas de su equipo. Quien no tiene equipo, como un proveedor, ve solo las suyas. Un correo externo registrado aquí puede entrar al hub.</p></div><button class="btn red" id="perNew">Agregar persona</button></div>
+        <div class="gridwrap"><table class="tbl" id="perTbl" style="margin-top:0"></table></div>
+      </div>
+      <div class="panel" id="trAsist" hidden>
+        <label>Escribe o pega las tareas de la semana<textarea id="trTexto" placeholder="Martes:&#10;3 banners de mail (Granite) Daniel&#10;1 video del día del campesino Laura&#10;Miércoles:&#10;Parrilla de contenidos Corferias Alexandra"></textarea></label>
+        <p class="muted">Pon el día (Lunes:, Martes:…) y el nombre de la persona en cada línea, o como encabezado. Antes de crear nada verás cómo se interpretó.</p>
+        <div class="row"><button class="btn red" id="trInterp" type="button">Interpretar</button></div>
+        <div id="trSug" hidden>
+          <div id="trSugList"></div>
+          <p class="msg" id="trSugMsg"></p>
+          <div class="row"><button class="btn" id="trSugCancel" type="button">Cancelar</button><button class="btn red" id="trSugOk" type="button">Crear las tareas marcadas</button></div>
+        </div>
+      </div>
+      <div class="gridwrap"><table class="cal" id="trCal"></table></div>
+      <div class="mt" id="trResumen"></div>
+      <div class="mt" id="trMes"></div>
+      <div class="mt" id="trCostos"></div>
+      <details class="mt" id="trSinFecha" hidden><summary id="trSinFechaTitulo"></summary><div id="trSinFechaList"></div></details>
     </section>
 
     <section id="p-ausencias" hidden>
@@ -240,13 +323,52 @@ dialog form>*+*{margin-top:14px}
   </main>
 </div>
 
+<dialog id="perDlg" class="wide">
+  <form id="perForm">
+    <h2 id="perTitle">Agregar persona</h2>
+    <div class="fgrid">
+      <label class="full">Nombre completo<input id="pfNombre" maxlength="80" required></label>
+      <label class="full">Correo (con el que entra al hub y recibe avisos)<input type="email" id="pfCorreo" maxlength="120" placeholder="nombre@empresa.com"></label>
+      <label>Equipo<input id="pfEquipo" list="equipos" maxlength="40" placeholder="Sin equipo"></label>
+      <label>Rol<select id="pfRol"></select></label>
+      <label class="full chk"><input type="checkbox" id="pfProv"> Es proveedor externo: puede entrar con su correo aunque no sea de Rebold</label>
+      <label class="full">Clientes que supervisa, separados por coma (opcional). Ve el diseño de esos clientes<input id="pfClientes" maxlength="200" placeholder="Granite, Ayoba"></label>
+    </div>
+    <p class="muted" id="pfNota" hidden>Si cambias el nombre, las tareas ya asignadas conservan el nombre anterior.</p>
+    <p class="msg" id="pfMsg" role="alert"></p>
+    <div class="row"><button type="button" class="btn" id="pfDel" style="margin-right:auto" hidden>Quitar</button><button type="button" class="btn" id="pfCancel">Cancelar</button><button class="btn red" type="submit">Guardar</button></div>
+  </form>
+</dialog>
+<datalist id="equipos"></datalist>
+
+<dialog id="trDlg" class="wide">
+  <form id="trForm">
+    <h2 id="trDlgTitle">Nueva tarea</h2>
+    <div class="fgrid">
+      <label>Asignado a<select id="tfAsig"></select></label>
+      <label>Cliente<select id="tfCli"></select></label>
+      <label class="full">Nombre de la pieza o tarea<input id="tfNombre" maxlength="140" required></label>
+      <label>Tipo<select id="tfTipo"></select></label>
+      <label>Fecha de entrega<input type="date" id="tfFecha"></label>
+      <label id="tfEstWrap">Estado<select id="tfEst"></select></label>
+      <label>Feria o campaña<input id="tfFeria" maxlength="60"></label>
+      <label>Posts o stories<input type="number" id="tfPosts" min="0"></label>
+      <label>Carruseles<input type="number" id="tfCarr" min="0"></label>
+      <label>Videos<input type="number" id="tfVid" min="0"></label>
+      <label class="full">Notas<input id="tfNotas" maxlength="200"></label>
+    </div>
+    <p class="msg" id="tfMsg"></p>
+    <div class="row"><button type="button" class="btn" id="tfDel" style="margin-right:auto" hidden>Eliminar</button><button type="button" class="btn" id="tfCancel">Cancelar</button><button class="btn red" type="submit">Guardar</button></div>
+  </form>
+</dialog>
+
 <dialog id="dlg">
   <form id="dlgForm">
     <h2>Proyecto nuevo</h2>
     <label>Nombre del cliente o proyecto<input id="dName" maxlength="80" required></label>
     <label>Área (opcional)<input id="dArea" list="areas" maxlength="40"></label>
     <p class="msg" id="dMsg"></p>
-    <div class="row"><button class="btn" type="button" id="dCancel">Cancelar</button><button class="btn red" type="submit">Crear y agregar a mi semana</button></div>
+    <div class="row"><button class="btn" type="button" id="dCancel">Cancelar</button><button class="btn red" type="submit" id="dlgSubmit">Crear y agregar a mi semana</button></div>
   </form>
 </dialog>
 <div id="toast" role="status" hidden></div>
@@ -260,6 +382,12 @@ const ADMINS=['andrea.patino@letsrebold.com'];
 // Dominios que pueden entrar. Deja la lista vacía ([]) para permitir cualquier correo.
 const ALLOWED_DOMAINS=['letsrebold.com','ispd.com'];
 const AREAS=['Intelligence','Creatividad','Interno'];
+// Dirección de la aplicación web de Apps Script que envía los correos de "nueva tarea asignada".
+const NOTIF_URL='https://script.google.com/macros/s/AKfycbyIKpUXys8j4l-XqRnURAHzoxAgeD1X1Rq3ffEVekYegZtzwksDVOM6nAozmj3-FYfL/exec';
+// Proveedores externos: pueden entrar con estos correos aunque no sean de Rebold.
+const PROVEEDORES={'lauramlopez3004@gmail.com':'Laura Morales','dg17sanchez@gmail.com':'Andrés Sánchez','caroramirez.agenciatap@gmail.com':'Sebastián Barrera'};
+// Personas, equipos, roles y correos se administran desde la pestaña Tráfico (tabla "personas").
+// Cada persona ve las tareas de su equipo; quien no tiene equipo (por ejemplo, un proveedor) ve solo las suyas.
 // Nombres ya conocidos (el resto escribe su nombre la primera vez que entra).
 const KNOWN={
  'andrea.patino@letsrebold.com':'Natalia Patiño','sebastian.castro@letsrebold.com':'Sebastián Castro',
@@ -271,7 +399,10 @@ const KNOWN={
  'alexandra.salas@ispd.com':'Alexandra Salas','laura.rios@ispd.com':'Laura Camila Ríos'
 };
 
-/* ===== Funciones puras (fechas, pivote, CSV) ===== */
+const NOMBRES=Object.assign({},KNOWN,PROVEEDORES);
+let personas=[];
+
+/* ===== Funciones puras (fechas, pivote, CSV, asistente de tráfico) ===== */
 // <pure>
 const SEP='\u0001';
 const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -326,6 +457,79 @@ function csvOf(p,rowHead,rowLbl,colLbl){
   lines.push(['Total'].concat(p.cols.map(c=>num(p.colTot[c])),[num(p.total)]).map(q).join(';'));
   return '\ufeff'+lines.join('\r\n');
 }
+
+const ESTADOS={pendiente:'Pendiente',en_curso:'En curso',aprobacion:'En aprobación',finalizado:'Finalizado'};
+const TIPOS_TR=[['Diseño',['Post','Story','Carrusel','Video','Banner','Mailing','Pieza en alta','Adaptación']],
+  ['Community',['Parrilla de contenidos','Cronopost','Flow de email','Informe de resultados','Gestión de comentarios','Brief de contenido','Propuesta creativa','Copywriting']],
+  ['Interno',['Reunión interna','Tráfico interno','Propuesta comercial','Presentación','Capacitación','Administrativo']],['General',['Otro']]];
+const TR_TIPOS={'cortinilla':'Video','video':'Video','carrusel':'Carrusel','carousel':'Carrusel','banner':'Banner','post':'Post','story':'Story','stories':'Story',
+  'mailing':'Mailing','e-mail':'Mailing','email':'Mailing','mail':'Mailing','parrilla':'Parrilla de contenidos','cronopost':'Cronopost','crono post':'Cronopost',
+  'crno post':'Cronopost','flow':'Flow de email','flujo':'Flow de email','informe':'Informe de resultados','brief':'Brief de contenido','ugc':'Brief de contenido',
+  'propuesta':'Propuesta creativa','redaccion':'Copywriting','copy':'Copywriting','texto':'Copywriting','estructura':'Pieza en alta','pieza':'Pieza en alta',
+  'adaptacion':'Adaptación','reunion':'Reunión interna','capacitacion':'Capacitación','presentacion':'Presentación','comentarios':'Gestión de comentarios'};
+const TR_DIAS=['lunes','martes','miercoles','jueves','viernes'];
+const trEsc=k=>String(k).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+// Busca la clave más larga que aparezca como palabra (con plural opcional) en el texto normalizado.
+function trBuscar(n,keys){
+  let best=null;
+  keys.forEach(k=>{
+    const m=new RegExp('(^|[^a-z0-9])('+trEsc(k)+'(?:s|es)?)(?![a-z0-9])').exec(n);
+    if(m&&(!best||k.length>best.k.length))best={k:k,idx:m.index+m[1].length,len:m[2].length};
+  });
+  return best;
+}
+// Alias de personas: nombre completo, primer nombre si es único, y los que se indiquen aparte.
+function trAliasPersonas(nombres,extra,yo){
+  const m={},first={};
+  nombres.forEach(n=>{const f=norm(n).split(' ')[0];(first[f]=first[f]||[]).push(n);m[norm(n)]=n;});
+  Object.keys(first).forEach(f=>{if(first[f].length===1)m[f]=first[f][0];});
+  Object.keys(extra||{}).forEach(k=>{m[norm(k)]=extra[k];});
+  if(yo)m['yo']=yo;
+  return m;
+}
+// Convierte texto libre en tareas. ctx: {lunes:Date, personas:{alias:nombre}, clientesMap:{norm:nombre}, aliasCli:{alias:{cliente,feria}}}
+function parseTareas(texto,ctx){
+  let t=String(texto||'').replace(/\r/g,'');
+  t=t.replace(/[A-ZÁÉÍÓÚÑ]{3,}/g,w=>(ctx.personas[norm(w)]&&norm(w)!=='yo')?'\n'+w+'\n':w);   // encabezados en mayúsculas pegados al texto
+  t=t.replace(/(lunes|martes|mi[eé]rcoles|jueves|viernes)\s*:/gi,'\n$1:');
+  const aliasP=Object.keys(ctx.personas).sort((a,b)=>b.length-a.length);
+  const cliKeys=Object.keys(ctx.clientesMap),aliasC=Object.keys(ctx.aliasCli);
+  const tipoKeys=Object.keys(TR_TIPOS).sort((a,b)=>b.length-a.length);
+  const reCant=new RegExp('(\\d+)\\s*(?:x\\s*)?(?:'+tipoKeys.map(trEsc).join('|')+')(?:s|es)?(?![a-z0-9])');
+  let dia=null,persona=null,sinPersona=0;const tareas=[];
+  t.split('\n').forEach(linea=>{
+    linea.split(/,(?![^(]*\))/).forEach(raw=>{
+      let tok=raw.trim();if(!tok)return;
+      let n=norm(tok);
+      const dm=/^(lunes|martes|miercoles|jueves|viernes)\s*:?\s*/.exec(n);
+      if(dm){dia=TR_DIAS.indexOf(dm[1]);tok=tok.slice(dm[0].length).trim();n=norm(tok);if(!tok)return;}
+      const pm=trBuscar(n,aliasP);
+      let resto=tok,pDet=null;
+      if(pm){pDet=ctx.personas[pm.k];resto=(tok.slice(0,pm.idx)+' '+tok.slice(pm.idx+pm.len)).replace(/\(\s*\)/g,'').replace(/\s+/g,' ').trim();}
+      if(pm&&!/[a-z0-9]{2,}/.test(norm(resto))){persona=pDet;return;}   // la línea es solo un nombre: encabezado
+      const quien=pDet||persona;
+      if(!quien){sinPersona++;return;}
+      const n2=norm(resto);
+      let cliente='Sin cliente',feria='';
+      const ac=trBuscar(n2,aliasC),cm=trBuscar(n2,cliKeys);
+      if(cm)cliente=ctx.clientesMap[cm.k];
+      if(ac){const a=ctx.aliasCli[ac.k];if(a.feria)feria=a.feria;if(a.cliente&&(!cm||ac.k.length>cm.k.length))cliente=a.cliente;}
+      const tm=trBuscar(n2,tipoKeys),tipo=tm?TR_TIPOS[tm.k]:'Otro';
+      const cq=reCant.exec(n2),lead=/^\s*(\d+)\s/.exec(n2);
+      const cantidad=cq?Number(cq[1]):(lead?Number(lead[1]):1);
+      const sm=/\((\d+)\s*slides?\)/.exec(n2),slides=sm?Number(sm[1]):0;
+      let nombre=resto.replace(/\(\s*\d+\s*slides?\s*\)/gi,'').replace(/\(([^)]*)\)/g,(m,inner)=>{
+        const ni=norm(inner);return (trBuscar(ni,cliKeys)||trBuscar(ni,aliasC)||trBuscar(ni,aliasP))?'':m;
+      }).replace(/\s+/g,' ').replace(/^[\s\-–:]+|[\s\-–:]+$/g,'').trim();
+      if(!nombre)nombre=tok;
+      tareas.push({asignado:quien,nombre_pieza:nombre.slice(0,140),cliente:cliente,feria:feria,tipo:tipo,
+        dia_entrega:dia==null?null:fmtD(addDays(ctx.lunes,dia)),
+        num_posts:(tipo==='Post'||tipo==='Story')?cantidad:0,num_carruseles:tipo==='Carrusel'?cantidad:0,num_videos:tipo==='Video'?cantidad:0,
+        total_piezas:slides>0?slides:cantidad,comentarios_rebold:slides>0?slides+' slides':''});
+    });
+  });
+  return {tareas:tareas,sinPersona:sinPersona};
+}
 // </pure>
 
 /* ===== Supabase ===== */
@@ -354,7 +558,10 @@ const sbUpsert=(table,rows,conflict)=>sb(table+'?on_conflict='+conflict,{method:
 const SESSION='rb3_session';
 const pwdKey=e=>'rb_pwd_'+e,nameKey=e=>'rb_name_'+e;
 const b64=p=>btoa(unescape(encodeURIComponent(p)));
-const nameOf=e=>KNOWN[e]||localStorage.getItem(nameKey(e))||'';
+let personaLogin=null;
+const esLogin=e=>!!(personaLogin&&String(personaLogin.email||'').toLowerCase()===e);
+const nameOf=e=>(esLogin(e)?personaLogin.name:'')||NOMBRES[e]||localStorage.getItem(nameKey(e))||'';
+const nombreFijo=e=>esLogin(e)||!!NOMBRES[e];
 let me=null,pendingEmail='',isReset=false;
 
 function showStep(id){['stEmail','stNew','stPass'].forEach(s=>{$('#'+s).hidden=s!==id;});$('#loginErr').textContent='';}
@@ -362,14 +569,16 @@ function loginErr(t){$('#loginErr').textContent=t;}
 function showNew(reset){
   isReset=reset;showStep('stNew');
   $('#newTitle').textContent=reset?'Crea una contraseña nueva':'Crea tu acceso';
-  const n=$('#inName');n.value=nameOf(pendingEmail);n.readOnly=!!KNOWN[pendingEmail];
+  const n=$('#inName');n.value=nameOf(pendingEmail);n.readOnly=nombreFijo(pendingEmail);
   $('#inP1').value='';$('#inP2').value='';(n.value?$('#inP1'):n).focus();
 }
-function onEmail(ev){
+async function onEmail(ev){
   ev.preventDefault();
   const email=$('#inEmail').value.trim().toLowerCase();
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return loginErr('Escribe un correo válido.');
-  if(ALLOWED_DOMAINS.length&&!ALLOWED_DOMAINS.includes(email.split('@')[1]))
+  personaLogin=null;
+  try{const r=await sb('personas?email=eq.'+enc(email)+'&activo=eq.true&limit=1',{headers:H});personaLogin=(await r.json())[0]||null;}catch(e){}
+  if(ALLOWED_DOMAINS.length&&!personaLogin&&!PROVEEDORES[email]&&!ALLOWED_DOMAINS.includes(email.split('@')[1]))
     return loginErr('Usa tu correo de Rebold ('+ALLOWED_DOMAINS.map(d=>'@'+d).join(' o ')+').');
   pendingEmail=email;
   if(localStorage.getItem(pwdKey(email))){
@@ -385,7 +594,7 @@ function onNew(ev){
   if(p1.length<6)return loginErr('La contraseña necesita al menos 6 caracteres.');
   if(p1!==p2)return loginErr('Las contraseñas no coinciden.');
   localStorage.setItem(pwdKey(pendingEmail),b64(p1));
-  if(!KNOWN[pendingEmail])localStorage.setItem(nameKey(pendingEmail),name);
+  localStorage.setItem(nameKey(pendingEmail),name);   // así la sesión se recuerda al recargar
   enter(pendingEmail);
 }
 function onPass(ev){
@@ -402,20 +611,40 @@ async function enter(email){
   localStorage.setItem(SESSION,email);
   $('#login').hidden=true;$('#app').hidden=false;
   $('#whoName').textContent=me.name;
-  fillAbsWho();
+  $('#trNew').hidden=!me.admin;$('#trAsistBtn').hidden=!me.admin;$('#trPerBtn').hidden=!me.admin;
   $('#repScope').textContent=me.admin?'Ves las horas de todo el equipo.':'Ves únicamente tus propias horas.';
-  try{await loadProjects();}catch(e){toast('No pude cargar la lista de proyectos. Recarga la página.');}
+  await Promise.all([loadProjects().catch(()=>toast('No pude cargar la lista de proyectos. Recarga la página.')),loadPersonas().catch(()=>{})]);
+  catAt=Date.now();
+  const pe=personas.find(x=>String(x.email||'').toLowerCase()===email);
+  if(pe){me.name=pe.name;$('#whoName').textContent=me.name;}
+  fillAbsWho();trAviso();
   goPage('horas');
 }
 
 /* ===== Navegación ===== */
 let curPage='horas';
+let catAt=0;
+// Vuelve a leer proyectos y personas para ver lo que otras personas agregaron (un cliente nuevo, alguien del equipo).
+async function refrescarCatalogos(espera){
+  if(!me||me.viewer)return;
+  if(espera&&Date.now()-catAt<espera)return;
+  catAt=Date.now();
+  try{
+    await Promise.all([loadProjects(),loadPersonas()]);
+    fillAbsWho();
+    if(curPage==='horas'&&$('#grid').querySelector('tfoot'))fillAddSel();
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refrescarCatalogos(5000);});
+window.addEventListener('focus',()=>refrescarCatalogos(5000));
 async function goPage(p){
   if(curPage==='horas'&&p!=='horas'){clearTimeout(saveTimer);await enqueueSave();}
+  await refrescarCatalogos(1500);
   curPage=p;
   $$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
-  ['horas','ausencias','proyectos','reportes'].forEach(s=>{$('#p-'+s).hidden=s!==p;});
+  ['horas','trafico','ausencias','proyectos','reportes'].forEach(s=>{$('#p-'+s).hidden=s!==p;});
   if(p==='horas')loadWeek();
+  if(p==='trafico')loadTrafico();
   if(p==='ausencias')openAbsences();
   if(p==='proyectos')renderProjects();
   if(p==='reportes')runReport();
@@ -481,6 +710,7 @@ async function loadWeek(){
     showWk=d.some(e=>(parseD(e.entry_date).getDay()+6)%7>=5);
     $('#chkWk').checked=showWk;
     renderWeek();
+    loadMisTareas();
   }catch(e){
     $('#grid').innerHTML='<tbody><tr><td class="empty">No pude cargar tus horas. Revisa la conexión y recarga la página.</td></tr></tbody>';
   }
@@ -565,15 +795,359 @@ async function runSave(){
   }
 }
 
+/* ===== Tráfico ===== */
+let trWeek=mondayOf(new Date()),trItems=[],trSinFecha=[],misTr=[],trEditId=null,trSug=[],trCliPrev='',projMode='horas';
+const trPzs=t=>Number(t.total_piezas)>0?Number(t.total_piezas):1;
+function trVisible(t){
+  if(me.viewer||me.admin)return true;
+  const a=norm(t.asignado||''),yo=norm(me.name);
+  if(a&&(a===yo||a.includes(yo)))return true;
+  const equipo=trTeam(),mi=equipo.find(x=>norm(x.n)===yo),dueno=equipo.find(x=>norm(x.n)===trClave(t));
+  if(!mi||!dueno)return false;
+  if(mi.equipo&&dueno.equipo===mi.equipo)return true;   // ve lo que hace todo su equipo
+  if(mi.clientes&&dueno.t==='Diseño'){                  // quien supervisa clientes ve el diseño de esos clientes
+    const cl=mi.clientes.split(',').map(x=>norm(x)).filter(Boolean);
+    return cl.some(c=>norm(t.cliente||'').includes(c));
+  }
+  return false;
+}
+const trTodos=()=>trItems.concat(trSinFecha,misTr);
+// Todo el equipo aparece siempre en el calendario, en el orden y con el rol del directorio de personas.
+const rolClase=r=>({'Directora':'r','Diseño':'b','Community':'p','Intelligence':'r','Integral':'a','Proveedor':'g'}[r]||'');
+const PER_ROLES=['Directora','Diseño','Community','Intelligence','Integral','Proveedor','Otro'];
+const trTeam=()=>personas.map(p=>({id:p.id,n:p.name,t:p.rol||'',c:rolClase(p.rol),g:p.equipo||(p.proveedor?'Proveedores':'Sin equipo'),equipo:p.equipo||'',email:p.email||'',clientes:p.clientes||'',proveedor:!!p.proveedor}));
+const trPersonas=()=>personas.map(p=>p.name);
+async function loadPersonas(){personas=await sbAll('personas','activo=eq.true','orden.asc,id.asc');}
+// A qué persona del equipo corresponde una tarea (por nombre completo; no por el primer nombre).
+const trClave=t=>{
+  const a=norm(String(t.asignado||'').trim());
+  if(!a)return 'sin asignar';
+  const f=trTeam().find(x=>norm(x.n)===a)||trTeam().find(x=>a.includes(norm(x.n)));
+  return f?norm(f.n):a;
+};
+let trMes=[];
+async function loadTrafico(){
+  $('#trLabel').textContent=shortD(trWeek)+' al '+shortD(addDays(trWeek,4))+' de '+addDays(trWeek,4).getFullYear();
+  $('#trCal').innerHTML='<tbody><tr><td class="empty">Cargando…</td></tr></tbody>';
+  if(me.admin)trVisto();
+  try{
+    const from=fmtD(trWeek),to=fmtD(addDays(trWeek,4)),hoy=new Date();
+    const mi=fmtD(new Date(hoy.getFullYear(),hoy.getMonth(),1)),mf=fmtD(new Date(hoy.getFullYear(),hoy.getMonth()+1,0));
+    const res=await Promise.all([
+      sbAll('trafico','dia_entrega=gte.'+from+'&dia_entrega=lte.'+to),
+      sb('trafico?dia_entrega=is.null&estado=neq.finalizado&order=id.desc&limit=100',{headers:H}).then(r=>r.json()),
+      sbAll('trafico','dia_entrega=gte.'+mi+'&dia_entrega=lte.'+mf)
+    ]);
+    trItems=res[0].filter(trVisible);trSinFecha=res[1].filter(trVisible);trMes=res[2].filter(trVisible);
+    renderTrafico();
+  }catch(e){
+    $('#trCal').innerHTML='<tbody><tr><td class="empty">No pude cargar el tráfico. Revisa la conexión y recarga la página.</td></tr></tbody>';
+  }
+}
+function trCard(t){
+  const est=ESTADOS[t.estado]?t.estado:'pendiente';
+  const pz=Number(t.total_piezas)>0?' <span class="pz">('+esc(t.total_piezas)+' pzas)</span>':'';
+  const meta=[t.cliente,t.feria].filter(Boolean).map(esc).join(' · ');
+  const ctl=me.viewer?'<span class="est">'+ESTADOS[est]+'</span>'
+    :'<select class="trst" data-st="'+t.id+'" aria-label="Estado de la tarea">'+Object.keys(ESTADOS).map(k=>'<option value="'+k+'"'+(k===est?' selected':'')+'>'+ESTADOS[k]+'</option>').join('')+'</select><button class="link" data-ed="'+t.id+'">Editar</button>';
+  return '<div class="tc e-'+est+'"><div class="tcn">'+esc(String(t.nombre_pieza||'').slice(0,70))+pz+'</div><div class="tcm">'+meta+'</div><div class="tcc">'+ctl+'</div></div>';
+}
+// Resumen por persona en piezas (semana o mes)
+function trResumenHtml(items,titulo){
+  const res={};
+  items.forEach(t=>{
+    const k=trClave(t),f=trTeam().find(x=>norm(x.n)===k),n=f?f.n:(String(t.asignado||'').trim()||'Sin asignar');
+    const r=res[n]||(res[n]={pendiente:0,en_curso:0,aprobacion:0,finalizado:0,total:0});
+    const e=ESTADOS[t.estado]?t.estado:'pendiente';r[e]+=trPzs(t);r.total+=trPzs(t);
+  });
+  const orden=trTeam().map(p=>p.n).concat(Object.keys(res).filter(n=>!trTeam().some(p=>p.n===n)).sort((a,b)=>a.localeCompare(b,'es'))).filter(n=>res[n]);
+  if(!orden.length)return '';
+  return '<h2>'+titulo+'</h2><div class="gridwrap"><table class="tbl" style="margin-top:0"><thead><tr><th>Persona</th><th>Pendiente</th><th>En curso</th><th>En aprobación</th><th>Finalizado</th><th>Total</th></tr></thead><tbody>'
+    +orden.map(n=>'<tr><td>'+esc(n)+'</td>'+['pendiente','en_curso','aprobacion','finalizado'].map(k=>'<td>'+(res[n][k]||'—')+'</td>').join('')+'<td><b>'+res[n].total+'</b></td></tr>').join('')+'</tbody></table></div>';
+}
+// Costo proyectado de proveedores del mes (solo administradoras)
+const TR_TARIFAS={
+  'Laura Morales':{nota:'$720 mil por cada 20 piezas con IA',costo:p=>Math.ceil(p/20)*720000},
+  'Andrés Sánchez':{nota:'$1,3 M por 10 · $2,0 M por 20 · $2,7 M por 30 piezas',costo:p=>p<=0?0:1300000+Math.max(0,Math.ceil((p-10)/10))*700000},
+  'Sebastián Barrera':{nota:'$3,0 M fijo (Henkel) + $65 mil por pieza',costo:p=>3000000+p*65000}
+};
+const pesos=n=>'$'+Math.round(n).toLocaleString('es-CO');
+function trCostosHtml(){
+  const prov={};
+  trMes.forEach(t=>{
+    const f=trTeam().find(x=>norm(x.n)===trClave(t));
+    if(!f||!TR_TARIFAS[f.n])return;
+    const r=prov[f.n]||(prov[f.n]={piezas:0,fin:0,curso:0,pend:0});
+    const z=trPzs(t);r.piezas+=z;
+    if(t.estado==='finalizado')r.fin+=z;else if(t.estado==='en_curso'||t.estado==='aprobacion')r.curso+=z;else r.pend+=z;
+  });
+  const nombres=Object.keys(TR_TARIFAS).filter(n=>prov[n]);
+  if(!nombres.length)return '<h2>Costo proyectado de proveedores</h2><p class="muted">Sin tareas asignadas a proveedores este mes.</p>';
+  let total=0;
+  const filas=nombres.map(n=>{const c=TR_TARIFAS[n].costo(prov[n].piezas);total+=c;const r=prov[n];
+    return '<tr><td><b>'+esc(n)+'</b><br><small class="muted">'+esc(TR_TARIFAS[n].nota)+'</small></td><td>'+r.piezas+'</td><td>'+r.fin+'</td><td>'+r.curso+'</td><td>'+r.pend+'</td><td data-v="'+c+'"><b>'+pesos(c)+'</b></td></tr>';}).join('');
+  return '<h2>Costo proyectado de proveedores · mes actual</h2><div class="gridwrap"><table class="tbl costos" style="margin-top:0"><thead><tr><th>Proveedor</th><th>Piezas</th><th>Finalizadas</th><th>En curso o aprobación</th><th>Pendientes</th><th>Costo estimado</th></tr></thead><tbody>'
+    +filas+'<tr><td><b>Total proveedores</b></td><td colspan="4"></td><td data-v="'+total+'" data-total="1"><b>'+pesos(total)+'</b></td></tr></tbody></table></div>';
+}
+const MESES_LARGO=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+function renderTrafico(){
+  const dates=[0,1,2,3,4].map(i=>fmtD(addDays(trWeek,i))),today=fmtD(new Date()),dn=['Lun','Mar','Mié','Jue','Vie'];
+  // filas: todo el equipo + cualquier otra persona que tenga tareas
+  const filas=trTeam().map(p=>({k:norm(p.n),n:p.n,t:p.t,c:p.c}));
+  trItems.forEach(t=>{const k=trClave(t);if(!filas.some(f=>f.k===k))filas.push({k:k,n:String(t.asignado||'').trim()||'Sin asignar',t:'',c:''});});
+  const yo=me.viewer?'':norm(me.name);
+  let pend=0,curso=0,aprob=0,fin=0;
+  trItems.forEach(t=>{const z=trPzs(t);if(t.estado==='en_curso')curso+=z;else if(t.estado==='aprobacion')aprob+=z;else if(t.estado==='finalizado')fin+=z;else pend+=z;});
+  $('#trStats').innerHTML=[['a','Pendientes',pend,'Sin iniciar'],['b','En curso',curso,'Trabajando'],['c','En aprobación',aprob,'Esperando OK'],['d','Finalizados',fin,'Completados']]
+    .map(x=>'<div class="stat '+x[0]+'"><small>'+x[1]+'</small><b>'+x[2]+'</b><span>'+x[3]+'</span></div>').join('');
+  let h='<thead><tr><th class="pn" style="text-align:left">Persona</th>'+dates.map((d,i)=>'<th class="'+(d===today?'today':'')+'">'+dn[i]+'<span>'+parseD(d).getDate()+'</span></th>').join('')+'</tr></thead><tbody>';
+  filas.forEach(f=>{
+    h+='<tr><td class="pn"><span class="c-'+(f.c||'')+'">'+esc(f.n)+'</span>'+(f.k===yo?' <span class="muted" style="font-weight:400">(tú)</span>':'')+(f.t?'<br><span class="rol c-'+f.c+'">'+f.t+'</span>':'')+'</td>';
+    dates.forEach(d=>{
+      const ts=trItems.filter(t=>trClave(t)===f.k&&String(t.dia_entrega||'').slice(0,10)===d);
+      h+='<td class="'+(d===today?'today':'')+'">'+ts.map(trCard).join('')+(me.admin?'<button class="add" data-add="'+esc(f.n)+'" data-d="'+d+'" aria-label="Agregar tarea a '+esc(f.n)+'">+</button>':'')+'</td>';
+    });
+    h+='</tr>';
+  });
+  $('#trCal').innerHTML=h+'</tbody>';
+  $('#trResumen').innerHTML=trResumenHtml(trItems,'Resumen de la semana, en piezas');
+  $('#trMes').innerHTML=trResumenHtml(trMes,'Resumen de '+MESES_LARGO[new Date().getMonth()]+' '+new Date().getFullYear()+', en piezas');
+  $('#trCostos').innerHTML=me.admin?trCostosHtml():'';
+  const sf=$('#trSinFecha');
+  sf.hidden=!trSinFecha.length;
+  if(trSinFecha.length){
+    $('#trSinFechaTitulo').textContent='Sin fecha asignada ('+trSinFecha.length+')';
+    $('#trSinFechaList').innerHTML='<div class="mytr">'+trSinFecha.map(t=>'<div class="it"><div>'+esc(t.nombre_pieza)+'<small>'+esc([t.asignado,t.cliente].filter(Boolean).join(' · '))+'</small></div>'
+      +(me.viewer?'<span class="est">'+ESTADOS[t.estado||'pendiente']+'</span>':'<button class="link" data-ed="'+t.id+'">Editar</button>')+'</div>').join('')+'</div>';
+  }
+}
+// Aviso a la administradora: tareas que otras personas finalizaron desde su última visita a Tráfico.
+async function trAviso(){
+  if(!me||!me.admin)return;
+  const desde=localStorage.getItem('rb3_tr_visto');
+  if(!desde){localStorage.setItem('rb3_tr_visto',new Date().toISOString());return;}
+  try{
+    const r=await sb('trafico?estado=eq.finalizado&updated_at=gt.'+enc(desde)+'&sheet_name=in.(hub_v3,hub_manual,hub_ia,telegram)&select=id,asignado&limit=200',{headers:H});
+    const d=(await r.json()).filter(t=>trClave(t)!==norm(me.name));
+    const b=$('#trBadge');b.textContent=d.length;b.hidden=!d.length;
+    b.title=d.length+(d.length===1?' tarea finalizada':' tareas finalizadas')+' desde tu última visita';
+  }catch(e){}
+}
+function trVisto(){localStorage.setItem('rb3_tr_visto',new Date().toISOString());$('#trBadge').hidden=true;}
+async function trSetEstado(id,val){
+  const t=trTodos().find(x=>String(x.id)===String(id));if(!t)return;
+  const prev=t.estado;t.estado=val;
+  try{
+    await sb('trafico?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({estado:val,updated_at:new Date().toISOString()})});
+    renderTrafico();loadMisTareas();
+  }catch(e){t.estado=prev;renderTrafico();toast('No se pudo cambiar el estado. Intenta de nuevo.');}
+}
+function trOpciones(sel,items,actual,vacio){
+  const lista=items.slice();if(actual&&!lista.includes(actual))lista.unshift(actual);
+  sel.innerHTML=(vacio?'<option value="">'+vacio+'</option>':'')+lista.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');
+  sel.value=actual||'';
+}
+function trOpcionesAsig(sel,actual){
+  const tt=trTeam(),grupos={},orden=[];
+  tt.forEach(p=>{if(!grupos[p.g]){grupos[p.g]=[];orden.push(p.g);}grupos[p.g].push(p.n);});
+  let h='<option value="">Elige una persona</option>';
+  orden.forEach(g=>{h+='<optgroup label="'+esc(g)+'">'+grupos[g].map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join('')+'</optgroup>';});
+  if(actual&&!tt.some(p=>p.n===actual))h+='<option value="'+esc(actual)+'">'+esc(actual)+'</option>';
+  sel.innerHTML=h;sel.value=actual||'';
+}
+function openTrDlg(id,pre){
+  pre=pre||{};trEditId=id||null;
+  const t=id?trTodos().find(x=>String(x.id)===String(id)):null;
+  $('#trDlgTitle').textContent=t?'Editar tarea':'Nueva tarea';
+  trOpcionesAsig($('#tfAsig'),t?t.asignado:(pre.asignado||''));
+  trOpciones($('#tfCli'),['Sin cliente'].concat(projects.filter(p=>p.activo).map(p=>p.name)),t?(t.cliente||'Sin cliente'):'Sin cliente');
+  $('#tfCli').insertAdjacentHTML('beforeend','<option value="__new">Crear proyecto nuevo…</option>');
+  trCliPrev=$('#tfCli').value;
+  const grupos=TIPOS_TR.map(g=>'<optgroup label="'+g[0]+'">'+g[1].map(x=>'<option>'+x+'</option>').join('')+'</optgroup>').join('');
+  const ts=$('#tfTipo');ts.innerHTML=grupos;
+  const tipo=t?(t.tipo||'Otro'):'Otro';
+  if(![...ts.options].some(o=>o.value===tipo))ts.insertAdjacentHTML('afterbegin','<option>'+esc(tipo)+'</option>');
+  ts.value=tipo;
+  $('#tfEst').innerHTML=Object.keys(ESTADOS).map(k=>'<option value="'+k+'">'+ESTADOS[k]+'</option>').join('');
+  $('#tfEst').value=t&&ESTADOS[t.estado]?t.estado:'pendiente';
+  $('#tfEstWrap').hidden=!t;
+  $('#tfNombre').value=t?(t.nombre_pieza||''):'';
+  $('#tfFecha').value=t?String(t.dia_entrega||'').slice(0,10):(pre.fecha||fmtD(new Date()));
+  $('#tfFeria').value=t?(t.feria||''):'';
+  $('#tfPosts').value=t&&t.num_posts?t.num_posts:'';
+  $('#tfCarr').value=t&&t.num_carruseles?t.num_carruseles:'';
+  $('#tfVid').value=t&&t.num_videos?t.num_videos:'';
+  $('#tfNotas').value=t?(t.comentarios_rebold||''):'';
+  $('#tfMsg').textContent='';
+  $('#tfDel').hidden=!(t&&me.admin);
+  $('#trDlg').showModal();
+  $('#tfNombre').focus();
+}
+function trCliAgregar(n){
+  const sel=$('#tfCli');
+  if(![...sel.options].some(o=>o.value===n)){
+    const o=document.createElement('option');o.value=n;o.textContent=n;
+    sel.insertBefore(o,sel.querySelector('option[value="__new"]'));
+  }
+  sel.value=n;trCliPrev=n;
+}
+let perEditId=null;
+function renderPersonas(){
+  let h='<thead><tr><th>Nombre</th><th>Correo</th><th>Equipo</th><th>Rol</th><th>Clientes que supervisa</th><th></th></tr></thead><tbody>';
+  trTeam().forEach(p=>{
+    h+='<tr><td><b>'+esc(p.n)+'</b></td><td>'+esc(p.email||'Sin correo')+'</td><td>'+esc(p.equipo||'Sin equipo')+'</td><td><span class="rol c-'+p.c+'">'+esc(p.t||'Otro')+'</span></td><td>'+esc(p.clientes||'')+'</td><td><button class="link" data-pe="'+p.id+'">Editar</button></td></tr>';
+  });
+  $('#perTbl').innerHTML=h+'</tbody>';
+}
+function openPerDlg(id){
+  perEditId=id?Number(id):null;
+  const p=perEditId?personas.find(x=>x.id===perEditId):null;
+  $('#perTitle').textContent=p?'Editar persona':'Agregar persona';
+  $('#pfRol').innerHTML=PER_ROLES.map(r=>'<option>'+r+'</option>').join('');
+  $('#equipos').innerHTML=[...new Set(personas.map(x=>x.equipo).filter(Boolean))].map(e=>'<option value="'+esc(e)+'"></option>').join('');
+  $('#pfNombre').value=p?p.name:'';$('#pfCorreo').value=p?(p.email||''):'';
+  $('#pfEquipo').value=p?(p.equipo||''):'';$('#pfRol').value=p?(p.rol||'Otro'):'Otro';
+  $('#pfProv').checked=p?!!p.proveedor:false;$('#pfClientes').value=p?(p.clientes||''):'';
+  $('#pfMsg').textContent='';$('#pfDel').hidden=!p;$('#pfNota').hidden=!p;
+  $('#perDlg').showModal();$('#pfNombre').focus();
+}
+async function savePer(ev){
+  ev.preventDefault();
+  const msg=$('#pfMsg'),name=$('#pfNombre').value.trim().replace(/\s+/g,' '),email=$('#pfCorreo').value.trim().toLowerCase();
+  if(name.length<3){msg.textContent='Escribe el nombre completo.';return;}
+  if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.textContent='El correo no es válido.';return;}
+  const otro=personas.find(x=>x.id!==perEditId&&(norm(x.name)===norm(name)||(email&&String(x.email||'').toLowerCase()===email)));
+  if(otro){msg.textContent='Ya existe '+otro.name+' con ese nombre o correo.';return;}
+  const datos={name:name,email:email||null,equipo:$('#pfEquipo').value.trim(),rol:$('#pfRol').value,proveedor:$('#pfProv').checked,clientes:$('#pfClientes').value.trim()};
+  try{
+    if(perEditId)await sb('personas?id=eq.'+perEditId,{method:'PATCH',headers:H,body:JSON.stringify(datos)});
+    else{
+      datos.orden=personas.reduce((m,x)=>Math.max(m,x.orden||0),0)+10;datos.activo=true;
+      await sb('personas',{method:'POST',headers:Object.assign({},H,{Prefer:'return=minimal'}),body:JSON.stringify(datos)});
+    }
+    $('#perDlg').close();
+    await loadPersonas();renderPersonas();renderTrafico();fillAbsWho();
+  }catch(e){msg.textContent=e.status===409?'Ya existe una persona con ese nombre o correo.':'No se pudo guardar. Revisa la conexión e intenta de nuevo.';}
+}
+async function delPer(){
+  const p=personas.find(x=>x.id===perEditId);if(!p)return;
+  if(p.email&&ADMINS.includes(String(p.email).toLowerCase())){$('#pfMsg').textContent='Una administradora no se puede quitar desde aquí.';return;}
+  if(!confirm('¿Quitar a '+p.name+'? Sus tareas ya asignadas conservan el nombre. Si tiene un correo externo, deja de poder entrar.'))return;
+  try{
+    await sb('personas?id=eq.'+p.id,{method:'DELETE',headers:H});
+    $('#perDlg').close();
+    await loadPersonas();renderPersonas();renderTrafico();fillAbsWho();
+  }catch(e){$('#pfMsg').textContent='No se pudo quitar a la persona. Intenta de nuevo.';}
+}
+function trNotify(nombre,tarea,cliente,fecha){
+  if(!nombre||nombre===me.name)return;
+  const per=personas.find(x=>norm(x.name)===norm(nombre));
+  const mail=(per&&per.email)||Object.keys(NOMBRES).find(e=>NOMBRES[e]===nombre);
+  if(!mail)return;
+  const f=fecha?new Date(fecha+'T12:00:00').toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'}):'Sin fecha definida';
+  try{fetch(NOTIF_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'notificarTarea',email:mail,asignado:nombre,tarea:tarea,cliente:cliente||'Sin cliente',fecha:f,hub:location.origin})}).catch(()=>{});}catch(e){}
+}
+async function saveTr(ev){
+  ev.preventDefault();
+  const msg=$('#tfMsg'),asig=$('#tfAsig').value,nombre=$('#tfNombre').value.trim();
+  if(!asig){msg.textContent='Elige a quién se asigna la tarea.';return;}
+  if(!nombre){msg.textContent='Escribe el nombre de la pieza o tarea.';return;}
+  const num=id=>Math.max(0,parseInt($(id).value,10)||0);
+  const posts=num('#tfPosts'),carr=num('#tfCarr'),vid=num('#tfVid');
+  const datos={nombre_pieza:nombre,asignado:asig,cliente:$('#tfCli').value||'Sin cliente',tipo:$('#tfTipo').value,dia_entrega:$('#tfFecha').value||null,
+    feria:$('#tfFeria').value.trim(),comentarios_rebold:$('#tfNotas').value.trim(),num_posts:posts,num_carruseles:carr,num_videos:vid,total_piezas:posts+carr+vid};
+  try{
+    if(trEditId){
+      const antes=trTodos().find(x=>String(x.id)===String(trEditId));
+      const asigAntes=antes?antes.asignado:null;   // se guarda antes de enviar el cambio
+      datos.estado=$('#tfEst').value;datos.updated_at=new Date().toISOString();
+      await sb('trafico?id=eq.'+trEditId,{method:'PATCH',headers:H,body:JSON.stringify(datos)});
+      if(asigAntes!==asig)trNotify(asig,nombre,datos.cliente,datos.dia_entrega);
+    }else{
+      const fila=Object.assign({sheet_name:'hub_v3',numero:'',accion:'',semana_publicacion:'',link_pieza:'',comentarios_cliente:'',ok_rebold:'',estado:'pendiente'},datos);
+      await sb('trafico',{method:'POST',headers:Object.assign({},H,{Prefer:'return=minimal'}),body:JSON.stringify(fila)});
+      trNotify(asig,nombre,datos.cliente,datos.dia_entrega);
+    }
+    $('#trDlg').close();
+    await loadTrafico();loadMisTareas();
+  }catch(e){msg.textContent='No se pudo guardar la tarea. Revisa la conexión e intenta de nuevo.';}
+}
+async function delTr(){
+  if(!trEditId||!confirm('¿Eliminar esta tarea? No se puede deshacer.'))return;
+  try{await sb('trafico?id=eq.'+trEditId,{method:'DELETE',headers:H});$('#trDlg').close();await loadTrafico();loadMisTareas();}
+  catch(e){$('#tfMsg').textContent='No se pudo eliminar la tarea. Intenta de nuevo.';}
+}
+async function trGo(delta){trWeek=delta===0?mondayOf(new Date()):addDays(trWeek,delta*7);loadTrafico();}
+
+/* Asistente: texto libre a tareas */
+const TR_ALIAS_EXTRA={'laura':'Laura Morales','juanca':'Juan Camilo Espinosa','alex':'Alexandra Salas'};
+const TR_ALIAS_CLI={'b&b':{cliente:'Beg and Baker'},'beg & barker':{cliente:'Beg and Baker'},'beg & baker':{cliente:'Beg and Baker'},'beg and bake':{cliente:'Beg and Baker'},'beg and barker':{cliente:'Beg and Baker'},
+  'expopet':{cliente:'Corferias',feria:'Expopet'},'agroexpo':{cliente:'Corferias',feria:'Agroexpo'},'agro':{cliente:'Corferias',feria:'Agroexpo'},
+  'feria del hogar':{cliente:'Corferias',feria:'Feria del Hogar'},'f hogar':{cliente:'Corferias',feria:'Feria del Hogar'},'belleza y salud':{cliente:'Corferias',feria:'Belleza y Salud'}};
+function trContexto(){
+  const clientesMap={};projects.filter(p=>p.activo).forEach(p=>{clientesMap[norm(p.name)]=p.name;});
+  const aliasCli={};Object.keys(TR_ALIAS_CLI).forEach(k=>{const a=TR_ALIAS_CLI[k];aliasCli[k]={feria:a.feria||'',cliente:clientesMap[norm(a.cliente)]||''};});
+  const extra={};Object.keys(TR_ALIAS_EXTRA).forEach(k=>{if(trPersonas().includes(TR_ALIAS_EXTRA[k]))extra[k]=TR_ALIAS_EXTRA[k];});
+  return {lunes:trWeek,personas:trAliasPersonas(trPersonas(),extra,me.name),clientesMap:clientesMap,aliasCli:aliasCli};
+}
+function trInterpretar(){
+  const texto=$('#trTexto').value;
+  if(!texto.trim()){$('#trSugMsg').textContent='';$('#trSug').hidden=true;toast('Escribe primero las tareas.');return;}
+  const r=parseTareas(texto,trContexto());
+  trSug=r.tareas;
+  $('#trSug').hidden=false;
+  $('#trSugList').innerHTML=trSug.length?trSug.map((t,i)=>{
+    const f=t.dia_entrega?parseD(t.dia_entrega).toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'short'}):'Sin fecha';
+    return '<label class="sug"><input type="checkbox" data-i="'+i+'" checked><span><b>'+esc(t.nombre_pieza)+'</b><small>'+esc(t.asignado+' · '+t.cliente+(t.feria?' ('+t.feria+')':'')+' · '+t.tipo+' · '+f+' · '+t.total_piezas+' pzas')+'</small></span></label>';
+  }).join(''):'<p class="muted">No encontré tareas en el texto.</p>';
+  $('#trSugMsg').textContent=r.sinPersona?r.sinPersona+(r.sinPersona===1?' línea quedó':' líneas quedaron')+' sin persona y no se incluyó. Escribe el nombre en la línea o como encabezado.':'';
+  $('#trSugOk').hidden=!trSug.length;
+}
+async function trCrearSugeridas(){
+  const marcadas=$$('#trSugList input[type=checkbox]').filter(c=>c.checked).map(c=>trSug[Number(c.dataset.i)]);
+  if(!marcadas.length){$('#trSugMsg').textContent='Marca al menos una tarea.';return;}
+  const filas=marcadas.map(t=>({sheet_name:'hub_v3',numero:'',accion:'',semana_publicacion:'',link_pieza:'',comentarios_cliente:'',ok_rebold:'',estado:'pendiente',
+    nombre_pieza:t.nombre_pieza,asignado:t.asignado,cliente:t.cliente,tipo:t.tipo,dia_entrega:t.dia_entrega,feria:t.feria,comentarios_rebold:t.comentarios_rebold,
+    num_posts:t.num_posts,num_carruseles:t.num_carruseles,num_videos:t.num_videos,total_piezas:t.total_piezas}));
+  try{
+    await sb('trafico',{method:'POST',headers:Object.assign({},H,{Prefer:'return=minimal'}),body:JSON.stringify(filas)});
+    marcadas.forEach(t=>trNotify(t.asignado,t.nombre_pieza,t.cliente,t.dia_entrega));
+    $('#trTexto').value='';$('#trSug').hidden=true;$('#trAsist').hidden=true;trSug=[];
+    toast(filas.length+(filas.length===1?' tarea creada.':' tareas creadas.'));
+    await loadTrafico();
+  }catch(e){$('#trSugMsg').textContent='No se pudieron crear las tareas. Revisa la conexión e intenta de nuevo.';}
+}
+
+/* Tareas de tráfico de la semana, dentro de Mis horas */
+async function loadMisTareas(){
+  const box=$('#misTareas');
+  try{
+    const from=fmtD(weekStart),to=fmtD(addDays(weekStart,6));
+    const d=await sbAll('trafico','asignado=ilike.*'+enc(me.name)+'*&dia_entrega=gte.'+from+'&dia_entrega=lte.'+to+'&estado=neq.finalizado');
+    const yo=norm(me.name);
+    misTr=d.filter(t=>{const a=norm(t.asignado||'');return a===yo||a.includes(yo);}).sort((a,b)=>String(a.dia_entrega).localeCompare(String(b.dia_entrega))||a.id-b.id);
+    if(!misTr.length){box.hidden=true;box.innerHTML='';return;}
+    box.innerHTML='<h2>Tus tareas de tráfico de esta semana</h2>'+misTr.map(t=>{
+      const f=parseD(String(t.dia_entrega).slice(0,10));
+      return '<div class="it"><div>'+esc(t.nombre_pieza)+'<small>'+esc(['lun,mar,mié,jue,vie,sáb,dom'.split(',')[(f.getDay()+6)%7]+' '+f.getDate(),t.cliente,t.feria].filter(Boolean).join(' · '))+'</small></div>'
+        +'<select class="trst" data-st="'+t.id+'" aria-label="Estado de la tarea">'+Object.keys(ESTADOS).map(k=>'<option value="'+k+'"'+(k===(t.estado||'pendiente')?' selected':'')+'>'+ESTADOS[k]+'</option>').join('')+'</select></div>';
+    }).join('');
+    box.hidden=false;
+  }catch(e){box.hidden=true;}
+}
+
 /* ===== Ausencias ===== */
 const TIPOS_AUS={vacaciones:'Vacaciones',incapacidad:'Incapacidad',licencia:'Licencia',compensatorio:'Compensatorio',permiso:'Permiso'};
 let absences=[];
 const absMine=r=>r.member_email?r.member_email===me.email:norm(r.member_name)===norm(me.name);
+function nombrePorEmail(e){const x=personas.find(p=>String(p.email||'').toLowerCase()===e);return x?x.name:(KNOWN[e]||'');}
 function fillAbsWho(){
   $('#absWhoWrap').hidden=!me.admin;
   if(!me.admin)return;
-  const otros=Object.keys(KNOWN).filter(e=>e!==me.email).sort((a,b)=>KNOWN[a].localeCompare(KNOWN[b],'es'));
-  $('#absWho').innerHTML='<option value="">Yo ('+esc(me.name)+')</option>'+otros.map(e=>'<option value="'+esc(e)+'">'+esc(KNOWN[e])+'</option>').join('');
+  const lista=personas.filter(p=>p.email&&String(p.email).toLowerCase()!==me.email).map(p=>({e:String(p.email).toLowerCase(),n:p.name}));
+  const base=lista.length?lista:Object.keys(KNOWN).filter(e=>e!==me.email).map(e=>({e:e,n:KNOWN[e]}));
+  base.sort((a,b)=>a.n.localeCompare(b.n,'es'));
+  $('#absWho').innerHTML='<option value="">Yo ('+esc(me.name)+')</option>'+base.map(x=>'<option value="'+esc(x.e)+'">'+esc(x.n)+'</option>').join('');
 }
 async function loadAbsences(){
   const desde=fmtD(addDays(new Date(),-60));
@@ -611,7 +1185,7 @@ async function createAbsence(ev){
   if(dias===0){msg.textContent='Ese rango solo cae en fin de semana. Elige días entre lunes y viernes.';return;}
   let nombre=me.name,email=me.email;
   const otro=me.admin?$('#absWho').value:'';
-  if(otro){nombre=KNOWN[otro];email=otro;}
+  if(otro){nombre=nombrePorEmail(otro);email=otro;}
   const cruce=absences.find(r=>Number(r.days)>0&&r.date_start<=hasta&&r.date_end>=desde&&(r.member_email?r.member_email===email:norm(r.member_name)===norm(nombre)));
   if(cruce&&!confirm('Ya hay una ausencia registrada que se cruza con esas fechas ('+(TIPOS_AUS[cruce.type]||cruce.type)+', del '+shortD(parseD(cruce.date_start))+' al '+shortD(parseD(cruce.date_end))+'). ¿Registrar de todas formas?'))return;
   try{
@@ -700,14 +1274,14 @@ $('#grid').addEventListener('input',e=>{
 $('#grid').addEventListener('click',e=>{const b=e.target.closest('button[data-rm]');if(b)rmRow(b.dataset.rm);});
 $('#addSel').addEventListener('change',e=>{
   const v=e.target.value;
-  if(v==='__new'){$('#dName').value='';$('#dArea').value='';$('#dMsg').textContent='';$('#dlg').showModal();$('#dName').focus();}
+  if(v==='__new'){projMode='horas';$('#dlgSubmit').textContent='Crear y agregar a mi semana';$('#dName').value='';$('#dArea').value='';$('#dMsg').textContent='';$('#dlg').showModal();$('#dName').focus();}
   else if(v)addRow(v);
 });
 $('#dlg').addEventListener('close',fillAddSel);
 $('#dCancel').addEventListener('click',()=>$('#dlg').close());
 $('#dlgForm').addEventListener('submit',async ev=>{
   ev.preventDefault();
-  try{const p=await createProject($('#dName').value,$('#dArea').value);$('#dlg').close();addRow(p.name);}
+  try{const p=await createProject($('#dName').value,$('#dArea').value);$('#dlg').close();if(projMode==='trafico')trCliAgregar(p.name);else addRow(p.name);}
   catch(e){$('#dMsg').textContent=e.message;}
 });
 $('#projForm').addEventListener('submit',async ev=>{
@@ -733,10 +1307,52 @@ $('#absTbl').addEventListener('click',async e=>{
   catch(err){toast('No se pudo eliminar la ausencia.');}
 });
 $('#btnCsv').addEventListener('click',downloadCsv);
+$('#trPrev').addEventListener('click',()=>trGo(-1));
+$('#trNext').addEventListener('click',()=>trGo(1));
+$('#trToday').addEventListener('click',()=>trGo(0));
+$('#trNew').addEventListener('click',()=>openTrDlg(null,{}));
+$('#trAsistBtn').addEventListener('click',()=>{const a=$('#trAsist');a.hidden=!a.hidden;if(!a.hidden)$('#trTexto').focus();});
+$('#trInterp').addEventListener('click',trInterpretar);
+$('#trPerBtn').addEventListener('click',()=>{const a=$('#trPer');a.hidden=!a.hidden;if(!a.hidden)renderPersonas();});
+$('#perNew').addEventListener('click',()=>openPerDlg(null));
+$('#perTbl').addEventListener('click',e=>{const b=e.target.closest('button[data-pe]');if(b)openPerDlg(b.dataset.pe);});
+$('#perForm').addEventListener('submit',savePer);
+$('#pfCancel').addEventListener('click',()=>$('#perDlg').close());
+$('#pfDel').addEventListener('click',delPer);
+$('#pfProv').addEventListener('change',e=>{if(e.target.checked&&['Otro',''].includes($('#pfRol').value))$('#pfRol').value='Proveedor';});
+$('#trSugOk').addEventListener('click',trCrearSugeridas);
+$('#trSugCancel').addEventListener('click',()=>{$('#trSug').hidden=true;trSug=[];});
+$('#trForm').addEventListener('submit',saveTr);
+$('#tfCancel').addEventListener('click',()=>$('#trDlg').close());
+$('#tfCli').addEventListener('change',e=>{
+  if(e.target.value!=='__new'){trCliPrev=e.target.value;return;}
+  e.target.value=trCliPrev||'Sin cliente';
+  projMode='trafico';$('#dlgSubmit').textContent='Crear proyecto';
+  $('#dName').value='';$('#dArea').value='';$('#dMsg').textContent='';
+  $('#dlg').showModal();$('#dName').focus();
+});
+$('#tfDel').addEventListener('click',delTr);
+$('#trCal').addEventListener('change',e=>{const t=e.target;if(t.matches&&t.matches('select[data-st]'))trSetEstado(t.dataset.st,t.value);});
+$('#trCal').addEventListener('click',e=>{
+  const ed=e.target.closest('button[data-ed]');if(ed){openTrDlg(ed.dataset.ed);return;}
+  const ad=e.target.closest('button[data-add]');if(ad)openTrDlg(null,{asignado:ad.dataset.add,fecha:ad.dataset.d});
+});
+$('#trSinFechaList').addEventListener('click',e=>{const ed=e.target.closest('button[data-ed]');if(ed)openTrDlg(ed.dataset.ed);});
+$('#misTareas').addEventListener('change',e=>{const t=e.target;if(t.matches&&t.matches('select[data-st]'))trSetEstado(t.dataset.st,t.value);});
 window.addEventListener('beforeunload',e=>{if(pending){e.preventDefault();e.returnValue='';}});
 
 /* ===== Inicio ===== */
 (function init(){
+  // Enlace público de solo lectura para tráfico: rebold-hub.vercel.app/?view=trafico (sin ingreso)
+  if(new URLSearchParams(location.search).get('view')==='trafico'){
+    me={email:'',name:'Visitante',admin:false,viewer:true};
+    $('#login').hidden=true;$('#app').hidden=false;
+    $('#whoName').textContent='Vista pública, solo lectura';$('#btnOut').hidden=true;
+    $$('#tabs button').forEach(b=>{b.hidden=b.dataset.p!=='trafico';});
+    $('#trNew').hidden=true;$('#trAsistBtn').hidden=true;
+    loadPersonas().catch(()=>{}).then(()=>goPage('trafico'));
+    return;
+  }
   const s=localStorage.getItem(SESSION);
   if(s&&localStorage.getItem(pwdKey(s))&&nameOf(s))enter(s);
 })();
