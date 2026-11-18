@@ -61,7 +61,7 @@ main{max-width:1120px;margin:0 auto;padding:28px 24px 60px}
 .grid tfoot td{border-bottom:0;background:var(--panel2);font-weight:600}
 .grid th{padding:10px 6px;font-weight:600;color:var(--muted);font-size:12px}
 .grid th span{display:block;font:500 16px 'DM Mono',monospace;color:var(--text)}
-.pn{text-align:left!important;padding:10px 14px!important;min-width:190px;position:sticky;left:0;background:var(--panel);z-index:1}
+.pn{text-align:left!important;padding:10px 14px!important;min-width:250px;position:sticky;left:0;background:var(--panel);z-index:1}
 .grid tfoot .pn{background:var(--panel2)}
 .grid td input{min-width:64px;border:0;border-radius:0;background:transparent;text-align:center;font:500 15px 'DM Mono',monospace;padding:13px 4px}
 .grid td input:focus{background:var(--panel2);outline:2px solid var(--red);outline-offset:-2px}
@@ -134,6 +134,14 @@ dialog.wide{width:min(600px,94vw)}
 .mytr .it small{color:var(--muted);display:block}
 .mytr .trst{font-size:12px}
 details summary{cursor:pointer;color:var(--muted);padding:6px 0}
+.tp{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.tsel{width:auto;max-width:215px;font-size:12px;padding:4px 8px;border-radius:6px}
+.tsel.falta{border-color:var(--red)}
+.tp .link{font-size:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:4px 6px 4px 12px;font-size:13px}
+.chip button{background:none;border:0;color:var(--muted);padding:0 4px;font-size:13px}
+.chip button:hover{color:var(--red)}
 .absform{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end;margin-bottom:6px}
 .abs-wrap .tbl{margin-top:0}
 
@@ -225,6 +233,7 @@ dialog form>*+*{margin-top:14px}
         <label class="chk"><input type="checkbox" id="chkWk"> Mostrar fin de semana</label>
         <button class="status" id="saveStatus" type="button" role="status" aria-live="polite"></button>
       </div>
+      <p class="msg" id="faltaTipo" role="status"></p>
       <div class="mytr mt" id="misTareas" hidden></div>
     </section>
 
@@ -288,6 +297,17 @@ dialog form>*+*{margin-top:14px}
       <datalist id="areas"></datalist>
       <p class="msg" id="pjMsg" role="status"></p>
       <table class="tbl" id="projTbl"></table>
+      <div class="panel mt" id="tiposPanel" hidden>
+        <h2 style="margin-bottom:6px">Tipos de tarea por equipo</h2>
+        <p class="muted">Al cargar horas, cada persona elige entre los tipos de su equipo y los de «Todos». Quitar un tipo no borra las horas ya cargadas con él.</p>
+        <div class="fgrid">
+          <label>Equipo<select id="tpEquipo"></select></label>
+          <label>Tipo de tarea nuevo<input id="tpNombre" maxlength="60" placeholder="Por ejemplo, Estudio cualitativo"></label>
+        </div>
+        <div class="row"><button class="btn red" id="tpAdd" type="button">Agregar tipo</button></div>
+        <p class="msg" id="tpMsg" role="status"></p>
+        <div class="chips" id="tpLista"></div>
+      </div>
     </section>
 
     <section id="p-reportes" hidden>
@@ -311,10 +331,10 @@ dialog form>*+*{margin-top:14px}
         <label class="cust" hidden>Desde<input type="date" id="rFrom"></label>
         <label class="cust" hidden>Hasta<input type="date" id="rTo"></label>
         <label>Filas
-          <select id="rRow"><option value="proyecto" selected>Proyecto</option><option value="persona">Persona</option><option value="area">Área</option><option value="semana">Semana</option></select>
+          <select id="rRow"><option value="proyecto" selected>Proyecto</option><option value="tipo">Tipo de tarea</option><option value="persona">Persona</option><option value="equipo">Equipo</option><option value="area">Área</option><option value="semana">Semana</option></select>
         </label>
         <label>Columnas
-          <select id="rCol"><option value="semana" selected>Semana</option><option value="persona">Persona</option><option value="proyecto">Proyecto</option><option value="area">Área</option></select>
+          <select id="rCol"><option value="semana" selected>Semana</option><option value="tipo">Tipo de tarea</option><option value="persona">Persona</option><option value="proyecto">Proyecto</option><option value="equipo">Equipo</option><option value="area">Área</option></select>
         </label>
       </div>
       <div class="sum" id="repSum"></div>
@@ -400,13 +420,13 @@ const KNOWN={
 };
 
 const NOMBRES=Object.assign({},KNOWN,PROVEEDORES);
-let personas=[];
+let personas=[],tiposTarea=[];
 
 /* ===== Funciones puras (fechas, pivote, CSV, asistente de tráfico) ===== */
 // <pure>
 const SEP='\u0001';
 const MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-const DIMS={proyecto:'Proyecto',persona:'Persona',area:'Área',semana:'Semana'};
+const DIMS={proyecto:'Proyecto',tipo:'Tipo de tarea',persona:'Persona',equipo:'Equipo',area:'Área',semana:'Semana'};
 const pad=n=>String(n).padStart(2,'0');
 const fmtD=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parseD=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
@@ -437,6 +457,8 @@ function keyOf(e,dim){
   if(dim==='proyecto')return e.client_name;
   if(dim==='persona')return e.member_name;
   if(dim==='area')return e.area||'Sin área';
+  if(dim==='tipo')return e.tipo_tarea||'Sin tipo';
+  if(dim==='equipo')return e.equipo||'Sin equipo';
   return weekKey(e.entry_date);
 }
 function pivot(entries,rowDim,colDim){
@@ -611,9 +633,10 @@ async function enter(email){
   localStorage.setItem(SESSION,email);
   $('#login').hidden=true;$('#app').hidden=false;
   $('#whoName').textContent=me.name;
-  $('#trNew').hidden=!me.admin;$('#trAsistBtn').hidden=!me.admin;$('#trPerBtn').hidden=!me.admin;
+  $('#trNew').hidden=false;$('#trAsistBtn').hidden=false;$('#trPerBtn').hidden=!me.admin;
   $('#repScope').textContent=me.admin?'Ves las horas de todo el equipo.':'Ves únicamente tus propias horas.';
-  await Promise.all([loadProjects().catch(()=>toast('No pude cargar la lista de proyectos. Recarga la página.')),loadPersonas().catch(()=>{})]);
+  await Promise.all([loadProjects().catch(()=>toast('No pude cargar la lista de proyectos. Recarga la página.')),loadPersonas().catch(()=>{}),loadTipos().catch(()=>{})]);
+  $('#tiposPanel').hidden=!me.admin;
   catAt=Date.now();
   const pe=personas.find(x=>String(x.email||'').toLowerCase()===email);
   if(pe){me.name=pe.name;$('#whoName').textContent=me.name;}
@@ -630,7 +653,7 @@ async function refrescarCatalogos(espera){
   if(espera&&Date.now()-catAt<espera)return;
   catAt=Date.now();
   try{
-    await Promise.all([loadProjects(),loadPersonas()]);
+    await Promise.all([loadProjects(),loadPersonas(),loadTipos()]);
     fillAbsWho();
     if(curPage==='horas'&&$('#grid').querySelector('tfoot'))fillAddSel();
   }catch(e){}
@@ -646,7 +669,7 @@ async function goPage(p){
   if(p==='horas')loadWeek();
   if(p==='trafico')loadTrafico();
   if(p==='ausencias')openAbsences();
-  if(p==='proyectos')renderProjects();
+  if(p==='proyectos'){renderProjects();if(me.admin)renderTipos();}
   if(p==='reportes')runReport();
 }
 let toastT=null;
@@ -691,12 +714,29 @@ function renderProjects(){
 }
 
 /* ===== Mis horas (grilla semanal) ===== */
-const K=(c,d)=>c+SEP+d;
+const K=(c,t,d)=>c+SEP+t+SEP+d;
 let weekStart=mondayOf(new Date()),cells={},saved={},rows=[],showWk=false;
 let chain=Promise.resolve(),saveTimer=null,pending=false,ver=0;
 
 function setStatus(t,cls){const e=$('#saveStatus');e.textContent=t||'';e.className='status'+(cls?' '+cls:'');}
 function weekLabel(){return shortD(weekStart)+' al '+shortD(addDays(weekStart,6))+' de '+addDays(weekStart,6).getFullYear();}
+
+// Equipo de quien carga las horas y los tipos de tarea que le corresponden
+function miEquipo(){
+  const yo=norm(me.name),p=personas.find(x=>String(x.email||'').toLowerCase()===me.email)||personas.find(x=>norm(x.name)===yo);
+  return p?(p.equipo||''):'';
+}
+const tiposDe=eq=>eq?tiposTarea.filter(t=>norm(t.equipo)===norm(eq)).map(t=>t.nombre):[];
+function opcionesTipo(actual){
+  const eq=miEquipo(),prop=tiposDe(eq),comun=eq&&norm(eq)==='todos'?[]:tiposDe('Todos');
+  const lista=g=>g.map(t=>'<option value="'+esc(t)+'">'+esc(t)+'</option>').join('');
+  let h='<option value="">Elige el tipo de tarea</option>';
+  if(prop.length)h+='<optgroup label="'+esc(eq)+'">'+lista(prop)+'</optgroup>';
+  if(comun.length)h+='<optgroup label="Todos los equipos">'+lista(comun)+'</optgroup>';
+  if(actual&&!prop.includes(actual)&&!comun.includes(actual))h+='<option value="'+esc(actual)+'">'+esc(actual)+'</option>';
+  return h;
+}
+const filaKeys=r=>[...Array(7)].map((_,i)=>K(r.c,r.t,fmtD(addDays(weekStart,i))));
 
 async function loadWeek(){
   $('#weekLabel').textContent=weekLabel();
@@ -704,9 +744,12 @@ async function loadWeek(){
   try{
     const from=fmtD(weekStart),to=fmtD(addDays(weekStart,6));
     const d=await sbAll('horas','member_email=eq.'+enc(me.email)+'&entry_date=gte.'+from+'&entry_date=lte.'+to);
-    saved={};cells={};const names=[];
-    d.forEach(e=>{const v=Number(e.hours);saved[K(e.client_name,e.entry_date)]=v;cells[K(e.client_name,e.entry_date)]=v;if(!names.includes(e.client_name))names.push(e.client_name);});
-    rows=names;
+    saved={};cells={};rows=[];
+    d.forEach(e=>{
+      const t=e.tipo_tarea||'',v=Number(e.hours);
+      saved[K(e.client_name,t,e.entry_date)]=v;cells[K(e.client_name,t,e.entry_date)]=v;
+      if(!rows.some(r=>r.c===e.client_name&&r.t===t))rows.push({c:e.client_name,t:t});
+    });
     showWk=d.some(e=>(parseD(e.entry_date).getDay()+6)%7>=5);
     $('#chkWk').checked=showWk;
     renderWeek();
@@ -720,51 +763,78 @@ async function loadWeek(){
 function renderWeek(){
   const n=showWk?7:5,today=fmtD(new Date()),dn=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
   const dates=[...Array(n)].map((_,i)=>fmtD(addDays(weekStart,i)));
-  let h='<thead><tr><th class="pn">Proyecto</th>'+dates.map((d,i)=>'<th class="'+(d===today?'today':'')+'">'+dn[i]+'<span>'+parseD(d).getDate()+'</span></th>').join('')+'<th>Total</th><th></th></tr></thead><tbody>';
+  let h='<thead><tr><th class="pn">Proyecto y tipo de tarea</th>'+dates.map((d,i)=>'<th class="'+(d===today?'today':'')+'">'+dn[i]+'<span>'+parseD(d).getDate()+'</span></th>').join('')+'<th>Total</th><th></th></tr></thead><tbody>';
   if(!rows.length)h+='<tr><td colspan="'+(n+3)+'" class="empty">Aún no hay proyectos en esta semana. Agrega el primero con el selector de abajo.</td></tr>';
-  rows.forEach(c=>{
-    h+='<tr><td class="pn">'+esc(c)+'</td>'+dates.map(d=>{
-      const v=cells[K(c,d)];
-      return '<td class="'+(d===today?'today':'')+'"><input type="number" inputmode="decimal" min="0" max="24" step="0.25" data-c="'+esc(c)+'" data-d="'+d+'" value="'+(v?round2(v):'')+'" aria-label="Horas en '+esc(c)+', '+d+'"></td>';
-    }).join('')+'<td class="tt rt" data-c="'+esc(c)+'"></td><td><button class="x" data-rm="'+esc(c)+'" aria-label="Quitar '+esc(c)+' de esta semana">✕</button></td></tr>';
+  rows.forEach((r,i)=>{
+    h+='<tr><td class="pn"><b>'+esc(r.c)+'</b><div class="tp"><select class="tsel" data-i="'+i+'" aria-label="Tipo de tarea de '+esc(r.c)+'"></select><button class="link" data-dup="'+i+'">+ otro tipo</button></div></td>'+dates.map(d=>{
+      const v=cells[K(r.c,r.t,d)];
+      return '<td class="'+(d===today?'today':'')+'"><input type="number" inputmode="decimal" min="0" max="24" step="0.25" data-i="'+i+'" data-d="'+d+'" value="'+(v?round2(v):'')+'" aria-label="Horas en '+esc(r.c)+(r.t?', '+esc(r.t):'')+', '+d+'"></td>';
+    }).join('')+'<td class="tt rt" data-i="'+i+'"></td><td><button class="x" data-rm="'+i+'" aria-label="Quitar '+esc(r.c)+' de esta semana">✕</button></td></tr>';
   });
   h+='</tbody><tfoot><tr><td class="pn">Total del día</td>'+dates.map(d=>'<td class="dt" data-d="'+d+'"></td>').join('')+'<td class="tt gt"></td><td></td></tr></tfoot>';
-  $('#grid').innerHTML=h;updTotals();fillAddSel();
+  $('#grid').innerHTML=h;
+  $$('#grid select.tsel').forEach(sel=>{const r=rows[Number(sel.dataset.i)];sel.innerHTML=opcionesTipo(r.t);sel.value=r.t;});
+  updTotals();fillAddSel();
 }
 function updTotals(){
   const dates=$$('#grid tfoot .dt').map(e=>e.dataset.d);let gt=0;
-  $$('#grid .rt').forEach(el=>{let s=0;dates.forEach(d=>{s+=cells[K(el.dataset.c,d)]||0;});el.textContent=fmtH(s)||'0';});
-  $$('#grid .dt').forEach(el=>{let s=0;rows.forEach(c=>{s+=cells[K(c,el.dataset.d)]||0;});gt+=s;el.textContent=fmtH(s);el.classList.toggle('hi',s>10);});
+  $$('#grid .rt').forEach(el=>{const r=rows[Number(el.dataset.i)];let s=0;dates.forEach(d=>{s+=cells[K(r.c,r.t,d)]||0;});el.textContent=fmtH(s)||'0';});
+  $$('#grid .dt').forEach(el=>{let s=0;rows.forEach(r=>{s+=cells[K(r.c,r.t,el.dataset.d)]||0;});gt+=s;el.textContent=fmtH(s);el.classList.toggle('hi',s>10);});
   const g=$('#grid .gt');if(g)g.textContent=fmtH(gt)||'0';
+  // las filas con horas y sin tipo se marcan: se guardan igual, pero falta el detalle
+  let falta=0;
+  $$('#grid select.tsel').forEach(sel=>{
+    const r=rows[Number(sel.dataset.i)],sinTipo=!r.t&&filaKeys(r).some(k=>cells[k]>0);
+    sel.classList.toggle('falta',sinTipo);if(sinTipo)falta++;
+  });
+  $('#faltaTipo').textContent=falta?'Falta elegir el tipo de tarea en '+falta+(falta===1?' fila.':' filas.'):'';
 }
 function fillAddSel(){
-  const free=projects.filter(p=>p.activo&&!rows.includes(p.name)),by={};
-  free.forEach(p=>{const a=p.area||'Otros';(by[a]=by[a]||[]).push(p);});
+  const by={};
+  projects.filter(p=>p.activo).forEach(p=>{const a=p.area||'Otros';(by[a]=by[a]||[]).push(p);});
   let h='<option value="" selected disabled>Agregar proyecto a esta semana…</option>';
   Object.keys(by).sort((a,b)=>a.localeCompare(b,'es')).forEach(a=>{
     h+='<optgroup label="'+esc(a)+'">'+by[a].map(p=>'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>').join('')+'</optgroup>';
   });
   $('#addSel').innerHTML=h+'<option value="__new">Crear proyecto nuevo…</option>';
 }
+function enfocarTipo(i){const sel=$$('#grid select.tsel').find(x=>Number(x.dataset.i)===i);if(sel)sel.focus();}
 function addRow(c){
-  if(!rows.includes(c))rows.push(c);
-  renderWeek();
-  const i=$$('#grid input').find(x=>x.dataset.c===c);if(i)i.focus();
+  let i=rows.findIndex(r=>r.c===c&&!r.t);          // si ya hay una fila de ese proyecto sin tipo, se usa
+  if(i<0){rows.push({c:c,t:''});i=rows.length-1;}
+  renderWeek();enfocarTipo(i);
 }
-function rmRow(c){
-  const keys=[...Array(7)].map((_,i)=>K(c,fmtD(addDays(weekStart,i))));
-  if(keys.some(k=>cells[k]>0)&&!confirm('Quitar "'+c+'" borra las horas que cargaste en esta semana. ¿Continuar?'))return;
+function dupRow(i){
+  const r=rows[i];if(!r)return;
+  if(rows.some(x=>x.c===r.c&&!x.t)){toast('Primero elige el tipo de tarea de la fila de '+r.c+' que está sin tipo.');return;}
+  rows.splice(i+1,0,{c:r.c,t:''});renderWeek();enfocarTipo(i+1);
+}
+function cambiarTipo(i,nuevo){
+  const r=rows[i];if(!r||r.t===nuevo)return;
+  if(nuevo&&rows.some((x,j)=>j!==i&&x.c===r.c&&x.t===nuevo)){toast('Ya tienes «'+nuevo+'» en '+r.c+'. Súmale las horas a esa fila.');renderWeek();return;}
+  if(!nuevo&&rows.some((x,j)=>j!==i&&x.c===r.c&&!x.t)){toast('Ya hay una fila de '+r.c+' sin tipo.');renderWeek();return;}
+  for(let k=0;k<7;k++){                              // las horas se pasan a la fila con el tipo nuevo
+    const d=fmtD(addDays(weekStart,k)),vOld=cells[K(r.c,r.t,d)];
+    if(vOld){cells[K(r.c,nuevo,d)]=vOld;cells[K(r.c,r.t,d)]=0;}
+  }
+  r.t=nuevo;renderWeek();schedSave();
+}
+function rmRow(i){
+  const r=rows[i];if(!r)return;
+  const keys=filaKeys(r);
+  if(keys.some(k=>cells[k]>0)&&!confirm('Quitar «'+r.c+(r.t?' · '+r.t:'')+'» borra las horas que cargaste en esta semana. ¿Continuar?'))return;
   keys.forEach(k=>{if(cells[k])cells[k]=0;});
-  rows=rows.filter(x=>x!==c);renderWeek();schedSave();
+  rows.splice(i,1);renderWeek();schedSave();
 }
 async function pullPrev(){
   try{
     const from=fmtD(addDays(weekStart,-7)),to=fmtD(addDays(weekStart,-1));
     const d=await sbAll('horas','member_email=eq.'+enc(me.email)+'&entry_date=gte.'+from+'&entry_date=lte.'+to);
-    const nuevos=[...new Set(d.map(e=>e.client_name))].filter(n=>!rows.includes(n));
-    if(!nuevos.length){toast('No hay proyectos nuevos para traer de la semana pasada.');return;}
+    const nuevos=[];
+    d.forEach(e=>{const t=e.tipo_tarea||'';if(!rows.some(r=>r.c===e.client_name&&r.t===t)&&!nuevos.some(r=>r.c===e.client_name&&r.t===t))nuevos.push({c:e.client_name,t:t});});
+    if(!nuevos.length){toast('No hay filas nuevas para traer de la semana pasada.');return;}
     rows=rows.concat(nuevos);renderWeek();
-  }catch(e){toast('No pude traer los proyectos de la semana pasada.');}
+  }catch(e){toast('No pude traer las filas de la semana pasada.');}
 }
 async function goWeek(delta){
   clearTimeout(saveTimer);await enqueueSave();
@@ -781,18 +851,45 @@ async function runSave(){
     const ups=[],dels=[];
     new Set(Object.keys(cells).concat(Object.keys(saved))).forEach(k=>{
       const v=round2(cells[k]||0),s=saved[k]||0;if(v===s)return;
-      const [c,d]=k.split(SEP);
-      if(v>0)ups.push({k,v,row:{member_email:me.email,member_name:me.name,entry_date:d,client_name:c,hours:v}});
-      else dels.push({k,c,d});
+      const [c,t,d]=k.split(SEP);
+      if(v>0)ups.push({k,v,row:{member_email:me.email,member_name:me.name,entry_date:d,client_name:c,tipo_tarea:t,hours:v}});
+      else dels.push({k,c,t,d});
     });
     if(ups.length||dels.length)setStatus('Guardando…');
-    if(ups.length)await sbUpsert('horas',ups.map(u=>u.row),'member_email,entry_date,client_name');
-    for(const x of dels)await sb('horas?member_email=eq.'+enc(me.email)+'&entry_date=eq.'+x.d+'&client_name=eq.'+enc(x.c),{method:'DELETE',headers:H});
+    if(ups.length)await sbUpsert('horas',ups.map(u=>u.row),'member_email,entry_date,client_name,tipo_tarea');
+    for(const x of dels)await sb('horas?member_email=eq.'+enc(me.email)+'&entry_date=eq.'+x.d+'&client_name=eq.'+enc(x.c)+'&tipo_tarea=eq.'+enc(x.t),{method:'DELETE',headers:H});
     ups.forEach(u=>{saved[u.k]=u.v;});dels.forEach(x=>{delete saved[x.k];});
     if(ver===myVer){pending=false;setStatus('Guardado ✓','ok');}
   }catch(e){
     setStatus('No se pudo guardar. Toca aquí para reintentar.','err');
   }
+}
+
+/* ===== Tipos de tarea por equipo (administradoras) ===== */
+function renderTipos(){
+  const eqs=['Todos'].concat([...new Set(personas.map(x=>x.equipo).filter(Boolean))]);
+  const sel=$('#tpEquipo'),actual=sel.value;
+  sel.innerHTML=eqs.map(e=>'<option value="'+esc(e)+'">'+esc(e==='Todos'?'Todos los equipos':e)+'</option>').join('');
+  sel.value=eqs.includes(actual)?actual:'Todos';
+  const lista=tiposTarea.filter(t=>norm(t.equipo)===norm(sel.value));
+  $('#tpLista').innerHTML=lista.length?lista.map(t=>'<span class="chip">'+esc(t.nombre)+'<button data-tdel="'+t.id+'" aria-label="Quitar '+esc(t.nombre)+'">✕</button></span>').join(''):'<span class="muted">Este equipo aún no tiene tipos propios; usa los de «Todos».</span>';
+}
+async function addTipo(){
+  const msg=$('#tpMsg'),eq=$('#tpEquipo').value,nombre=$('#tpNombre').value.trim().replace(/\s+/g,' ');
+  if(!nombre){msg.textContent='Escribe el nombre del tipo de tarea.';return;}
+  if(tiposTarea.some(t=>norm(t.equipo)===norm(eq)&&norm(t.nombre)===norm(nombre))){msg.textContent='«'+nombre+'» ya existe en ese equipo.';return;}
+  try{
+    const orden=tiposTarea.filter(t=>norm(t.equipo)===norm(eq)).reduce((m,t)=>Math.max(m,t.orden||0),0)+10;
+    await sb('tipos_tarea',{method:'POST',headers:Object.assign({},H,{Prefer:'return=minimal'}),body:JSON.stringify({equipo:eq,nombre:nombre,orden:orden,activo:true})});
+    $('#tpNombre').value='';msg.textContent='«'+nombre+'» agregado a '+(eq==='Todos'?'todos los equipos':eq)+'.';
+    await loadTipos();renderTipos();
+  }catch(e){msg.textContent=e.status===409?'«'+nombre+'» ya existe en ese equipo.':'No se pudo agregar. Revisa la conexión e intenta de nuevo.';}
+}
+async function delTipo(id){
+  const t=tiposTarea.find(x=>String(x.id)===String(id));if(!t)return;
+  if(!confirm('¿Quitar «'+t.nombre+'»? Las horas ya cargadas con ese tipo se conservan.'))return;
+  try{await sb('tipos_tarea?id=eq.'+t.id,{method:'DELETE',headers:H});await loadTipos();renderTipos();}
+  catch(e){$('#tpMsg').textContent='No se pudo quitar. Intenta de nuevo.';}
 }
 
 /* ===== Tráfico ===== */
@@ -817,6 +914,7 @@ const rolClase=r=>({'Directora':'r','Diseño':'b','Community':'p','Intelligence'
 const PER_ROLES=['Directora','Diseño','Community','Intelligence','Integral','Proveedor','Otro'];
 const trTeam=()=>personas.map(p=>({id:p.id,n:p.name,t:p.rol||'',c:rolClase(p.rol),g:p.equipo||(p.proveedor?'Proveedores':'Sin equipo'),equipo:p.equipo||'',email:p.email||'',clientes:p.clientes||'',proveedor:!!p.proveedor}));
 const trPersonas=()=>personas.map(p=>p.name);
+async function loadTipos(){tiposTarea=await sbAll('tipos_tarea','activo=eq.true','orden.asc,id.asc');}
 async function loadPersonas(){personas=await sbAll('personas','activo=eq.true','orden.asc,id.asc');}
 // A qué persona del equipo corresponde una tarea (por nombre completo; no por el primer nombre).
 const trClave=t=>{
@@ -905,7 +1003,7 @@ function renderTrafico(){
     h+='<tr><td class="pn"><span class="c-'+(f.c||'')+'">'+esc(f.n)+'</span>'+(f.k===yo?' <span class="muted" style="font-weight:400">(tú)</span>':'')+(f.t?'<br><span class="rol c-'+f.c+'">'+f.t+'</span>':'')+'</td>';
     dates.forEach(d=>{
       const ts=trItems.filter(t=>trClave(t)===f.k&&String(t.dia_entrega||'').slice(0,10)===d);
-      h+='<td class="'+(d===today?'today':'')+'">'+ts.map(trCard).join('')+(me.admin?'<button class="add" data-add="'+esc(f.n)+'" data-d="'+d+'" aria-label="Agregar tarea a '+esc(f.n)+'">+</button>':'')+'</td>';
+      h+='<td class="'+(d===today?'today':'')+'">'+ts.map(trCard).join('')+(!me.viewer?'<button class="add" data-add="'+esc(f.n)+'" data-d="'+d+'" aria-label="Agregar tarea a '+esc(f.n)+'">+</button>':'')+'</td>';
     });
     h+='</tr>';
   });
@@ -959,7 +1057,7 @@ function openTrDlg(id,pre){
   pre=pre||{};trEditId=id||null;
   const t=id?trTodos().find(x=>String(x.id)===String(id)):null;
   $('#trDlgTitle').textContent=t?'Editar tarea':'Nueva tarea';
-  trOpcionesAsig($('#tfAsig'),t?t.asignado:(pre.asignado||''));
+  trOpcionesAsig($('#tfAsig'),t?t.asignado:(pre.asignado||(me.admin?'':me.name)));
   trOpciones($('#tfCli'),['Sin cliente'].concat(projects.filter(p=>p.activo).map(p=>p.name)),t?(t.cliente||'Sin cliente'):'Sin cliente');
   $('#tfCli').insertAdjacentHTML('beforeend','<option value="__new">Crear proyecto nuevo…</option>');
   trCliPrev=$('#tfCli').value;
@@ -1216,7 +1314,8 @@ async function runReport(){
     const data=await sbAll('horas',q);
     if(tok!==repTok)return;
     const areaOf={};projects.forEach(p=>{areaOf[p.name]=p.area;});
-    data.forEach(e=>{e.area=areaOf[e.client_name]||'';});
+    const equipoDe={};personas.forEach(x=>{if(x.email)equipoDe[String(x.email).toLowerCase()]=x.equipo||'';});
+    data.forEach(e=>{e.area=areaOf[e.client_name]||'';e.equipo=equipoDe[String(e.member_email).toLowerCase()]||'';});
     lastRep={p:pivot(data,rd,cd),rd,cd,from,to,
       projs:new Set(data.map(e=>e.client_name)).size,people:new Set(data.map(e=>e.member_email)).size};
     renderRep();
@@ -1266,12 +1365,20 @@ $('#chkWk').addEventListener('change',e=>{showWk=e.target.checked;renderWeek();}
 $('#btnPrevProj').addEventListener('click',pullPrev);
 $('#saveStatus').addEventListener('click',()=>{if($('#saveStatus').classList.contains('err'))enqueueSave();});
 $('#grid').addEventListener('input',e=>{
-  const t=e.target;if(!t.matches||!t.matches('input[data-c]'))return;
+  const t=e.target;if(!t.matches||!t.matches('input[data-i]'))return;
+  const r=rows[Number(t.dataset.i)];if(!r)return;
   let v=parseFloat(String(t.value).replace(',','.'));if(!(v>0))v=0;
   if(v>24){v=24;t.value=24;}
-  cells[K(t.dataset.c,t.dataset.d)]=round2(v);updTotals();schedSave();
+  cells[K(r.c,r.t,t.dataset.d)]=round2(v);updTotals();schedSave();
 });
-$('#grid').addEventListener('click',e=>{const b=e.target.closest('button[data-rm]');if(b)rmRow(b.dataset.rm);});
+$('#grid').addEventListener('change',e=>{const t=e.target;if(t.matches&&t.matches('select.tsel'))cambiarTipo(Number(t.dataset.i),t.value);});
+$('#grid').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-rm]');if(b){rmRow(Number(b.dataset.rm));return;}
+  const d=e.target.closest('button[data-dup]');if(d)dupRow(Number(d.dataset.dup));
+});
+$('#tpAdd').addEventListener('click',addTipo);
+$('#tpEquipo').addEventListener('change',renderTipos);
+$('#tpLista').addEventListener('click',e=>{const b=e.target.closest('button[data-tdel]');if(b)delTipo(b.dataset.tdel);});
 $('#addSel').addEventListener('change',e=>{
   const v=e.target.value;
   if(v==='__new'){projMode='horas';$('#dlgSubmit').textContent='Crear y agregar a mi semana';$('#dName').value='';$('#dArea').value='';$('#dMsg').textContent='';$('#dlg').showModal();$('#dName').focus();}
