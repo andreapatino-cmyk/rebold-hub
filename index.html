@@ -87,6 +87,9 @@ main{max-width:1120px;margin:0 auto;padding:28px 24px 60px}
 .tbl td{padding:11px 12px;border-bottom:1px solid var(--line)}
 .tbl tr.off td{color:var(--muted)}
 
+.absform{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end;margin-bottom:6px}
+.abs-wrap .tbl{margin-top:0}
+
 /* reports */
 .filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
 .sum{display:flex;gap:36px;margin-bottom:16px;flex-wrap:wrap}
@@ -150,6 +153,7 @@ dialog form>*+*{margin-top:14px}
     <div class="brand">re<b>bold</b></div>
     <nav id="tabs" aria-label="Secciones">
       <button data-p="horas" class="on">Mis horas</button>
+      <button data-p="ausencias">Ausencias</button>
       <button data-p="proyectos">Proyectos</button>
       <button data-p="reportes">Reportes</button>
     </nav>
@@ -173,6 +177,22 @@ dialog form>*+*{margin-top:14px}
         <label class="chk"><input type="checkbox" id="chkWk"> Mostrar fin de semana</label>
         <button class="status" id="saveStatus" type="button" role="status" aria-live="polite"></button>
       </div>
+    </section>
+
+    <section id="p-ausencias" hidden>
+      <div class="head"><div><h1>Ausencias</h1><p class="muted">Registra aquí tus vacaciones, incapacidades o licencias. Mientras estén registradas no recibes recordatorios para cargar horas. Se cuentan los días hábiles, de lunes a viernes.</p></div></div>
+      <form id="absForm" class="absform">
+        <label id="absWhoWrap" hidden>Persona<select id="absWho"></select></label>
+        <label>Tipo
+          <select id="absTipo"><option value="vacaciones">Vacaciones</option><option value="incapacidad">Incapacidad</option><option value="licencia">Licencia</option><option value="compensatorio">Compensatorio</option></select>
+        </label>
+        <label>Desde<input type="date" id="absDesde" required></label>
+        <label>Hasta<input type="date" id="absHasta" required></label>
+        <label>Nota (opcional)<input id="absNota" maxlength="120"></label>
+        <button class="btn red" type="submit">Registrar ausencia</button>
+      </form>
+      <p class="msg" id="absMsg" role="status"></p>
+      <div class="gridwrap abs-wrap"><table class="tbl" id="absTbl"></table></div>
     </section>
 
     <section id="p-proyectos" hidden>
@@ -267,6 +287,8 @@ const shortD=d=>d.getDate()+' '+MESES[d.getMonth()];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
 const weekKey=s=>fmtD(mondayOf(parseD(s)));
+// Días hábiles (lunes a viernes) entre dos fechas ISO, ambas incluidas.
+function diasHabiles(a,b){let n=0;for(let d=parseD(a);fmtD(d)<=b;d=addDays(d,1)){const w=d.getDay();if(w>=1&&w<=5)n++;}return n;}
 function periodRange(p,today,cf,ct){
   const mon=mondayOf(today),y=today.getFullYear(),m=today.getMonth();
   switch(p){
@@ -380,6 +402,7 @@ async function enter(email){
   localStorage.setItem(SESSION,email);
   $('#login').hidden=true;$('#app').hidden=false;
   $('#whoName').textContent=me.name;
+  fillAbsWho();
   $('#repScope').textContent=me.admin?'Ves las horas de todo el equipo.':'Ves únicamente tus propias horas.';
   try{await loadProjects();}catch(e){toast('No pude cargar la lista de proyectos. Recarga la página.');}
   goPage('horas');
@@ -391,8 +414,9 @@ async function goPage(p){
   if(curPage==='horas'&&p!=='horas'){clearTimeout(saveTimer);await enqueueSave();}
   curPage=p;
   $$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.p===p));
-  ['horas','proyectos','reportes'].forEach(s=>{$('#p-'+s).hidden=s!==p;});
+  ['horas','ausencias','proyectos','reportes'].forEach(s=>{$('#p-'+s).hidden=s!==p;});
   if(p==='horas')loadWeek();
+  if(p==='ausencias')openAbsences();
   if(p==='proyectos')renderProjects();
   if(p==='reportes')runReport();
 }
@@ -541,6 +565,63 @@ async function runSave(){
   }
 }
 
+/* ===== Ausencias ===== */
+const TIPOS_AUS={vacaciones:'Vacaciones',incapacidad:'Incapacidad',licencia:'Licencia',compensatorio:'Compensatorio',permiso:'Permiso'};
+let absences=[];
+const absMine=r=>r.member_email?r.member_email===me.email:norm(r.member_name)===norm(me.name);
+function fillAbsWho(){
+  $('#absWhoWrap').hidden=!me.admin;
+  if(!me.admin)return;
+  const otros=Object.keys(KNOWN).filter(e=>e!==me.email).sort((a,b)=>KNOWN[a].localeCompare(KNOWN[b],'es'));
+  $('#absWho').innerHTML='<option value="">Yo ('+esc(me.name)+')</option>'+otros.map(e=>'<option value="'+esc(e)+'">'+esc(KNOWN[e])+'</option>').join('');
+}
+async function loadAbsences(){
+  const desde=fmtD(addDays(new Date(),-60));
+  if(me.admin){absences=await sbAll('absences','date_end=gte.'+desde,'date_start.desc,id.asc');return;}
+  const a=await sbAll('absences','member_email=eq.'+enc(me.email)+'&date_end=gte.'+desde,'date_start.desc,id.asc');
+  const b=await sbAll('absences','member_name=eq.'+enc(me.name)+'&date_end=gte.'+desde,'date_start.desc,id.asc');
+  const vistos=new Set();
+  absences=a.concat(b).filter(r=>vistos.has(r.id)?false:(vistos.add(r.id),true)).sort((x,y)=>x.date_start<y.date_start?1:x.date_start>y.date_start?-1:0);
+}
+async function openAbsences(){
+  $('#absMsg').textContent='';
+  $('#absTbl').innerHTML='<tbody><tr><td class="empty">Cargando…</td></tr></tbody>';
+  try{await loadAbsences();renderAbsences();}
+  catch(e){$('#absTbl').innerHTML='<tbody><tr><td class="empty">No pude cargar las ausencias. Revisa la conexión y recarga la página.</td></tr></tbody>';}
+}
+function renderAbsences(){
+  const hoy=fmtD(new Date());
+  let h='<thead><tr>'+(me.admin?'<th>Persona</th>':'')+'<th>Tipo</th><th>Desde</th><th>Hasta</th><th>Días hábiles</th><th>Nota</th><th>Estado</th><th></th></tr></thead><tbody>';
+  if(!absences.length)h+='<tr><td colspan="'+(me.admin?8:7)+'" class="empty">No hay ausencias registradas en los últimos 60 días ni próximas.</td></tr>';
+  absences.forEach(r=>{
+    const estado=r.date_end<hoy?'Terminada':r.date_start>hoy?'Próxima':'En curso';
+    const dias=Number(r.days)>0?String(Number(r.days)):(Number(r.hours_partial)>0?fmtH(r.hours_partial)+' h':'');
+    h+='<tr class="'+(estado==='Terminada'?'off':'')+'">'+(me.admin?'<td>'+esc(r.member_name)+'</td>':'')
+      +'<td>'+esc(TIPOS_AUS[r.type]||r.type||'')+'</td><td>'+esc(shortD(parseD(r.date_start)))+'</td><td>'+esc(shortD(parseD(r.date_end)))+'</td><td>'+esc(dias)+'</td><td>'+esc(r.note||'')+'</td><td>'+estado+'</td>'
+      +'<td>'+((me.admin||absMine(r))?'<button class="link" data-del="'+r.id+'">Eliminar</button>':'')+'</td></tr>';
+  });
+  $('#absTbl').innerHTML=h+'</tbody>';
+}
+async function createAbsence(ev){
+  ev.preventDefault();
+  const msg=$('#absMsg'),tipo=$('#absTipo').value,desde=$('#absDesde').value,hasta=$('#absHasta').value,nota=$('#absNota').value.trim();
+  if(!desde||!hasta){msg.textContent='Elige las fechas de inicio y fin.';return;}
+  if(hasta<desde){msg.textContent='La fecha final no puede ser anterior a la inicial.';return;}
+  const dias=diasHabiles(desde,hasta);
+  if(dias===0){msg.textContent='Ese rango solo cae en fin de semana. Elige días entre lunes y viernes.';return;}
+  let nombre=me.name,email=me.email;
+  const otro=me.admin?$('#absWho').value:'';
+  if(otro){nombre=KNOWN[otro];email=otro;}
+  const cruce=absences.find(r=>Number(r.days)>0&&r.date_start<=hasta&&r.date_end>=desde&&(r.member_email?r.member_email===email:norm(r.member_name)===norm(nombre)));
+  if(cruce&&!confirm('Ya hay una ausencia registrada que se cruza con esas fechas ('+(TIPOS_AUS[cruce.type]||cruce.type)+', del '+shortD(parseD(cruce.date_start))+' al '+shortD(parseD(cruce.date_end))+'). ¿Registrar de todas formas?'))return;
+  try{
+    await sb('absences',{method:'POST',headers:Object.assign({},H,{Prefer:'return=minimal'}),body:JSON.stringify({member_name:nombre,member_email:email,type:tipo,date_start:desde,date_end:hasta,days:dias,note:nota||null,registered_by:me.name})});
+    msg.textContent=otro?'Ausencia registrada para '+nombre+': '+dias+' días hábiles.':'Ausencia registrada: '+dias+' días hábiles. En ese período no recibirás recordatorios de horas.';
+    $('#absForm').reset();
+    await loadAbsences();renderAbsences();
+  }catch(e){msg.textContent='No se pudo registrar la ausencia. Revisa la conexión e intenta de nuevo.';}
+}
+
 /* ===== Reportes ===== */
 let lastRep=null,repTok=0;
 const rowLbl=(dim,k)=>dim==='semana'?'Semana del '+shortD(parseD(k)):k;
@@ -642,6 +723,15 @@ $('#projTbl').addEventListener('click',async e=>{
   try{await setActivo(p,!p.activo);renderProjects();}catch(err){toast('No se pudo cambiar el estado del proyecto.');}
 });
 ['rPer','rRow','rCol','rFrom','rTo'].forEach(id=>$('#'+id).addEventListener('change',runReport));
+$('#absForm').addEventListener('submit',createAbsence);
+$('#absDesde').addEventListener('change',()=>{const d=$('#absDesde').value,h=$('#absHasta');if(d&&(!h.value||h.value<d))h.value=d;});
+$('#absTbl').addEventListener('click',async e=>{
+  const b=e.target.closest('button[data-del]');if(!b)return;
+  const r=absences.find(x=>String(x.id)===b.dataset.del);if(!r)return;
+  if(!confirm('¿Eliminar esta ausencia? Desde ese momento volverás a recibir recordatorios en esas fechas.'))return;
+  try{await sb('absences?id=eq.'+r.id,{method:'DELETE',headers:H});absences=absences.filter(x=>x.id!==r.id);renderAbsences();}
+  catch(err){toast('No se pudo eliminar la ausencia.');}
+});
 $('#btnCsv').addEventListener('click',downloadCsv);
 window.addEventListener('beforeunload',e=>{if(pending){e.preventDefault();e.returnValue='';}});
 
