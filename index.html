@@ -134,6 +134,10 @@ dialog.wide{width:min(600px,94vw)}
 .mytr .it small{color:var(--muted);display:block}
 .mytr .trst{font-size:12px}
 details summary{cursor:pointer;color:var(--muted);padding:6px 0}
+.cel{display:flex;flex-direction:column;gap:1px}
+.grid td input.pz{font:500 12px 'DM Mono',monospace;padding:3px 2px 6px;color:var(--muted)}
+.grid td input.pz::placeholder{color:#55555e;font-family:'Figtree',system-ui,sans-serif}
+.rt small,.dt small{display:block;font:400 11px 'Figtree',system-ui,sans-serif;color:var(--muted)}
 .tp{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
 .tsel{width:auto;max-width:215px;font-size:12px;padding:4px 8px;border-radius:6px}
 .tsel.falta{border-color:var(--red)}
@@ -330,6 +334,9 @@ dialog form>*+*{margin-top:14px}
         </label>
         <label class="cust" hidden>Desde<input type="date" id="rFrom"></label>
         <label class="cust" hidden>Hasta<input type="date" id="rTo"></label>
+        <label>Medir
+          <select id="rMed"><option value="horas" selected>Horas</option><option value="piezas">Piezas</option></select>
+        </label>
         <label>Filas
           <select id="rRow"><option value="proyecto" selected>Proyecto</option><option value="tipo">Tipo de tarea</option><option value="persona">Persona</option><option value="equipo">Equipo</option><option value="area">Área</option><option value="semana">Semana</option></select>
         </label>
@@ -352,6 +359,7 @@ dialog form>*+*{margin-top:14px}
       <label>Equipo<input id="pfEquipo" list="equipos" maxlength="40" placeholder="Sin equipo"></label>
       <label>Rol<select id="pfRol"></select></label>
       <label class="full chk"><input type="checkbox" id="pfProv"> Es proveedor externo: puede entrar con su correo aunque no sea de Rebold</label>
+      <label class="full chk"><input type="checkbox" id="pfPiezas"> Anota el número de piezas cada día, además de las horas (equipo de diseño)</label>
       <label class="full">Clientes que supervisa, separados por coma (opcional). Ve el diseño de esos clientes<input id="pfClientes" maxlength="200" placeholder="Granite, Ayoba"></label>
     </div>
     <p class="muted" id="pfNota" hidden>Si cambias el nombre, las tareas ya asignadas conservan el nombre anterior.</p>
@@ -461,10 +469,10 @@ function keyOf(e,dim){
   if(dim==='equipo')return e.equipo||'Sin equipo';
   return weekKey(e.entry_date);
 }
-function pivot(entries,rowDim,colDim){
+function pivot(entries,rowDim,colDim,medida){
   const cell={},rowTot={},colTot={};let total=0;
   for(const e of entries){
-    const h=Number(e.hours)||0;if(!h)continue;
+    const h=Number(medida==='piezas'?e.piezas:e.hours)||0;if(!h)continue;
     const r=keyOf(e,rowDim),c=keyOf(e,colDim);
     cell[r+SEP+c]=(cell[r+SEP+c]||0)+h;rowTot[r]=(rowTot[r]||0)+h;colTot[c]=(colTot[c]||0)+h;total+=h;
   }
@@ -715,7 +723,7 @@ function renderProjects(){
 
 /* ===== Mis horas (grilla semanal) ===== */
 const K=(c,t,d)=>c+SEP+t+SEP+d;
-let weekStart=mondayOf(new Date()),cells={},saved={},rows=[],showWk=false;
+let weekStart=mondayOf(new Date()),cells={},saved={},pzs={},savedPz={},rows=[],showWk=false;
 let chain=Promise.resolve(),saveTimer=null,pending=false,ver=0;
 
 function setStatus(t,cls){const e=$('#saveStatus');e.textContent=t||'';e.className='status'+(cls?' '+cls:'');}
@@ -736,6 +744,11 @@ function opcionesTipo(actual){
   if(actual&&!prop.includes(actual)&&!comun.includes(actual))h+='<option value="'+esc(actual)+'">'+esc(actual)+'</option>';
   return h;
 }
+// ¿Esta persona anota piezas además de horas? (se activa en Personas y equipos)
+function conPiezas(){
+  const p=personas.find(x=>String(x.email||'').toLowerCase()===me.email)||personas.find(x=>norm(x.name)===norm(me.name));
+  return !!(p&&p.registra_piezas);
+}
 const filaKeys=r=>[...Array(7)].map((_,i)=>K(r.c,r.t,fmtD(addDays(weekStart,i))));
 
 async function loadWeek(){
@@ -744,10 +757,10 @@ async function loadWeek(){
   try{
     const from=fmtD(weekStart),to=fmtD(addDays(weekStart,6));
     const d=await sbAll('horas','member_email=eq.'+enc(me.email)+'&entry_date=gte.'+from+'&entry_date=lte.'+to);
-    saved={};cells={};rows=[];
+    saved={};cells={};pzs={};savedPz={};rows=[];
     d.forEach(e=>{
-      const t=e.tipo_tarea||'',v=Number(e.hours);
-      saved[K(e.client_name,t,e.entry_date)]=v;cells[K(e.client_name,t,e.entry_date)]=v;
+      const t=e.tipo_tarea||'',v=Number(e.hours),z=Number(e.piezas)||0,k=K(e.client_name,t,e.entry_date);
+      saved[k]=v;cells[k]=v;savedPz[k]=z;pzs[k]=z;
       if(!rows.some(r=>r.c===e.client_name&&r.t===t))rows.push({c:e.client_name,t:t});
     });
     showWk=d.some(e=>(parseD(e.entry_date).getDay()+6)%7>=5);
@@ -762,13 +775,15 @@ async function loadWeek(){
 
 function renderWeek(){
   const n=showWk?7:5,today=fmtD(new Date()),dn=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  const dates=[...Array(n)].map((_,i)=>fmtD(addDays(weekStart,i)));
-  let h='<thead><tr><th class="pn">Proyecto y tipo de tarea</th>'+dates.map((d,i)=>'<th class="'+(d===today?'today':'')+'">'+dn[i]+'<span>'+parseD(d).getDate()+'</span></th>').join('')+'<th>Total</th><th></th></tr></thead><tbody>';
+  const dates=[...Array(n)].map((_,i)=>fmtD(addDays(weekStart,i))),conPz=conPiezas();
+  let h='<thead><tr><th class="pn">Proyecto y tipo de tarea'+(conPz?'<br><span style="font:400 11px Figtree,system-ui,sans-serif;color:var(--muted)">horas y número de piezas</span>':'')+'</th>'+dates.map((d,i)=>'<th class="'+(d===today?'today':'')+'">'+dn[i]+'<span>'+parseD(d).getDate()+'</span></th>').join('')+'<th>Total</th><th></th></tr></thead><tbody>';
   if(!rows.length)h+='<tr><td colspan="'+(n+3)+'" class="empty">Aún no hay proyectos en esta semana. Agrega el primero con el selector de abajo.</td></tr>';
   rows.forEach((r,i)=>{
     h+='<tr><td class="pn"><b>'+esc(r.c)+'</b><div class="tp"><select class="tsel" data-i="'+i+'" aria-label="Tipo de tarea de '+esc(r.c)+'"></select><button class="link" data-dup="'+i+'">+ otro tipo</button></div></td>'+dates.map(d=>{
-      const v=cells[K(r.c,r.t,d)];
-      return '<td class="'+(d===today?'today':'')+'"><input type="number" inputmode="decimal" min="0" max="24" step="0.25" data-i="'+i+'" data-d="'+d+'" value="'+(v?round2(v):'')+'" aria-label="Horas en '+esc(r.c)+(r.t?', '+esc(r.t):'')+', '+d+'"></td>';
+      const v=cells[K(r.c,r.t,d)],z=pzs[K(r.c,r.t,d)];
+      const hrs='<input type="number" inputmode="decimal" min="0" max="24" step="0.25" data-i="'+i+'" data-d="'+d+'" value="'+(v?round2(v):'')+'" aria-label="Horas en '+esc(r.c)+(r.t?', '+esc(r.t):'')+', '+d+'">';
+      const pz=conPz?'<input class="pz" type="number" inputmode="numeric" min="0" max="500" step="1" data-i="'+i+'" data-d="'+d+'" data-pz="1" placeholder="pzas" value="'+(z?z:'')+'" aria-label="Piezas en '+esc(r.c)+(r.t?', '+esc(r.t):'')+', '+d+'">':'';
+      return '<td class="'+(d===today?'today':'')+'">'+(conPz?'<div class="cel">'+hrs+pz+'</div>':hrs)+'</td>';
     }).join('')+'<td class="tt rt" data-i="'+i+'"></td><td><button class="x" data-rm="'+i+'" aria-label="Quitar '+esc(r.c)+' de esta semana">✕</button></td></tr>';
   });
   h+='</tbody><tfoot><tr><td class="pn">Total del día</td>'+dates.map(d=>'<td class="dt" data-d="'+d+'"></td>').join('')+'<td class="tt gt"></td><td></td></tr></tfoot>';
@@ -777,17 +792,22 @@ function renderWeek(){
   updTotals();fillAddSel();
 }
 function updTotals(){
-  const dates=$$('#grid tfoot .dt').map(e=>e.dataset.d);let gt=0;
-  $$('#grid .rt').forEach(el=>{const r=rows[Number(el.dataset.i)];let s=0;dates.forEach(d=>{s+=cells[K(r.c,r.t,d)]||0;});el.textContent=fmtH(s)||'0';});
-  $$('#grid .dt').forEach(el=>{let s=0;rows.forEach(r=>{s+=cells[K(r.c,r.t,el.dataset.d)]||0;});gt+=s;el.textContent=fmtH(s);el.classList.toggle('hi',s>10);});
-  const g=$('#grid .gt');if(g)g.textContent=fmtH(gt)||'0';
+  const conPz=conPiezas(),dates=$$('#grid tfoot .dt').map(e=>e.dataset.d);let gt=0,gp=0;
+  const celda=(h,pz)=>(fmtH(h)||'0')+(conPz?'<small>'+pz+' pzas</small>':'');
+  $$('#grid .rt').forEach(el=>{const r=rows[Number(el.dataset.i)];let s=0,z=0;dates.forEach(d=>{s+=cells[K(r.c,r.t,d)]||0;z+=pzs[K(r.c,r.t,d)]||0;});el.innerHTML=celda(s,z);});
+  $$('#grid .dt').forEach(el=>{let s=0,z=0;rows.forEach(r=>{s+=cells[K(r.c,r.t,el.dataset.d)]||0;z+=pzs[K(r.c,r.t,el.dataset.d)]||0;});gt+=s;gp+=z;el.innerHTML=(fmtH(s)||'')+(conPz&&z?'<small>'+z+' pzas</small>':'');el.classList.toggle('hi',s>10);});
+  const g=$('#grid .gt');if(g)g.innerHTML=celda(gt,gp);
   // las filas con horas y sin tipo se marcan: se guardan igual, pero falta el detalle
   let falta=0;
   $$('#grid select.tsel').forEach(sel=>{
     const r=rows[Number(sel.dataset.i)],sinTipo=!r.t&&filaKeys(r).some(k=>cells[k]>0);
     sel.classList.toggle('falta',sinTipo);if(sinTipo)falta++;
   });
-  $('#faltaTipo').textContent=falta?'Falta elegir el tipo de tarea en '+falta+(falta===1?' fila.':' filas.'):'';
+  const sinHoras=Object.keys(pzs).filter(k=>pzs[k]>0&&!(cells[k]>0)).length;
+  const msgs=[];
+  if(falta)msgs.push('Falta elegir el tipo de tarea en '+falta+(falta===1?' fila.':' filas.'));
+  if(sinHoras)msgs.push('Las piezas se guardan cuando también pongas las horas.');
+  $('#faltaTipo').textContent=msgs.join(' ');
 }
 function fillAddSel(){
   const by={};
@@ -814,8 +834,9 @@ function cambiarTipo(i,nuevo){
   if(nuevo&&rows.some((x,j)=>j!==i&&x.c===r.c&&x.t===nuevo)){toast('Ya tienes «'+nuevo+'» en '+r.c+'. Súmale las horas a esa fila.');renderWeek();return;}
   if(!nuevo&&rows.some((x,j)=>j!==i&&x.c===r.c&&!x.t)){toast('Ya hay una fila de '+r.c+' sin tipo.');renderWeek();return;}
   for(let k=0;k<7;k++){                              // las horas se pasan a la fila con el tipo nuevo
-    const d=fmtD(addDays(weekStart,k)),vOld=cells[K(r.c,r.t,d)];
+    const d=fmtD(addDays(weekStart,k)),vOld=cells[K(r.c,r.t,d)],zOld=pzs[K(r.c,r.t,d)];
     if(vOld){cells[K(r.c,nuevo,d)]=vOld;cells[K(r.c,r.t,d)]=0;}
+    if(zOld){pzs[K(r.c,nuevo,d)]=zOld;pzs[K(r.c,r.t,d)]=0;}
   }
   r.t=nuevo;renderWeek();schedSave();
 }
@@ -823,7 +844,7 @@ function rmRow(i){
   const r=rows[i];if(!r)return;
   const keys=filaKeys(r);
   if(keys.some(k=>cells[k]>0)&&!confirm('Quitar «'+r.c+(r.t?' · '+r.t:'')+'» borra las horas que cargaste en esta semana. ¿Continuar?'))return;
-  keys.forEach(k=>{if(cells[k])cells[k]=0;});
+  keys.forEach(k=>{if(cells[k])cells[k]=0;if(pzs[k])pzs[k]=0;});
   rows.splice(i,1);renderWeek();schedSave();
 }
 async function pullPrev(){
@@ -849,16 +870,17 @@ async function runSave(){
   const myVer=ver;
   try{
     const ups=[],dels=[];
-    new Set(Object.keys(cells).concat(Object.keys(saved))).forEach(k=>{
-      const v=round2(cells[k]||0),s=saved[k]||0;if(v===s)return;
+    new Set(Object.keys(cells).concat(Object.keys(saved),Object.keys(pzs),Object.keys(savedPz))).forEach(k=>{
+      const v=round2(cells[k]||0),sv=saved[k]||0,z=pzs[k]||0,sz=savedPz[k]||0;
+      if(v===sv&&z===sz)return;
       const [c,t,d]=k.split(SEP);
-      if(v>0)ups.push({k,v,row:{member_email:me.email,member_name:me.name,entry_date:d,client_name:c,tipo_tarea:t,hours:v}});
-      else dels.push({k,c,t,d});
+      if(v>0)ups.push({k,v,z,row:{member_email:me.email,member_name:me.name,entry_date:d,client_name:c,tipo_tarea:t,hours:v,piezas:z}});
+      else if(sv>0)dels.push({k,c,t,d});                  // sin horas no hay registro; las piezas solas esperan a que haya horas
     });
     if(ups.length||dels.length)setStatus('Guardando…');
     if(ups.length)await sbUpsert('horas',ups.map(u=>u.row),'member_email,entry_date,client_name,tipo_tarea');
     for(const x of dels)await sb('horas?member_email=eq.'+enc(me.email)+'&entry_date=eq.'+x.d+'&client_name=eq.'+enc(x.c)+'&tipo_tarea=eq.'+enc(x.t),{method:'DELETE',headers:H});
-    ups.forEach(u=>{saved[u.k]=u.v;});dels.forEach(x=>{delete saved[x.k];});
+    ups.forEach(u=>{saved[u.k]=u.v;savedPz[u.k]=u.z;});dels.forEach(x=>{delete saved[x.k];delete savedPz[x.k];});
     if(ver===myVer){pending=false;setStatus('Guardado ✓','ok');}
   }catch(e){
     setStatus('No se pudo guardar. Toca aquí para reintentar.','err');
@@ -912,7 +934,7 @@ const trTodos=()=>trItems.concat(trSinFecha,misTr);
 // Todo el equipo aparece siempre en el calendario, en el orden y con el rol del directorio de personas.
 const rolClase=r=>({'Directora':'r','Diseño':'b','Community':'p','Intelligence':'r','Integral':'a','Proveedor':'g'}[r]||'');
 const PER_ROLES=['Directora','Diseño','Community','Intelligence','Integral','Proveedor','Otro'];
-const trTeam=()=>personas.map(p=>({id:p.id,n:p.name,t:p.rol||'',c:rolClase(p.rol),g:p.equipo||(p.proveedor?'Proveedores':'Sin equipo'),equipo:p.equipo||'',email:p.email||'',clientes:p.clientes||'',proveedor:!!p.proveedor}));
+const trTeam=()=>personas.map(p=>({id:p.id,n:p.name,t:p.rol||'',c:rolClase(p.rol),g:p.equipo||(p.proveedor?'Proveedores':'Sin equipo'),equipo:p.equipo||'',email:p.email||'',clientes:p.clientes||'',proveedor:!!p.proveedor,piezas:!!p.registra_piezas}));
 const trPersonas=()=>personas.map(p=>p.name);
 async function loadTipos(){tiposTarea=await sbAll('tipos_tarea','activo=eq.true','orden.asc,id.asc');}
 async function loadPersonas(){personas=await sbAll('personas','activo=eq.true','orden.asc,id.asc');}
@@ -1105,7 +1127,7 @@ function openPerDlg(id){
   $('#equipos').innerHTML=[...new Set(personas.map(x=>x.equipo).filter(Boolean))].map(e=>'<option value="'+esc(e)+'"></option>').join('');
   $('#pfNombre').value=p?p.name:'';$('#pfCorreo').value=p?(p.email||''):'';
   $('#pfEquipo').value=p?(p.equipo||''):'';$('#pfRol').value=p?(p.rol||'Otro'):'Otro';
-  $('#pfProv').checked=p?!!p.proveedor:false;$('#pfClientes').value=p?(p.clientes||''):'';
+  $('#pfProv').checked=p?!!p.proveedor:false;$('#pfPiezas').checked=p?!!p.registra_piezas:false;$('#pfClientes').value=p?(p.clientes||''):'';
   $('#pfMsg').textContent='';$('#pfDel').hidden=!p;$('#pfNota').hidden=!p;
   $('#perDlg').showModal();$('#pfNombre').focus();
 }
@@ -1116,7 +1138,7 @@ async function savePer(ev){
   if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.textContent='El correo no es válido.';return;}
   const otro=personas.find(x=>x.id!==perEditId&&(norm(x.name)===norm(name)||(email&&String(x.email||'').toLowerCase()===email)));
   if(otro){msg.textContent='Ya existe '+otro.name+' con ese nombre o correo.';return;}
-  const datos={name:name,email:email||null,equipo:$('#pfEquipo').value.trim(),rol:$('#pfRol').value,proveedor:$('#pfProv').checked,clientes:$('#pfClientes').value.trim()};
+  const datos={name:name,email:email||null,equipo:$('#pfEquipo').value.trim(),rol:$('#pfRol').value,proveedor:$('#pfProv').checked,registra_piezas:$('#pfPiezas').checked,clientes:$('#pfClientes').value.trim()};
   try{
     if(perEditId)await sb('personas?id=eq.'+perEditId,{method:'PATCH',headers:H,body:JSON.stringify(datos)});
     else{
@@ -1304,7 +1326,7 @@ async function runReport(){
   const {from,to}=periodRange(per,new Date(),$('#rFrom').value,$('#rTo').value);
   const tbl=$('#repTbl');
   if(!from||!to||from>to){tbl.innerHTML='<tbody><tr><td class="empty">Elige un rango de fechas válido.</td></tr></tbody>';$('#repSum').innerHTML='';lastRep=null;return;}
-  const rd=$('#rRow').value;let cd=$('#rCol').value;
+  const rd=$('#rRow').value,med=$('#rMed').value;let cd=$('#rCol').value;
   if(rd===cd){cd=Object.keys(DIMS).find(x=>x!==rd);$('#rCol').value=cd;}
   const tok=++repTok;
   tbl.innerHTML='<tbody><tr><td class="empty">Cargando…</td></tr></tbody>';
@@ -1316,7 +1338,7 @@ async function runReport(){
     const areaOf={};projects.forEach(p=>{areaOf[p.name]=p.area;});
     const equipoDe={};personas.forEach(x=>{if(x.email)equipoDe[String(x.email).toLowerCase()]=x.equipo||'';});
     data.forEach(e=>{e.area=areaOf[e.client_name]||'';e.equipo=equipoDe[String(e.member_email).toLowerCase()]||'';});
-    lastRep={p:pivot(data,rd,cd),rd,cd,from,to,
+    lastRep={p:pivot(data,rd,cd,med),med,piezas:data.reduce((a,e)=>a+(Number(e.piezas)||0),0),rd,cd,from,to,
       projs:new Set(data.map(e=>e.client_name)).size,people:new Set(data.map(e=>e.member_email)).size};
     renderRep();
   }catch(e){
@@ -1324,9 +1346,9 @@ async function runReport(){
   }
 }
 function renderRep(){
-  const {p,rd,cd,projs,people}=lastRep,tbl=$('#repTbl');
-  $('#repSum').innerHTML='<div><b>'+(fmtH(p.total)||'0')+'</b>horas</div><div><b>'+projs+'</b>proyectos</div>'+(me.admin?'<div><b>'+people+'</b>personas</div>':'');
-  if(!p.rows.length){tbl.innerHTML='<tbody><tr><td class="empty">No hay horas cargadas en este período.</td></tr></tbody>';return;}
+  const {p,rd,cd,projs,people,med,piezas}=lastRep,tbl=$('#repTbl');
+  $('#repSum').innerHTML='<div><b>'+(fmtH(p.total)||'0')+'</b>'+(med==='piezas'?'piezas':'horas')+'</div>'+(med!=='piezas'&&piezas>0?'<div><b>'+piezas+'</b>piezas</div>':'')+'<div><b>'+projs+'</b>proyectos</div>'+(me.admin?'<div><b>'+people+'</b>personas</div>':'');
+  if(!p.rows.length){tbl.innerHTML='<tbody><tr><td class="empty">No hay '+(med==='piezas'?'piezas':'horas')+' cargadas en este período.</td></tr></tbody>';return;}
   const max=Math.max.apply(null,Object.keys(p.cell).map(k=>p.cell[k])),maxRow=Math.max.apply(null,p.rows.map(r=>p.rowTot[r]));
   let h='<thead><tr><th>'+esc(DIMS[rd])+'</th>'+p.cols.map(c=>'<th>'+esc(colLbl(cd,c))+'</th>').join('')+'<th>Total</th></tr></thead><tbody>';
   p.rows.forEach(r=>{
@@ -1367,6 +1389,11 @@ $('#saveStatus').addEventListener('click',()=>{if($('#saveStatus').classList.con
 $('#grid').addEventListener('input',e=>{
   const t=e.target;if(!t.matches||!t.matches('input[data-i]'))return;
   const r=rows[Number(t.dataset.i)];if(!r)return;
+  if(t.dataset.pz){                                      // número de piezas del día
+    let z=parseInt(t.value,10);if(!(z>0))z=0;
+    if(z>500){z=500;t.value=500;}
+    pzs[K(r.c,r.t,t.dataset.d)]=z;updTotals();schedSave();return;
+  }
   let v=parseFloat(String(t.value).replace(',','.'));if(!(v>0))v=0;
   if(v>24){v=24;t.value=24;}
   cells[K(r.c,r.t,t.dataset.d)]=round2(v);updTotals();schedSave();
@@ -1403,7 +1430,7 @@ $('#projTbl').addEventListener('click',async e=>{
   const p=projects.find(x=>String(x.id)===b.dataset.tg);if(!p)return;
   try{await setActivo(p,!p.activo);renderProjects();}catch(err){toast('No se pudo cambiar el estado del proyecto.');}
 });
-['rPer','rRow','rCol','rFrom','rTo'].forEach(id=>$('#'+id).addEventListener('change',runReport));
+['rPer','rMed','rRow','rCol','rFrom','rTo'].forEach(id=>$('#'+id).addEventListener('change',runReport));
 $('#absForm').addEventListener('submit',createAbsence);
 $('#absDesde').addEventListener('change',()=>{const d=$('#absDesde').value,h=$('#absHasta');if(d&&(!h.value||h.value<d))h.value=d;});
 $('#absTbl').addEventListener('click',async e=>{
